@@ -63,6 +63,7 @@ El objetivo de largo plazo es que sea útil para la comunidad (profesores, estud
 - **Modo presentación** a pantalla completa, con navegación por teclado/clicker.
 - **Deshacer/rehacer** ilimitado en la sesión.
 - **Autoguardado** y recuperación ante cierre inesperado.
+- **Multilingüe desde el día uno:** español, portugués (Brasil), francés e inglés. Ningún texto de la UI va escrito directo en el código (ver §7.10).
 
 ### 3.2 Siguientes (post-MVP)
 
@@ -76,7 +77,6 @@ El objetivo de largo plazo es que sea útil para la comunidad (profesores, estud
 - **Formas y flechas** (rectángulo, elipse, línea, flecha, llaves).
 - **Exportar**: PDF, HTML autocontenido (presentación que se abre en cualquier navegador), imágenes PNG.
 - **Vista de código de la diapositiva**: ver/editar la diapositiva como texto estructurado, sincronizado con el lienzo.
-- Internacionalización: español, portugués e inglés.
 
 ### 3.3 Más adelante / ideas
 
@@ -324,6 +324,17 @@ Para incrustar simulaciones HTML/JS autocontenidas (por ejemplo, generadas con u
 - Autosave a carpeta de recuperación; el guardado "real" sigue siendo explícito (Ctrl+S), salvo que el usuario active autoguardado en el archivo en ajustes.
 - Indicador de "cambios sin guardar" y confirmación al cerrar.
 
+### 7.10 Idiomas (i18n)
+
+Requisito central del autor: **español (`es`), portugués de Brasil (`pt-BR`), francés (`fr`) e inglés (`en`)** no pueden faltar, en todas las fases.
+
+- Frontend: **i18next + react-i18next**. Un JSON por idioma en `src/i18n/locales/`; claves tipadas desde `en.json`.
+- Toda funcionalidad nueva agrega sus textos **en los cuatro idiomas a la vez**. Un test (`locales.test.ts`) falla si falta una clave, hay una vacía o no coinciden los `{{placeholders}}`.
+- Idioma inicial: el del sistema (cualquier variante de portugués → `pt-BR`; si no se soporta → inglés). El usuario puede cambiarlo en la app.
+- Rust **no** devuelve textos para el usuario: devuelve errores con un **código** estable (p. ej. `archive.invalidZip`) y datos; el frontend los traduce.
+- Fechas y números con `Intl` según el idioma activo.
+- Agregar un idioma = agregar un JSON + una entrada en `SUPPORTED_LANGUAGES`.
+
 ---
 
 ## 8. Seguridad
@@ -398,6 +409,7 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Verificar herramientas instaladas: Rust (rustup), Node LTS, Git, y prerequisitos de Tauri del sistema operativo del autor. Si falta algo, explicar cómo instalarlo y esperar.
 - Crear proyecto Tauri 2 + React + TypeScript + Vite. Configurar ESLint, Prettier, rustfmt, clippy, Vitest.
 - `git init`, `.gitignore`, licencias, README mínimo, `CLAUDE.md`.
+- Infraestructura i18n con los cuatro idiomas (§7.10).
 - **Aceptación:** `npm run tauri dev` abre una ventana con "Hola Tiza"; `cargo test` y `npm test` pasan.
 
 ### Fase 1 — Documento y lienzo básico
@@ -443,7 +455,7 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - **Aceptación:** exporto a PDF y se ve fiel a la presentación; el HTML exportado se abre en un navegador sin la app.
 
 ### Fase 9 — Pulido y comunidad
-- Temas y diapositivas maestras, formas/flechas avanzadas, bloques de código, i18n (es/pt/en), accesibilidad (navegación por teclado, contraste), instaladores para los tres sistemas, documentación de usuario, guía de contribución.
+- Temas y diapositivas maestras, formas/flechas avanzadas, bloques de código, revisión de traducciones por hablantes nativos, accesibilidad (navegación por teclado, contraste), instaladores para los tres sistemas, documentación de usuario, guía de contribución.
 
 ---
 
@@ -465,7 +477,7 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - **Tectonic offline:** tamaño del paquete TeX cacheado y primera descarga. Alternativa: usar TeX instalado en el sistema.
 - **PDF vectorial:** no trivial desde un webview; la primera versión será rasterizada.
 - **Nombre:** "Tiza"/`.tiza` (decidido). Revisar choques de nombre antes de publicar instaladores.
-- **Sistema operativo principal del autor:** confirmar en la fase 0 para priorizar pruebas.
+- **Sistema operativo principal del autor:** Arch Linux (Omarchy, Hyprland/Wayland, WebKitGTK 4.1). Se prioriza probar ahí; Windows y macOS después.
 
 ---
 
@@ -473,4 +485,11 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 
 > Claude Code: añade una entrada al cerrar cada fase (fecha, qué se hizo, decisiones tomadas, pendientes).
 
-- _(vacío — el proyecto aún no empieza)_
+### Fase 0 — 2026-10-30 ✅
+- Repo público `HumbeDev/tiza`; rama por fase (`fase-N`) fusionada a `main` al cerrar.
+- Nombre definitivo: **Tiza** (`.tiza`, `tiza-asset://`).
+- Tauri 2.12 + React 19 + Vite 8 + TypeScript 6.0 (TS 7 aún no es compatible con typescript-eslint). Tauri 3 está en alfa: no se usa.
+- Quitado el plugin `opener` de la plantilla (permisos mínimos, §8). CSP estricta en producción.
+- i18n con es / pt-BR / fr / en y tests de consistencia (§7.10).
+- ESLint, Prettier, rustfmt, clippy (`-D warnings`), Vitest, `cargo test`.
+- Pendiente del autor: cambiar Rust del paquete de Arch a `rustup` (`sudo pacman -S rustup` → `rustup default stable`), e instalar `gst-plugins-base` para video en WebKitGTK.
