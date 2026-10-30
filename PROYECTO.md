@@ -107,10 +107,10 @@ El autor se inspira en proyectos como ArtCraft, escritos en Rust nativo. Para *e
 |---|---|---|
 | Shell de escritorio | **Tauri 2** | Windows (WebView2), macOS (WKWebView), Linux (WebKitGTK) |
 | Backend | **Rust** (edición estable actual) | `serde`, `zip`, `sha2`, `thiserror`, `tokio` |
-| Bindings Rust↔TS | **tauri-specta** (o equivalente) | Tipos TS generados automáticamente desde Rust |
+| Bindings Rust↔TS | **ts-rs** | Tipos TS generados desde Rust con `cargo test` → `src/bindings/` |
 | Frontend | **TypeScript + React + Vite** | Ecosistema más amplio; Claude Code trabaja bien con él |
 | Estado | **Zustand** + **Immer** (parches para deshacer/rehacer) | |
-| Mover/redimensionar/rotar | **Moveable** (+ Selecto para selección por área) | Licencia MIT |
+| Mover/redimensionar/rotar | **Implementación propia** (`src/canvas/`, `src/document/geometry.ts`) | Moveable está sin mantenimiento desde 2023 |
 | Texto enriquecido | **TipTap** (ProseMirror) | Nodo personalizado para matemáticas inline |
 | Ecuaciones (render) | **MathJax** empaquetado localmente, salida **SVG** | Soporta `amsmath`, `physics`, `mhchem`, etc. Sin CDN |
 | Ecuaciones (editor visual) | **MathLive** empaquetado localmente | Produce LaTeX; mismo dato que el modo código |
@@ -493,3 +493,11 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - i18n con es / pt-BR / fr / en y tests de consistencia (§7.10).
 - ESLint, Prettier, rustfmt, clippy (`-D warnings`), Vitest, `cargo test`.
 - Pendiente del autor: cambiar Rust del paquete de Arch a `rustup` (`sudo pacman -S rustup` → `rustup default stable`), e instalar `gst-plugins-base` para video en WebKitGTK.
+
+### Fase 1 — 2026-10-30 🧪 (pendiente de prueba manual del autor)
+- Modelo de datos en Rust (`src-tauri/src/document/`) con tests de JSON; tipos TS generados con **ts-rs** (tauri-specta 2 sigue en RC).
+- Store Zustand + Immer con parches: deshacer/rehacer ilimitado; los gestos continuos se agrupan con `mergeKey` y `seal()`.
+- Mover/redimensionar/rotar y guías magnéticas **implementados a mano** en vez de Moveable (sin releases desde 2023, riesgo con React 19). La geometría es pura y tiene tests.
+- Elementos `shape` (rect, elipse, línea, flecha) y `text` plano. `text` pasará a TipTap en la fase 3 con una migración de esquema.
+- Reordenar diapositivas con eventos de puntero (no HTML5 drag&drop, que choca con el drag&drop de archivos de Tauri).
+- Pendiente: agrupar (Ctrl+G) queda para después; portapapeles solo interno (no del sistema).
