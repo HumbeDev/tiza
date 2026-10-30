@@ -4,24 +4,28 @@ Editor de presentaciones **offline, libre y de código abierto** para ciencia y 
 la facilidad de PowerPoint, la potencia de LaTeX y la riqueza de la web
 (video, páginas en vivo y simulaciones HTML/JS interactivas).
 
+**Hecho para agentes de IA:** Tiza incluirá un servidor **MCP**, así que Claude Code, Claude Desktop
+u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y tú deshaces lo que no te guste).
+
 > 🚧 En desarrollo temprano. Especificación y hoja de ruta: [PROYECTO.md](PROYECTO.md).
 
 **Stack:** Tauri 2 (Rust) + TypeScript + React · **Idiomas:** Español · Português (Brasil) · Français · English
 
 ## Estado
 
-| Fase | Contenido                                                  | Estado |
-| ---- | ---------------------------------------------------------- | ------ |
-| 0    | Entorno, esqueleto Tauri, idiomas                          | ✅     |
-| 1    | Documento y lienzo básico (formas, texto, mover, deshacer) | ⏳     |
-| 2    | Archivo `.tiza`, autosave y recuperación                   | —      |
-| 3    | Texto enriquecido y ecuaciones LaTeX                       | —      |
-| 4    | Imágenes y video                                           | —      |
-| 5    | Simulaciones HTML y páginas web                            | —      |
-| 6    | Modo presentación y vista del presentador                  | —      |
-| 7    | LaTeX completo (TikZ) con Tectonic                         | —      |
-| 8    | Exportar a PDF / HTML / PNG                                | —      |
-| 9    | Temas, pulido e instaladores                               | —      |
+| Fase | Contenido                                                  | Estado       |
+| ---- | ---------------------------------------------------------- | ------------ |
+| 0    | Entorno, esqueleto Tauri, idiomas                          | ✅           |
+| 1    | Documento y lienzo básico (formas, texto, mover, deshacer) | 🧪 en prueba |
+| 2    | Archivo `.tiza`, autosave y recuperación                   | —            |
+| 3    | **Servidor MCP para agentes de IA**                        | —            |
+| 4    | Texto enriquecido y ecuaciones LaTeX                       | —            |
+| 5    | Imágenes y video                                           | —            |
+| 6    | Simulaciones HTML y páginas web                            | —            |
+| 7    | Modo presentación y vista del presentador                  | —            |
+| 8    | LaTeX completo (TikZ) con Tectonic                         | —            |
+| 9    | Exportar a PDF / HTML / PNG                                | —            |
+| 10   | Temas, pulido e instaladores                               | —            |
 
 ## Funcionalidades disponibles
 
