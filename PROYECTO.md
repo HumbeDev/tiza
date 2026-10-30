@@ -1,0 +1,476 @@
+# Tiza — Editor de presentaciones offline con LaTeX, multimedia y simulaciones
+
+> **Nombre:** "Tiza" (decidido por el autor el 2026-10-30). Archivos con extensión `.tiza`.
+>
+> **Para quién es este documento:** para Claude Code, que trabajará en este repositorio junto al autor del proyecto. Es la especificación de referencia: visión, decisiones técnicas, modelo de datos y hoja de ruta por fases. Si algo de este documento entra en conflicto con lo que el autor pide en la conversación, **manda lo que pide el autor**, y se actualiza este documento.
+
+---
+
+## 0. Instrucciones para Claude Code (leer primero)
+
+1. **Trabaja por fases (§11), en orden.** No adelantes funcionalidades de fases futuras. Cada fase tiene criterios de aceptación; una fase está terminada solo cuando se cumplen todos.
+2. **Pasos pequeños y verificables.** Cada cambio debe compilar, pasar los tests y poder probarse a mano. Después de cada paso significativo: `git commit` con un mensaje claro.
+3. **El autor está aprendiendo.** Al terminar cada paso, explica en pocas líneas y en español qué hiciste, qué archivos tocaste y cómo probarlo. Si tomaste una decisión de diseño no trivial, di por qué.
+4. **Pregunta antes de:** agregar una dependencia pesada, cambiar el formato de archivo, cambiar el stack, o borrar código que funciona.
+5. **Versiones:** no confíes en versiones memorizadas. Antes de instalar algo, verifica la versión estable actual (documentación oficial / crates.io / npm) y usa esa.
+6. **Fase 0 incluye crear `CLAUDE.md`** en la raíz: un resumen corto (≤ 60 líneas) de convenciones y comandos, que apunte a este archivo para el detalle.
+7. Mantén al día la sección **§14 Registro de progreso** al cerrar cada fase.
+
+---
+
+## 1. Visión
+
+Una aplicación de escritorio **offline, gratuita y de código abierto** para crear presentaciones científicas y docentes, que combine:
+
+- La **facilidad de PowerPoint/Keynote**: lienzo libre, arrastrar, soltar, mover, redimensionar, escribir directamente sobre la diapositiva.
+- La **potencia de LaTeX/Beamer**: ecuaciones de calidad tipográfica, editables tanto **escribiendo código** como con un **editor visual**.
+- La **riqueza de la web**: videos, imágenes, páginas web incrustadas en vivo y **simulaciones HTML/JS interactivas** dentro de la diapositiva.
+
+El objetivo de largo plazo es que sea útil para la comunidad (profesores, estudiantes, investigadores), así que la facilidad de uso es tan importante como las funciones.
+
+### Principios
+
+1. **Offline primero.** Todo funciona sin internet, salvo lo que por naturaleza es online (páginas web en vivo). Nada de cuentas ni nubes obligatorias.
+2. **Directo y visual.** Lo que ves es lo que se presenta. Cada elemento se puede tocar y mover.
+3. **Código cuando quieras, UI cuando quieras.** LaTeX se puede escribir a mano o construir visualmente; ambos modos editan lo mismo.
+4. **Archivos portables.** Una presentación es **un solo archivo** con todo adentro (imágenes, videos, simulaciones), que se abre igual en Windows, macOS y Linux.
+5. **Rápido y liviano.** Arranque rápido, poco uso de memoria, fluido incluso con muchas diapositivas.
+
+---
+
+## 2. Usuarios y casos de uso
+
+- **Docente de física/matemáticas:** clase con ecuaciones, una simulación interactiva de un péndulo o de una red cristalina, y un video de un experimento.
+- **Estudiante:** presentación de seminario/tesis con muchas fórmulas y figuras, revelando ecuaciones paso a paso (como `\pause` de Beamer).
+- **Investigador:** charla en congreso que muestra una herramienta web en vivo (un visor 3D, un notebook publicado, un dashboard).
+- **Divulgador:** presentación visual con video y animaciones simples.
+
+---
+
+## 3. Funcionalidades
+
+### 3.1 Núcleo (MVP)
+
+- Crear, abrir, guardar presentaciones (`.tiza`).
+- Panel de miniaturas de diapositivas: agregar, duplicar, borrar, reordenar arrastrando.
+- Lienzo con elementos posicionables: **seleccionar, mover, redimensionar, rotar, alinear, traer adelante/atrás, agrupar**, guías de alineación (snapping), copiar/pegar, multi-selección.
+- **Texto enriquecido** (negrita, cursiva, listas, tamaños, colores) con **ecuaciones inline** (`$...$`) dentro del texto.
+- **Bloques de ecuación** (display) con LaTeX: edición por código con vista previa instantánea **y** editor visual de ecuaciones.
+- **Imágenes** (PNG, JPG, SVG, GIF, WebP): insertar arrastrando desde el explorador de archivos o pegando del portapapeles.
+- **Videos locales** (MP4/WebM): reproducir dentro de la diapositiva, con controles, autoplay opcional, inicio/fin recortado.
+- **Simulaciones HTML**: insertar un archivo `.html` (o pegar código) que corre aislado dentro de un recuadro de la diapositiva.
+- **Páginas web en vivo**: incrustar una URL que se ve e interactúa en tiempo real.
+- **Modo presentación** a pantalla completa, con navegación por teclado/clicker.
+- **Deshacer/rehacer** ilimitado en la sesión.
+- **Autoguardado** y recuperación ante cierre inesperado.
+
+### 3.2 Siguientes (post-MVP)
+
+- **Vista del presentador** en segunda pantalla: notas, diapositiva siguiente, cronómetro, reloj.
+- **Revelado paso a paso** (fragmentos/"builds"): elementos que aparecen en orden con cada clic.
+- **Transiciones** simples entre diapositivas (fundido, deslizar) y animaciones de entrada.
+- **Temas y diapositivas maestras**: fuentes, colores, fondo, numeración, pie de página.
+- **Bloques LaTeX completos** (TikZ, `pgfplots`, `circuitikz`, tablas complejas) compilados a SVG con un motor TeX real.
+- **Macros LaTeX globales** del documento (`\newcommand`) aplicadas a todas las ecuaciones.
+- **Bloques de código** con resaltado de sintaxis.
+- **Formas y flechas** (rectángulo, elipse, línea, flecha, llaves).
+- **Exportar**: PDF, HTML autocontenido (presentación que se abre en cualquier navegador), imágenes PNG.
+- **Vista de código de la diapositiva**: ver/editar la diapositiva como texto estructurado, sincronizado con el lienzo.
+- Internacionalización: español, portugués e inglés.
+
+### 3.3 Más adelante / ideas
+
+- Importar/exportar Beamer (`.tex`).
+- Importar PPTX (solo contenido básico).
+- Galería de simulaciones de ejemplo (física, matemáticas) lista para insertar.
+- Capturas automáticas ("snapshot") de páginas web para cuando no hay internet.
+- Plugins.
+
+---
+
+## 4. Decisiones técnicas
+
+### 4.1 Por qué **Tauri 2** (Rust + webview) y no una GUI 100 % Rust
+
+El autor se inspira en proyectos como ArtCraft, escritos en Rust nativo. Para *esta* aplicación, sin embargo, la mejor arquitectura es **Tauri**: núcleo en **Rust** + interfaz en **TypeScript** dibujada por el **webview del sistema operativo**. Razones:
+
+- Tres de los requisitos centrales — **incrustar páginas web, correr simulaciones HTML/JS y reproducir video** — son exactamente lo que hace un motor web. Con una GUI pura en Rust (egui, iced, gpui, Slint) habría que incrustar un webview igual, y coordinarlo con el lienzo sería mucho más difícil.
+- Ecuaciones (MathJax/MathLive), texto enriquecido y lienzo con arrastrar/redimensionar tienen bibliotecas web maduras y libres.
+- Tauri usa el webview **del sistema** (no empaqueta un navegador como Electron): binarios pequeños, poco consumo de memoria, arranque rápido.
+- Rust queda a cargo de lo que necesita rendimiento y acceso al sistema: archivos, compresión, assets, compilación LaTeX, exportación, caché.
+
+**Regla de reparto:** *la UI y el renderizado de diapositivas viven en el frontend; el sistema de archivos, el procesamiento pesado y todo lo que toca el disco vive en Rust.*
+
+### 4.2 Stack
+
+| Capa | Elección | Notas |
+|---|---|---|
+| Shell de escritorio | **Tauri 2** | Windows (WebView2), macOS (WKWebView), Linux (WebKitGTK) |
+| Backend | **Rust** (edición estable actual) | `serde`, `zip`, `sha2`, `thiserror`, `tokio` |
+| Bindings Rust↔TS | **tauri-specta** (o equivalente) | Tipos TS generados automáticamente desde Rust |
+| Frontend | **TypeScript + React + Vite** | Ecosistema más amplio; Claude Code trabaja bien con él |
+| Estado | **Zustand** + **Immer** (parches para deshacer/rehacer) | |
+| Mover/redimensionar/rotar | **Moveable** (+ Selecto para selección por área) | Licencia MIT |
+| Texto enriquecido | **TipTap** (ProseMirror) | Nodo personalizado para matemáticas inline |
+| Ecuaciones (render) | **MathJax** empaquetado localmente, salida **SVG** | Soporta `amsmath`, `physics`, `mhchem`, etc. Sin CDN |
+| Ecuaciones (editor visual) | **MathLive** empaquetado localmente | Produce LaTeX; mismo dato que el modo código |
+| Editor de código | **CodeMirror 6** | Para LaTeX, HTML de simulaciones y vista de código |
+| LaTeX completo (fase 7) | **Tectonic** (motor TeX en Rust) → PDF → SVG | Requiere paquete TeX cacheado para funcionar offline |
+| Tests | `cargo test`, **Vitest**, luego **Playwright** para e2e | |
+| Lint/formato | `rustfmt`, `clippy`, **ESLint**, **Prettier** | |
+
+> Antes de fijar cualquier dependencia, verificar versión estable actual y licencia compatible con MIT/Apache-2.0.
+
+### 4.3 Licencia del proyecto
+
+Doble licencia **MIT OR Apache-2.0** (la convención del ecosistema Rust). Todas las dependencias deben ser compatibles.
+
+---
+
+## 5. Arquitectura
+
+```
+┌──────────────────────────── Ventana Tauri ────────────────────────────┐
+│  Frontend (TypeScript/React)                                          │
+│  ┌────────────┐  ┌────────────────────────────┐  ┌────────────────┐   │
+│  │ Miniaturas │  │ Lienzo (1920×1080 lógicos, │  │ Panel de       │   │
+│  │ de slides  │  │ escalado con CSS transform)│  │ propiedades    │   │
+│  └────────────┘  │  ├ TextElement (TipTap)    │  └────────────────┘   │
+│                  │  ├ MathElement (MathJax)   │                       │
+│  Store (Zustand) │  ├ ImageElement            │  Editores:            │
+│  · documento     │  ├ VideoElement            │  · LaTeX código       │
+│  · selección     │  ├ WebElement (iframe /    │  · LaTeX visual       │
+│  · historial     │  │   webview hijo)         │  · HTML simulación    │
+│                  │  └ SimElement (iframe      │                       │
+│                  │      sandbox, srcdoc)      │                       │
+│                  └────────────────────────────┘                       │
+│                         ▲  invoke() / eventos (tipados)               │
+├─────────────────────────┼─────────────────────────────────────────────┤
+│  Backend (Rust)         ▼                                             │
+│  · document: abrir/guardar .tiza (zip), migraciones de versión       │
+│  · assets: importar, deduplicar por hash, servir por protocolo propio │
+│  · autosave + recuperación                                            │
+│  · latex: compilar bloques con Tectonic, caché por hash               │
+│  · export: PDF / HTML / PNG                                           │
+│  · settings, archivos recientes                                       │
+└───────────────────────────────────────────────────────────────────────┘
+```
+
+### 5.1 Principios de arquitectura
+
+- **El documento es datos puros** (JSON serializable). La UI es una función del documento. Nada de estado importante escondido en el DOM.
+- **Toda mutación del documento pasa por el store** como una acción con nombre (`moveElements`, `updateMath`, ...), lo que da deshacer/rehacer gratis vía parches de Immer.
+- **El mismo componente de renderizado** de diapositiva se usa en: lienzo de edición, miniaturas, modo presentación y exportación. Un solo `SlideRenderer` con un prop `mode: "edit" | "thumb" | "present" | "export"`.
+- **Coordenadas lógicas fijas:** cada diapositiva mide 1920×1080 unidades (16:9) o 1440×1080 (4:3). El lienzo se escala con `transform: scale()`. Así la presentación se ve idéntica en cualquier pantalla.
+
+---
+
+## 6. Modelo de datos y formato de archivo
+
+### 6.1 Tipos (fuente de verdad en Rust, exportados a TS)
+
+```ts
+type Id = string;            // UUID v4 / nanoid
+interface Presentation {
+  schemaVersion: number;     // empieza en 1; migraciones en Rust
+  meta: { title: string; author?: string; created: string; modified: string; lang: string };
+  page: { aspect: "16:9" | "4:3"; width: number; height: number };
+  theme: Theme;
+  latex: { preamble: string };          // \newcommand globales, paquetes de MathJax habilitados
+  slides: Slide[];
+}
+
+interface Slide {
+  id: Id;
+  background?: Fill;                    // color, degradado o imagen
+  elements: Element[];                  // orden del array = orden z (último arriba)
+  notes: string;                        // notas del presentador (texto/markdown)
+  transition?: { kind: "none" | "fade" | "slide"; durationMs: number };
+  hidden?: boolean;
+}
+
+interface BaseElement {
+  id: Id;
+  x: number; y: number; w: number; h: number;   // unidades lógicas
+  rotation: number;                              // grados
+  opacity: number;                               // 0..1
+  locked: boolean;
+  groupId?: Id;
+  build?: { step: number; effect: "appear" | "fade" };  // revelado paso a paso (fase 6)
+}
+
+type Element =
+  | BaseElement & { kind: "text";  doc: TipTapJSON }               // admite nodos math inline
+  | BaseElement & { kind: "math";  latex: string; color?: string; fontSize: number; align: "left"|"center"|"right" }
+  | BaseElement & { kind: "latexBlock"; source: string; renderedSvg?: AssetRef }   // fase 7, Tectonic
+  | BaseElement & { kind: "image"; asset: AssetRef; fit: "contain" | "cover" | "fill"; crop?: Rect }
+  | BaseElement & { kind: "video"; asset: AssetRef; autoplay: boolean; loop: boolean; muted: boolean;
+                    startS?: number; endS?: number; poster?: AssetRef }
+  | BaseElement & { kind: "web";   url: string; zoom: number; snapshot?: AssetRef; interactive: boolean }
+  | BaseElement & { kind: "sim";   asset: AssetRef; params?: Record<string, unknown>; poster?: AssetRef }
+  | BaseElement & { kind: "shape"; shape: "rect" | "ellipse" | "line" | "arrow"; fill?: Fill; stroke?: Stroke }
+  | BaseElement & { kind: "code";  language: string; source: string; theme: string };
+
+type AssetRef = string;  // "sha256:<hash>.<ext>" — apunta a assets/ dentro del archivo
+```
+
+### 6.2 Formato `.tiza`
+
+Un archivo **ZIP** con extensión `.tiza`:
+
+```
+mi-charla.tiza
+├── manifest.json        # schemaVersion, versión de la app, lista de assets con tamaño y tipo MIME
+├── presentation.json    # el documento (§6.1), legible por humanos
+├── assets/
+│   ├── sha256-ab12….png
+│   ├── sha256-cd34….mp4
+│   └── sha256-ef56….html  # simulaciones
+└── cache/               # opcional y descartable: SVG de LaTeX, miniaturas
+```
+
+Reglas:
+
+- Los assets se nombran por **hash de contenido** → deduplicación automática.
+- Videos y otros assets grandes se guardan **sin comprimir** (`Stored`) dentro del zip; JSON y HTML con `Deflate`.
+- Guardado **atómico**: escribir a archivo temporal en la misma carpeta → `fsync` → renombrar.
+- Al abrir: descomprimir a una **carpeta de trabajo** en el directorio de caché de la app; el frontend accede a los assets mediante un **protocolo personalizado** de Tauri (p. ej. `tiza-asset://<hash>`), nunca con rutas absolutas del disco.
+- `schemaVersion` + funciones de migración `v1 → v2 → …` en Rust, con tests.
+- Autosave cada N segundos y tras cambios, a la carpeta de recuperación; al iniciar, ofrecer recuperar si existe una sesión no cerrada.
+
+---
+
+## 7. Subsistemas en detalle
+
+### 7.1 Lienzo y edición directa
+
+- Clic selecciona; Shift/Ctrl+clic multi-selección; arrastrar en vacío = selección por área.
+- Moveable para mover, redimensionar (con Shift = mantener proporción), rotar; snapping a bordes/centros de otros elementos y de la diapositiva, con guías visibles.
+- Doble clic entra a **edición del contenido** (texto, ecuación, simulación); Esc sale.
+- Flechas mueven 1 unidad; Shift+flechas 10.
+- Atajos: Ctrl+Z/Ctrl+Shift+Z, Ctrl+C/V/X/D, Supr, Ctrl+G (agrupar), Ctrl+]/[ (orden z).
+- **Arrastrar archivos** desde el sistema al lienzo: detectar tipo y crear el elemento adecuado (imagen, video, `.html` → simulación). Pegar del portapapeles: imágenes, texto, URLs (URL → preguntar "¿incrustar página web?").
+- Zoom del lienzo (Ctrl+rueda) y "ajustar a ventana".
+- Barra de inserción clara: Texto · Ecuación · Imagen · Video · Web · Simulación · Forma.
+
+### 7.2 Texto y LaTeX
+
+**Tres niveles, de lo más simple a lo más potente:**
+
+1. **Matemática inline en texto:** en un cuadro de texto, escribir `$E = mc^2$` convierte automáticamente a un nodo matemático renderizado. Clic sobre él → editar su LaTeX en un popover con vista previa.
+2. **Elemento ecuación (`math`):** un bloque independiente, movible y escalable.
+   - **Modo código:** CodeMirror con resaltado LaTeX, autocompletado de comandos comunes, vista previa en vivo (MathJax → SVG, debounce ~150 ms). Errores mostrados en línea, sin romper la diapositiva (se mantiene el último render válido).
+   - **Modo visual:** MathLive (teclado virtual matemático, plantillas de fracciones, integrales, matrices).
+   - Ambos modos editan el **mismo string LaTeX**; cambiar de pestaña no pierde nada.
+   - Macros globales del documento (`latex.preamble`) se aplican a todas las ecuaciones.
+3. **Bloque LaTeX completo (`latexBlock`, fase 7):** para TikZ, pgfplots, etc. Se compila con **Tectonic** en Rust en un hilo de fondo → PDF → SVG, se cachea por hash del código fuente. Mientras compila, se muestra el render anterior y un indicador.
+   - Para funcionar **offline**, el paquete de TeX que usa Tectonic debe descargarse una vez y quedar cacheado (ofrecer botón "Preparar LaTeX sin conexión" en ajustes). Alternativa: si el usuario tiene TeX Live/MiKTeX instalado, permitir usar ese.
+
+Todo el JS de MathJax, MathLive y fuentes matemáticas va **empaquetado con la app** (cero CDN).
+
+### 7.3 Imágenes y video
+
+- Imágenes: importar → hash → `assets/`. Recorte y ajuste (`contain`/`cover`/`fill`). SVG se sanitiza (sin scripts).
+- Video: elemento `<video>` HTML5 servido por el protocolo de assets (con soporte de **range requests**, imprescindible para poder adelantar en videos grandes).
+  - En edición: muestra el póster/primer frame; reproduce solo si el usuario lo pide.
+  - En presentación: autoplay opcional al entrar a la diapositiva, pausa al salir.
+  - **Atención a códecs por plataforma:** MP4/H.264 funciona en Windows y macOS; en Linux (WebKitGTK) depende de que estén instalados los plugins de GStreamer. Recomendar WebM/VP9 o AV1 como formato más portable y avisar al usuario si un video no se puede reproducir.
+
+### 7.4 Páginas web en vivo (`web`)
+
+- Primera implementación: `<iframe src=url>` dentro del elemento, con zoom ajustable.
+- **Limitación conocida:** muchos sitios prohíben ser incrustados (`X-Frame-Options`, CSP `frame-ancestors`). Detectarlo y mostrar un mensaje claro en vez de un recuadro en blanco.
+- Solución robusta (fase posterior): usar un **webview hijo** de Tauri (multiwebview) posicionado exactamente sobre el rectángulo del elemento. Esto no está sujeto a las restricciones de iframe. Requiere sincronizar posición/tamaño con el lienzo y ocultarlo cuando el elemento no es visible. Evaluar estado/estabilidad de esa API en Tauri antes de implementarlo.
+- Modo "interactivo" on/off: en edición, por defecto un clic selecciona el elemento (no interactúa con la página); doble clic activa la interacción.
+- Sin internet: mostrar la **captura (snapshot)** guardada, si existe, con un aviso discreto.
+
+### 7.5 Simulaciones HTML (`sim`)
+
+Para incrustar simulaciones HTML/JS autocontenidas (por ejemplo, generadas con un asistente de IA o escritas a mano).
+
+- Se guardan como asset `.html`. Se renderizan en `<iframe sandbox="allow-scripts" srcdoc=…>`.
+  - **Nunca** `allow-same-origin` junto con `allow-scripts`: la simulación no debe poder acceder a la app, a los archivos ni a otros elementos.
+  - CSP estricta dentro del iframe: sin red por defecto (opción explícita del usuario para permitirla, p. ej. si la simulación carga una librería de un CDN). Mejor: ofrecer "empaquetar dependencias" descargando las librerías una vez dentro del asset.
+- Editor integrado (CodeMirror, HTML) con vista previa al lado, botón "recargar".
+- Parámetros opcionales: la app puede enviar `params` vía `postMessage` y la simulación puede responder (API mínima, documentada, opcional).
+- En presentación: la simulación corre solo en la diapositiva visible; al salir se desmonta o se pausa (ahorra CPU/batería).
+- Póster: captura estática para miniaturas y exportación PDF.
+- Fase posterior: galería de simulaciones de ejemplo (péndulo, ondas, campo eléctrico, red cristalina 3D, etc.).
+
+### 7.6 Modo presentación
+
+- Ventana a pantalla completa (en el monitor elegido). Fondo negro con la diapositiva escalada y centrada.
+- Navegación: →, ↓, Espacio, PageDown, clic = siguiente paso; ←, ↑, PageUp = anterior; Home/End; número + Enter = ir a diapositiva; `B` = pantalla negra; Esc = salir.
+- Los clickers de presentación envían PageUp/PageDown: deben funcionar sin configuración.
+- **Vista del presentador** (fase 6): segunda ventana con diapositiva actual, siguiente, notas, cronómetro y reloj, sincronizada por eventos de Tauri.
+- Las simulaciones y páginas web **son interactivas** durante la presentación (con el mouse), sin que el clic avance la diapositiva cuando el puntero está sobre ellas.
+
+### 7.7 Exportación (fase 8)
+
+- **HTML autocontenido:** una carpeta o archivo único con un visor ligero; mantiene video, ecuaciones y simulaciones. Es la exportación natural porque la app ya renderiza con tecnología web.
+- **PDF:** cada diapositiva se renderiza con `SlideRenderer mode="export"`; los elementos interactivos se sustituyen por su póster/snapshot. Primera versión: rasterizar a PNG de alta resolución y componer el PDF en Rust. Mejora posterior: PDF vectorial (texto y ecuaciones como vectores) — investigar la mejor vía por plataforma.
+- **PNG** por diapositiva.
+- Opción de exportar cada paso de revelado como página separada (como Beamer).
+
+### 7.8 Temas
+
+- Tema = fuentes (título/cuerpo/código), paleta de colores, fondo por defecto, estilos de texto predefinidos (Título, Subtítulo, Cuerpo, Pie).
+- Las fuentes se empaquetan con la app o se incrustan en el `.tiza` (nunca dependen de internet).
+- Fase posterior: diapositivas maestras/diseños (título, título + contenido, dos columnas).
+
+### 7.9 Deshacer/rehacer y autosave
+
+- Historial basado en parches de Immer, agrupando cambios continuos (un arrastre completo = un paso de deshacer; escribir texto se agrupa por pausas).
+- Autosave a carpeta de recuperación; el guardado "real" sigue siendo explícito (Ctrl+S), salvo que el usuario active autoguardado en el archivo en ajustes.
+- Indicador de "cambios sin guardar" y confirmación al cerrar.
+
+---
+
+## 8. Seguridad
+
+La app ejecuta contenido potencialmente no confiable (HTML de terceros, páginas web, archivos `.tiza` recibidos de otras personas). Reglas:
+
+- **Capabilities/permisos de Tauri mínimos:** el frontend solo puede invocar los comandos propios de la app; nada de acceso genérico al sistema de archivos ni a la shell desde JS.
+- Simulaciones y páginas web en iframes **aislados** (§7.5); nunca reciben acceso a la API de Tauri.
+- CSP estricta en la ventana principal.
+- Al abrir un `.tiza`: validar el JSON contra el esquema, rechazar rutas con `..` dentro del zip (zip-slip), limitar tamaños.
+- SVG importados: sanitizar.
+- Si una presentación contiene simulaciones o páginas web, mostrar un aviso la primera vez que se abre ("Este archivo contiene contenido interactivo") con opción de confiar.
+
+---
+
+## 9. Rendimiento
+
+- Miniaturas: renderizado diferido y virtualizado (solo las visibles); simulaciones/videos/web se muestran como póster en miniaturas, nunca en vivo.
+- En el lienzo, montar elementos pesados (web, sim, video) **solo en la diapositiva activa**.
+- MathJax: caché de SVG por `(latex, preamble)`; renderizar en idle o en un worker si es posible.
+- Assets grandes nunca pasan por IPC como bytes: se sirven por el protocolo de assets.
+- Operaciones de disco y compilación LaTeX en hilos de fondo en Rust (`tokio::task::spawn_blocking`); la UI nunca se congela.
+- Objetivo orientativo: presentación de 100 diapositivas con 20 ecuaciones cada una se abre en < 2 s y el arrastre de elementos se mantiene a 60 fps.
+
+---
+
+## 10. Estructura del repositorio
+
+```
+tiza/
+├── CLAUDE.md                 # convenciones y comandos (lo crea Claude Code en la fase 0)
+├── PROYECTO.md               # este documento
+├── README.md
+├── LICENSE-MIT / LICENSE-APACHE
+├── package.json
+├── src/                      # frontend (TypeScript/React)
+│   ├── app/                  # layout principal, menús, atajos
+│   ├── canvas/               # lienzo, selección, Moveable, guías
+│   ├── elements/             # un componente por tipo de elemento
+│   │   ├── text/  math/  image/  video/  web/  sim/  shape/  code/
+│   ├── editors/              # editor LaTeX (código + visual), editor HTML
+│   ├── present/              # modo presentación y vista del presentador
+│   ├── render/               # SlideRenderer compartido
+│   ├── store/                # Zustand, acciones, historial
+│   ├── bindings/             # tipos y comandos generados desde Rust (no editar a mano)
+│   ├── i18n/
+│   └── styles/
+├── src-tauri/                # backend (Rust)
+│   ├── src/
+│   │   ├── main.rs / lib.rs
+│   │   ├── commands/         # comandos expuestos al frontend
+│   │   ├── document/         # modelo, (de)serialización, migraciones
+│   │   ├── archive/          # lectura/escritura .tiza (zip, atómica)
+│   │   ├── assets/           # importación, hash, protocolo tiza-asset://
+│   │   ├── autosave/
+│   │   ├── latex/            # Tectonic (fase 7)
+│   │   └── export/
+│   ├── capabilities/
+│   └── tauri.conf.json
+├── vendor/                   # MathJax, MathLive, fuentes (si no se instalan vía npm)
+├── examples/                 # presentaciones de ejemplo y simulaciones de muestra
+└── tests/                    # e2e (Playwright), fixtures .tiza
+```
+
+---
+
+## 11. Hoja de ruta por fases
+
+Cada fase termina con: código compilando en modo release, tests pasando, commit, y actualización de §14.
+
+### Fase 0 — Preparación del entorno
+- Verificar herramientas instaladas: Rust (rustup), Node LTS, Git, y prerequisitos de Tauri del sistema operativo del autor. Si falta algo, explicar cómo instalarlo y esperar.
+- Crear proyecto Tauri 2 + React + TypeScript + Vite. Configurar ESLint, Prettier, rustfmt, clippy, Vitest.
+- `git init`, `.gitignore`, licencias, README mínimo, `CLAUDE.md`.
+- **Aceptación:** `npm run tauri dev` abre una ventana con "Hola Tiza"; `cargo test` y `npm test` pasan.
+
+### Fase 1 — Documento y lienzo básico
+- Modelo de datos (§6.1) en Rust + bindings TS generados.
+- Store con acciones y deshacer/rehacer.
+- Layout: miniaturas a la izquierda, lienzo al centro, propiedades a la derecha.
+- Elementos `shape` y `text` simple (sin TipTap aún): crear, seleccionar, mover, redimensionar, rotar, borrar, orden z, multi-selección, guías de alineación.
+- Agregar/duplicar/borrar/reordenar diapositivas.
+- **Aceptación:** puedo armar varias diapositivas con cuadros y textos, moverlos con precisión y deshacer todo.
+
+### Fase 2 — Archivo `.tiza`
+- Guardar/abrir/guardar como (zip, guardado atómico), archivos recientes, indicador de cambios sin guardar, autosave + recuperación, migraciones (aunque solo exista v1, dejar la infraestructura y un test).
+- **Aceptación:** cierro la app sin guardar a la fuerza, la vuelvo a abrir y me ofrece recuperar; un archivo guardado en un SO se abre igual en otro.
+
+### Fase 3 — Texto enriquecido y ecuaciones
+- TipTap en elementos de texto con matemática inline `$…$`.
+- Elemento `math` con modo código (CodeMirror + vista previa MathJax SVG) y modo visual (MathLive), sincronizados.
+- Preámbulo/macros globales del documento.
+- **Aceptación:** escribo una diapositiva con párrafos que mezclan texto y fórmulas, y una ecuación grande editada alternando código y modo visual; todo funciona sin internet.
+
+### Fase 4 — Imágenes y video
+- Protocolo `tiza-asset://` con range requests. Importar por diálogo, arrastrar y pegar. Recorte/ajuste de imagen. Video con controles, recorte inicio/fin, autoplay, póster.
+- **Aceptación:** inserto un video de 500 MB, puedo adelantarlo sin trabas, guardo, reabro y sigue ahí; el `.tiza` no duplica assets repetidos.
+
+### Fase 5 — Simulaciones HTML y páginas web
+- Elemento `sim` (iframe sandbox, editor HTML con vista previa, póster).
+- Elemento `web` con iframe, detección de bloqueo de incrustación con mensaje claro, modo interactivo on/off, snapshot.
+- Incluir 2–3 simulaciones de ejemplo en `examples/`.
+- **Aceptación:** inserto una simulación de un péndulo que corre aislada; incrusto una página que lo permita y la uso en vivo; una que lo bloquea muestra un aviso entendible.
+
+### Fase 6 — Modo presentación
+- Pantalla completa en monitor elegido, navegación por teclado/clicker, pantalla negra, simulaciones/web interactivas.
+- Revelado paso a paso (`build`), transiciones simples.
+- Vista del presentador con notas, siguiente diapositiva y cronómetro.
+- **Aceptación:** doy una charla completa con proyector usando solo un clicker.
+
+### Fase 7 — LaTeX completo
+- Bloques `latexBlock` con Tectonic, compilación en segundo plano, caché, errores legibles, modo offline preparado.
+- **Aceptación:** una figura TikZ se compila, se ve nítida al escalarla y funciona sin internet tras la preparación inicial.
+
+### Fase 8 — Exportación
+- HTML autocontenido, PDF (con pósters para lo interactivo, opción de un paso por página), PNG.
+- **Aceptación:** exporto a PDF y se ve fiel a la presentación; el HTML exportado se abre en un navegador sin la app.
+
+### Fase 9 — Pulido y comunidad
+- Temas y diapositivas maestras, formas/flechas avanzadas, bloques de código, i18n (es/pt/en), accesibilidad (navegación por teclado, contraste), instaladores para los tres sistemas, documentación de usuario, guía de contribución.
+
+---
+
+## 12. Convenciones
+
+- **Idioma:** código, identificadores y comentarios en inglés (facilita contribuciones); textos de la UI vía i18n; documentación para el autor en español.
+- **Rust:** sin `unwrap()` en código de producción; errores con `thiserror` y convertidos a mensajes legibles para el usuario. `clippy` sin advertencias.
+- **TypeScript:** `strict: true`. Componentes pequeños. Ningún componente modifica el documento directamente: siempre vía acciones del store.
+- **Tests mínimos por fase:** (de)serialización y migraciones en Rust; acciones del store y deshacer/rehacer en Vitest; luego e2e de flujos clave con Playwright.
+- **Git:** commits pequeños con mensajes descriptivos (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`). Una rama por fase si el autor lo prefiere.
+- **Dependencias:** justificar cada una nueva (qué resuelve, licencia, tamaño).
+
+---
+
+## 13. Riesgos conocidos y preguntas abiertas
+
+- **Diferencias entre webviews** (WebView2 / WKWebView / WebKitGTK): probar en los tres; especial cuidado con video en Linux y APIs CSS recientes.
+- **Incrustación web:** muchos sitios bloquean iframes; el webview hijo de Tauri es la salida, pero su API puede cambiar. Decidir cuando se llegue a la fase 5.
+- **Tectonic offline:** tamaño del paquete TeX cacheado y primera descarga. Alternativa: usar TeX instalado en el sistema.
+- **PDF vectorial:** no trivial desde un webview; la primera versión será rasterizada.
+- **Nombre:** "Tiza"/`.tiza` (decidido). Revisar choques de nombre antes de publicar instaladores.
+- **Sistema operativo principal del autor:** confirmar en la fase 0 para priorizar pruebas.
+
+---
+
+## 14. Registro de progreso
+
+> Claude Code: añade una entrada al cerrar cada fase (fecha, qué se hizo, decisiones tomadas, pendientes).
+
+- _(vacío — el proyecto aún no empieza)_
