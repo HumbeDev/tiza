@@ -1,0 +1,10 @@
+{
+  "app": {
+    "name": "Tiza",
+    "hello": "Bonjour, Tiza",
+    "tagline": "Des présentations avec LaTeX, vidéo et simulations. Hors ligne.",
+    "language": "Langue",
+    "backendVersion": "Cœur en Rust : version {{version}}",
+    "backendUnavailable": "Le cœur en Rust n’est pas disponible (êtes-vous dans le navigateur ?)"
+  }
+}

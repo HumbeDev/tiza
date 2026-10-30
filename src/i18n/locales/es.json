@@ -1,0 +1,10 @@
+{
+  "app": {
+    "name": "Tiza",
+    "hello": "Hola, Tiza",
+    "tagline": "Presentaciones con LaTeX, video y simulaciones. Sin conexión.",
+    "language": "Idioma",
+    "backendVersion": "Núcleo en Rust: versión {{version}}",
+    "backendUnavailable": "El núcleo en Rust no está disponible (¿estás en el navegador?)"
+  }
+}
