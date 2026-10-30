@@ -17,9 +17,9 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 | ---- | ---------------------------------------------------------- | ------------ |
 | 0    | Entorno, esqueleto Tauri, idiomas                          | ✅           |
 | 1    | Documento y lienzo básico (formas, texto, mover, deshacer) | 🧪 en prueba |
-| 2    | Archivo `.tiza`, autosave y recuperación                   | —            |
-| 3    | **Servidor MCP para agentes de IA**                        | —            |
-| 4    | Texto enriquecido y ecuaciones LaTeX                       | —            |
+| 2    | **Texto enriquecido y ecuaciones LaTeX**                   | —            |
+| 3    | Archivo `.tiza`, autosave y recuperación                   | —            |
+| 4    | **Servidor MCP para agentes de IA**                        | —            |
 | 5    | Imágenes y video                                           | —            |
 | 6    | Simulaciones HTML y páginas web                            | —            |
 | 7    | Modo presentación y vista del presentador                  | —            |

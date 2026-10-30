@@ -141,7 +141,7 @@ pub enum TextAlign {
     Right,
 }
 
-/// Plain text box. Rich text (TipTap) replaces `text` in phase 3 via a schema migration.
+/// Plain text box. Rich text (TipTap) replaces `text` in phase 2, before the file format exists.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]

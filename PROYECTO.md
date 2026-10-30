@@ -115,7 +115,7 @@ El autor se inspira en proyectos como ArtCraft, escritos en Rust nativo. Para *e
 | Texto enriquecido | **TipTap** (ProseMirror) | Nodo personalizado para matemáticas inline |
 | Ecuaciones (render) | **MathJax** empaquetado localmente, salida **SVG** | Soporta `amsmath`, `physics`, `mhchem`, etc. Sin CDN |
 | Ecuaciones (editor visual) | **MathLive** empaquetado localmente | Produce LaTeX; mismo dato que el modo código |
-| Servidor MCP (fase 3) | **rmcp** (SDK oficial de MCP para Rust) + Streamable HTTP | Apache-2.0. Esquemas de herramientas con `schemars` |
+| Servidor MCP (fase 4) | **rmcp** (SDK oficial de MCP para Rust) + Streamable HTTP | Apache-2.0. Esquemas de herramientas con `schemars` |
 | Editor de código | **CodeMirror 6** | Para LaTeX, HTML de simulaciones y vista de código |
 | LaTeX completo (fase 8) | **Tectonic** (motor TeX en Rust) → PDF → SVG | Requiere paquete TeX cacheado para funcionar offline |
 | Tests | `cargo test`, **Vitest**, luego **Playwright** para e2e | |
@@ -350,14 +350,14 @@ Requisito central del autor: **Tiza se construye para agentes.** Un agente conec
 - Las herramientas trabajan sobre la presentación abierta; si la app está cerrada, no hay servidor.
 - Más adelante (opcional): un puente stdio (`tiza --mcp-stdio`) para clientes que no hablan HTTP.
 
-**Herramientas iniciales (fase 3)**
+**Herramientas iniciales (fase 4)**
 
 - Lectura: `get_presentation` (resumen con ids de diapositivas y elementos), `get_slide`, `get_selection`.
 - Diapositivas: `add_slide`, `duplicate_slide`, `delete_slide`, `move_slide`, `set_slide_background`, `go_to_slide`.
 - Elementos: `add_shape`, `add_text`, `update_elements`, `delete_elements`, `align_elements`, `reorder_elements`, `select_elements`.
 - Lote: `apply_operations`: varias operaciones atómicas = un solo paso de deshacer.
 - Vista: `render_slide` → imagen PNG de la diapositiva, para que el agente **vea** el resultado (investigar la mejor técnica: SVG `foreignObject` → canvas, o captura del webview).
-- Archivo (requiere fase 2): `save`; `open`/`new` piden confirmación al usuario si hay cambios sin guardar.
+- Archivo: `save`; `open`/`new` piden confirmación al usuario si hay cambios sin guardar.
 
 **Reglas**
 
@@ -425,7 +425,7 @@ tiza/
 │   │   ├── archive/          # lectura/escritura .tiza (zip, atómica)
 │   │   ├── assets/           # importación, hash, protocolo tiza-asset://
 │   │   ├── autosave/
-│   │   ├── mcp/              # servidor MCP y puente con el frontend (fase 3)
+│   │   ├── mcp/              # servidor MCP y puente con el frontend (fase 4)
 │   │   ├── latex/            # Tectonic (fase 8)
 │   │   └── export/
 │   ├── capabilities/
@@ -456,23 +456,23 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Agregar/duplicar/borrar/reordenar diapositivas.
 - **Aceptación:** puedo armar varias diapositivas con cuadros y textos, moverlos con precisión y deshacer todo.
 
-### Fase 2 — Archivo `.tiza`
+### Fase 2 — Texto enriquecido y ecuaciones
+- TipTap en elementos de texto con matemática inline `$…$`.
+- Elemento `math` con modo código (CodeMirror + vista previa MathJax SVG) y modo visual (MathLive), sincronizados.
+- Preámbulo/macros globales del documento.
+- **Aceptación:** escribo una diapositiva con párrafos que mezclan texto y fórmulas, y una ecuación grande editada alternando código y modo visual; todo funciona sin internet.
+
+### Fase 3 — Archivo `.tiza`
 - Guardar/abrir/guardar como (zip, guardado atómico), archivos recientes, indicador de cambios sin guardar, autosave + recuperación, migraciones (aunque solo exista v1, dejar la infraestructura y un test).
 - **Aceptación:** cierro la app sin guardar a la fuerza, la vuelvo a abrir y me ofrece recuperar; un archivo guardado en un SO se abre igual en otro.
 
-### Fase 3 — Servidor MCP para agentes
+### Fase 4 — Servidor MCP para agentes
 - Servidor `rmcp` (Streamable HTTP, localhost, token) + puente Rust ↔ frontend por eventos con `requestId` y timeout.
 - Herramientas iniciales de §7.11 sobre las acciones existentes del store, con esquemas generados desde Rust.
 - `render_slide` (PNG) para que el agente vea el resultado.
 - Ajustes: activar/desactivar, puerto, token, "copiar configuración"; indicador de agente conectado.
 - Tests: cada herramienta en Rust (validación de argumentos) y en Vitest (ejecución sobre el store, un paso de deshacer por llamada); e2e conectando un cliente MCP real.
 - **Aceptación:** conecto Claude Code a Tiza, le pido "arma 3 diapositivas sobre el péndulo simple con títulos y formas" y las veo aparecer en vivo; con Ctrl+Z deshago lo que hizo el agente; con el servidor desactivado, nada escucha en el puerto.
-
-### Fase 4 — Texto enriquecido y ecuaciones
-- TipTap en elementos de texto con matemática inline `$…$`.
-- Elemento `math` con modo código (CodeMirror + vista previa MathJax SVG) y modo visual (MathLive), sincronizados.
-- Preámbulo/macros globales del documento.
-- **Aceptación:** escribo una diapositiva con párrafos que mezclan texto y fórmulas, y una ecuación grande editada alternando código y modo visual; todo funciona sin internet.
 
 ### Fase 5 — Imágenes y video
 - Protocolo `tiza-asset://` con range requests. Importar por diálogo, arrastrar y pegar. Recorte/ajuste de imagen. Video con controles, recorte inicio/fin, autoplay, póster.
@@ -542,7 +542,8 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Modelo de datos en Rust (`src-tauri/src/document/`) con tests de JSON; tipos TS generados con **ts-rs** (tauri-specta 2 sigue en RC).
 - Store Zustand + Immer con parches: deshacer/rehacer ilimitado; los gestos continuos se agrupan con `mergeKey` y `seal()`.
 - Mover/redimensionar/rotar y guías magnéticas **implementados a mano** en vez de Moveable (sin releases desde 2023, riesgo con React 19). La geometría es pura y tiene tests.
-- Elementos `shape` (rect, elipse, línea, flecha) y `text` plano. `text` pasará a TipTap en la fase 4 con una migración de esquema.
+- Elementos `shape` (rect, elipse, línea, flecha) y `text` plano. `text` pasará a TipTap en la fase 2, antes de que exista el formato de archivo (sin migración).
 - Reordenar diapositivas con eventos de puntero (no HTML5 drag&drop, que choca con el drag&drop de archivos de Tauri).
 - Pendiente: agrupar (Ctrl+G) queda para después; portapapeles solo interno (no del sistema).
-- Pendiente para la fase 3 (MCP): las acciones de elementos operan sobre la diapositiva actual; agregarles un `slideId` explícito.
+- Pendiente para la fase 4 (MCP): las acciones de elementos operan sobre la diapositiva actual; agregarles un `slideId` explícito.
+- Orden de fases cambiado por el autor (2026-10-30): **2 Ecuaciones → 3 Archivo → 4 MCP**. TikZ/Tectonic sigue en la fase 8.
