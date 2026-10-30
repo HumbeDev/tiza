@@ -1,10 +1,77 @@
 {
   "app": {
     "name": "Tiza",
-    "hello": "Bonjour, Tiza",
-    "tagline": "Des présentations avec LaTeX, vidéo et simulations. Hors ligne.",
     "language": "Langue",
-    "backendVersion": "Cœur en Rust : version {{version}}",
-    "backendUnavailable": "Le cœur en Rust n’est pas disponible (êtes-vous dans le navigateur ?)"
+    "backendVersion": "Cœur Rust {{version}}",
+    "backendUnavailable": "Cœur Rust indisponible (mode navigateur)"
+  },
+  "toolbar": {
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "newSlide": "Nouvelle diapositive",
+    "text": "Texte"
+  },
+  "shapes": {
+    "rect": "Rectangle",
+    "ellipse": "Ellipse",
+    "line": "Ligne",
+    "arrow": "Flèche"
+  },
+  "canvas": {
+    "defaultText": "Écrivez ici"
+  },
+  "slides": {
+    "panel": "Diapositives",
+    "duplicate": "Dupliquer la diapositive",
+    "delete": "Supprimer la diapositive"
+  },
+  "props": {
+    "panel": "Propriétés",
+    "slide": "Diapositive",
+    "background": "Arrière-plan",
+    "noSelection": "Sélectionnez un élément pour le modifier. Faites glisser sur une zone vide pour en sélectionner plusieurs.",
+    "multiple": "Éléments sélectionnés : {{count}}",
+    "text": "Zone de texte",
+    "width": "Largeur",
+    "height": "Hauteur",
+    "rotation": "Rotation (°)",
+    "opacity": "Opacité (%)",
+    "locked": "Verrouillé",
+    "style": "Style",
+    "shape": "Forme",
+    "fill": "Remplissage",
+    "stroke": "Contour",
+    "strokeWidth": "Épaisseur",
+    "radius": "Rayon des coins",
+    "fontSize": "Taille de police",
+    "color": "Couleur",
+    "bold": "Gras",
+    "italic": "Italique",
+    "editTextHint": "Double-cliquez sur le texte (ou appuyez sur Entrée) pour le modifier.",
+    "align": "Aligner",
+    "arrange": "Organiser",
+    "delete": "Supprimer"
+  },
+  "align": {
+    "left": "Aligner à gauche",
+    "centerX": "Centrer horizontalement",
+    "right": "Aligner à droite",
+    "top": "Aligner en haut",
+    "centerY": "Centrer verticalement",
+    "bottom": "Aligner en bas"
+  },
+  "zorder": {
+    "front": "Mettre au premier plan",
+    "forward": "Avancer",
+    "backward": "Reculer",
+    "back": "Mettre à l’arrière-plan"
+  },
+  "textAlign": {
+    "left": "Gauche",
+    "center": "Centre",
+    "right": "Droite"
+  },
+  "status": {
+    "slideOf": "Diapositive {{current}} sur {{total}}"
   }
 }

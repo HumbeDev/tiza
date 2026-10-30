@@ -1,10 +1,77 @@
 {
   "app": {
     "name": "Tiza",
-    "hello": "Olá, Tiza",
-    "tagline": "Apresentações com LaTeX, vídeo e simulações. Sem internet.",
     "language": "Idioma",
-    "backendVersion": "Núcleo em Rust: versão {{version}}",
-    "backendUnavailable": "O núcleo em Rust não está disponível (você está no navegador?)"
+    "backendVersion": "Núcleo Rust {{version}}",
+    "backendUnavailable": "Núcleo Rust indisponível (modo navegador)"
+  },
+  "toolbar": {
+    "undo": "Desfazer",
+    "redo": "Refazer",
+    "newSlide": "Novo slide",
+    "text": "Texto"
+  },
+  "shapes": {
+    "rect": "Retângulo",
+    "ellipse": "Elipse",
+    "line": "Linha",
+    "arrow": "Seta"
+  },
+  "canvas": {
+    "defaultText": "Escreva aqui"
+  },
+  "slides": {
+    "panel": "Slides",
+    "duplicate": "Duplicar slide",
+    "delete": "Excluir slide"
+  },
+  "props": {
+    "panel": "Propriedades",
+    "slide": "Slide",
+    "background": "Fundo",
+    "noSelection": "Selecione um elemento para editá-lo. Arraste em uma área vazia para selecionar vários.",
+    "multiple": "Elementos selecionados: {{count}}",
+    "text": "Caixa de texto",
+    "width": "Largura",
+    "height": "Altura",
+    "rotation": "Rotação (°)",
+    "opacity": "Opacidade (%)",
+    "locked": "Bloqueado",
+    "style": "Estilo",
+    "shape": "Forma",
+    "fill": "Preenchimento",
+    "stroke": "Contorno",
+    "strokeWidth": "Espessura",
+    "radius": "Raio do canto",
+    "fontSize": "Tamanho da fonte",
+    "color": "Cor",
+    "bold": "Negrito",
+    "italic": "Itálico",
+    "editTextHint": "Clique duas vezes no texto (ou pressione Enter) para editá-lo.",
+    "align": "Alinhar",
+    "arrange": "Organizar",
+    "delete": "Excluir"
+  },
+  "align": {
+    "left": "Alinhar à esquerda",
+    "centerX": "Centralizar horizontalmente",
+    "right": "Alinhar à direita",
+    "top": "Alinhar ao topo",
+    "centerY": "Centralizar verticalmente",
+    "bottom": "Alinhar à base"
+  },
+  "zorder": {
+    "front": "Trazer para a frente",
+    "forward": "Avançar",
+    "backward": "Recuar",
+    "back": "Enviar para trás"
+  },
+  "textAlign": {
+    "left": "Esquerda",
+    "center": "Centro",
+    "right": "Direita"
+  },
+  "status": {
+    "slideOf": "Slide {{current}} de {{total}}"
   }
 }
