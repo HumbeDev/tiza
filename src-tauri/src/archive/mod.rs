@@ -194,6 +194,7 @@ mod tests {
                 crate::document::ElementContent::Shape(_) => "shape",
                 crate::document::ElementContent::Text(_) => "text",
                 crate::document::ElementContent::Math(_) => "math",
+                crate::document::ElementContent::Sim(_) => "sim",
             })
             .collect();
         assert_eq!(kinds, ["shape", "math"]);
