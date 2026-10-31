@@ -14,7 +14,8 @@
     "new": "New",
     "open": "Open…",
     "save": "Save",
-    "saveAs": "Save as…"
+    "saveAs": "Save as…",
+    "html": "HTML"
   },
   "shapes": {
     "rect": "Rectangle",
@@ -60,7 +61,8 @@
     "underline": "Underline",
     "strike": "Strikethrough",
     "bulletList": "Bulleted list",
-    "orderedList": "Numbered list"
+    "orderedList": "Numbered list",
+    "sim": "HTML page"
   },
   "align": {
     "left": "Align left",
@@ -122,5 +124,29 @@
       "unsafePath": "The file contains unsafe paths and was not opened.",
       "badExtension": "The file name must end in .tiza."
     }
+  },
+  "sim": {
+    "exampleTitle": "Simple pendulum",
+    "editor": "HTML editor",
+    "editorHint": "One self-contained HTML file (scripts and styles inside).",
+    "loadFile": "Load file…",
+    "reload": "Reload",
+    "content": "Content",
+    "title": "Name",
+    "editHtml": "Edit HTML",
+    "interact": "Interact",
+    "stopInteracting": "Stop interacting",
+    "interactHint": "Double-click the page to use it (click outside to go back to editing). It is always interactive in presentation mode.",
+    "resolution": "Page size",
+    "custom": "Custom",
+    "matchBox": "Same as box",
+    "fitBox": "Box to page ratio",
+    "fit": "Scaling",
+    "fitContain": "Fit (keep proportions)",
+    "fitFill": "Stretch to box",
+    "resolutionHint": "The page is laid out at this size (in pixels) and scaled into the box on the slide. Resize the box with its handles.",
+    "security": "Security",
+    "allowNetwork": "Allow internet access",
+    "networkHint": "Off by default: the page cannot load anything from the internet. Turn it on if it uses a library from a CDN. It never has access to Tiza or your files."
   }
 }

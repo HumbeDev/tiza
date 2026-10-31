@@ -14,7 +14,8 @@
     "new": "Nouvelle",
     "open": "Ouvrir…",
     "save": "Enregistrer",
-    "saveAs": "Enregistrer sous…"
+    "saveAs": "Enregistrer sous…",
+    "html": "HTML"
   },
   "shapes": {
     "rect": "Rectangle",
@@ -60,7 +61,8 @@
     "underline": "Souligné",
     "strike": "Barré",
     "bulletList": "Liste à puces",
-    "orderedList": "Liste numérotée"
+    "orderedList": "Liste numérotée",
+    "sim": "Page HTML"
   },
   "align": {
     "left": "Aligner à gauche",
@@ -122,5 +124,29 @@
       "unsafePath": "Le fichier contient des chemins dangereux et n’a pas été ouvert.",
       "badExtension": "Le nom du fichier doit se terminer par .tiza."
     }
+  },
+  "sim": {
+    "exampleTitle": "Pendule simple",
+    "editor": "Éditeur HTML",
+    "editorHint": "Un seul fichier HTML (scripts et styles inclus).",
+    "loadFile": "Charger un fichier…",
+    "reload": "Recharger",
+    "content": "Contenu",
+    "title": "Nom",
+    "editHtml": "Modifier le HTML",
+    "interact": "Interagir",
+    "stopInteracting": "Arrêter d’interagir",
+    "interactHint": "Double-cliquez sur la page pour l’utiliser (cliquez à l’extérieur pour revenir à l’édition). En mode présentation, elle est toujours interactive.",
+    "resolution": "Taille de la page",
+    "custom": "Personnalisée",
+    "matchBox": "Comme la boîte",
+    "fitBox": "Boîte aux proportions",
+    "fit": "Mise à l’échelle",
+    "fitContain": "Ajuster (garder les proportions)",
+    "fitFill": "Étirer à la boîte",
+    "resolutionHint": "La page est dessinée à cette taille (en pixels) puis mise à l’échelle dans la boîte de la diapositive. Redimensionnez la boîte avec ses poignées.",
+    "security": "Sécurité",
+    "allowNetwork": "Autoriser l’accès à internet",
+    "networkHint": "Désactivé par défaut : la page ne peut rien charger depuis internet. Activez-le si elle utilise une bibliothèque d’un CDN. Elle n’a jamais accès à Tiza ni à vos fichiers."
   }
 }

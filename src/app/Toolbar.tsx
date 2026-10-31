@@ -1,12 +1,14 @@
 import { useTranslation } from "react-i18next";
 import type { ShapeKind } from "../document";
-import { createShape, createText } from "../document/factory";
+import { createShape, createSim, createText } from "../document/factory";
+import pendulum from "../../examples/pendulo.html?raw";
 import { newPresentation, openPresentation, save, saveAs } from "../files/session";
 import {
   addElement,
   addSlide,
   insertMath,
   isDirty,
+  openHtmlEditor,
   redo,
   startEditing,
   undo,
@@ -34,6 +36,12 @@ export default function Toolbar() {
 
   async function insertEquation() {
     startEditing(await insertMath(String.raw`E = mc^2`, cx, cy));
+  }
+
+  function insertHtml() {
+    const el = createSim(pendulum, t("sim.exampleTitle"), cx, cy);
+    addElement(el);
+    openHtmlEditor(el.id);
   }
 
   return (
@@ -96,6 +104,7 @@ export default function Toolbar() {
       <div className="tool-group">
         <ToolButton icon="text" label={t("toolbar.text")} onClick={insertText} showLabel />
         <ToolButton icon="math" label={t("toolbar.equation")} onClick={insertEquation} showLabel />
+        <ToolButton icon="html" label={t("toolbar.html")} onClick={insertHtml} showLabel />
         {SHAPES.map((shape) => (
           <ToolButton
             key={shape}

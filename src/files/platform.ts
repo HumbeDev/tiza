@@ -26,6 +26,8 @@ export interface Platform {
     suggestedName: string,
     forceDialog: boolean,
   ): Promise<FileInfo | null>;
+  /** Lets the user choose an .html file and returns its contents; null when cancelled. */
+  pickHtmlFile(): Promise<{ name: string; text: string } | null>;
   confirm(message: string, okLabel: string, cancelLabel: string): Promise<boolean>;
   alert(message: string): Promise<void>;
   setTitle(title: string): void;
@@ -78,6 +80,17 @@ const desktop: Platform = {
     }
     await wrap(invoke("save_presentation", { path, doc }));
     return { name: baseName(path), path };
+  },
+
+  async pickHtmlFile() {
+    const path = await dialog.open({
+      multiple: false,
+      directory: false,
+      filters: [{ name: "HTML", extensions: ["html", "htm"] }],
+    });
+    if (typeof path !== "string") return null;
+    const text = await wrap(invoke<string>("read_html_file", { path }));
+    return { name: baseName(path), text };
   },
 
   confirm(message, okLabel, cancelLabel) {
@@ -149,11 +162,11 @@ interface SaveFilePickerWindow {
 /** Where each web file was saved, when the browser supports real file handles. */
 let webHandle: FileSystemFileHandle | null = null;
 
-function pickFile(): Promise<File | null> {
+function pickFile(accept = ".tiza"): Promise<File | null> {
   return new Promise((resolve) => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".tiza";
+    input.accept = accept;
     input.addEventListener("change", () => resolve(input.files?.[0] ?? null));
     input.addEventListener("cancel", () => resolve(null));
     input.click();
@@ -206,6 +219,11 @@ const web: Platform = {
     const name = withExtension(file.name ?? suggestedName);
     download(bytes, name);
     return { name, path: null };
+  },
+
+  async pickHtmlFile() {
+    const picked = await pickFile(".html,.htm,text/html");
+    return picked ? { name: picked.name, text: await picked.text() } : null;
   },
 
   confirm: (message) => Promise.resolve(window.confirm(message)),

@@ -84,3 +84,24 @@ export function createMath(
     align: "center",
   };
 }
+
+/** An HTML page box centered at (cx, cy), 1:1 with its internal resolution. */
+export function createSim(html: string, title: string, cx: number, cy: number): Element {
+  const viewWidth = 1120;
+  const viewHeight = 630;
+  return {
+    ...base,
+    id: newId(),
+    x: cx - viewWidth / 2,
+    y: cy - viewHeight / 2,
+    w: viewWidth,
+    h: viewHeight,
+    kind: "sim",
+    html,
+    title,
+    viewWidth,
+    viewHeight,
+    fit: "contain",
+    allowNetwork: false,
+  };
+}

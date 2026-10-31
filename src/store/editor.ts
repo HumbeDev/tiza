@@ -37,7 +37,10 @@ export interface EditorState {
   sealed: boolean;
   currentSlideId: string;
   selectedIds: string[];
+  /** Element whose content is being edited (text, formula) or used (simulation). */
   editingId: string | null;
+  /** Simulation whose HTML source is open in the code editor. */
+  htmlEditingId: string | null;
 }
 
 function initialState(doc: Presentation, file: FileInfo = NO_FILE): EditorState {
@@ -51,6 +54,7 @@ function initialState(doc: Presentation, file: FileInfo = NO_FILE): EditorState 
     currentSlideId: doc.slides[0].id,
     selectedIds: [],
     editingId: null,
+    htmlEditingId: null,
   };
 }
 
@@ -152,6 +156,7 @@ function fixSelection(s: EditorState): EditorState {
     currentSlideId: slide.id,
     selectedIds: s.selectedIds.filter((id) => ids.has(id)),
     editingId: s.editingId && ids.has(s.editingId) ? s.editingId : null,
+    htmlEditingId: s.htmlEditingId && ids.has(s.htmlEditingId) ? s.htmlEditingId : null,
   };
 }
 
@@ -181,7 +186,7 @@ function* draftElements(doc: Draft<Presentation>, ids: Set<string>): Generator<D
 
 export function selectSlide(id: string): void {
   if (get().currentSlideId === id) return;
-  set({ currentSlideId: id, selectedIds: [], editingId: null });
+  set({ currentSlideId: id, selectedIds: [], editingId: null, htmlEditingId: null });
 }
 
 export function select(ids: string[]): void {
@@ -485,4 +490,35 @@ export async function insertMath(latex: string, cx: number, cy: number): Promise
   const el = createMath(latex, cx, cy, r.ok ? r.render : { width: 4, height: 1.2 });
   addElement(el);
   return el.id;
+}
+
+// ---------------------------------------------------------------- HTML simulations
+
+export function setSimHtml(id: string, html: string, mergeKey?: string): void {
+  updateElements(
+    [id],
+    (el) => {
+      if (el.kind === "sim") el.html = html;
+    },
+    mergeKey,
+  );
+}
+
+export function openHtmlEditor(id: string): void {
+  set({ htmlEditingId: id, editingId: null, selectedIds: [id] });
+}
+
+export function closeHtmlEditor(): void {
+  seal();
+  set({ htmlEditingId: null });
+}
+
+/** Resizes the box to the page's aspect ratio, keeping its width and center. */
+export function fitSimBoxToView(id: string): void {
+  updateElements([id], (el) => {
+    if (el.kind !== "sim") return;
+    const h = (el.w * el.viewHeight) / el.viewWidth;
+    el.y += (el.h - h) / 2;
+    el.h = h;
+  });
 }

@@ -108,6 +108,7 @@ pub enum ElementContent {
     Shape(ShapeElement),
     Text(TextElement),
     Math(MathElement),
+    Sim(SimElement),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -236,6 +237,33 @@ pub struct MathElement {
     pub font_size: f64,
     pub color: String,
     pub align: TextAlign,
+}
+
+/// How an embedded page is scaled into its box.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum SimFit {
+    /// Uniform scale; letterboxed if the aspect ratios differ.
+    Contain,
+    /// Stretch to fill the box.
+    Fill,
+}
+
+/// Self-contained HTML page (simulation, applet…) running in a sandboxed iframe.
+/// The page lays out at `view_width × view_height` CSS pixels and is scaled into the box.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct SimElement {
+    pub html: String,
+    pub title: String,
+    pub view_width: f64,
+    pub view_height: f64,
+    pub fit: SimFit,
+    /// Lets the page load resources from the internet (e.g. a library from a CDN).
+    #[serde(default)]
+    pub allow_network: bool,
 }
 
 #[cfg(test)]
@@ -402,6 +430,24 @@ mod tests {
                 ..
             })
         ));
+    }
+
+    #[test]
+    fn sim_elements_round_trip() {
+        let value = json!({
+            "id": "h1", "x": 0, "y": 0, "w": 800, "h": 600, "rotation": 0, "opacity": 1,
+            "kind": "sim", "html": "<p>hi</p>", "title": "Demo",
+            "viewWidth": 800, "viewHeight": 600, "fit": "contain"
+        });
+        let el: Element = serde_json::from_value(value).unwrap();
+        let ElementContent::Sim(sim) = &el.content else {
+            panic!("expected a sim element")
+        };
+        assert!(!sim.allow_network);
+        assert_eq!(sim.fit, SimFit::Contain);
+        let back = serde_json::to_value(&el).unwrap();
+        assert_eq!(back["kind"], "sim");
+        assert_eq!(back["viewWidth"], 800.0);
     }
 
     #[test]

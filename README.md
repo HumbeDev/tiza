@@ -22,7 +22,7 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 | 1    | Documento y lienzo básico (formas, texto, mover, deshacer) | ✅           |
 | 2    | Texto enriquecido y ecuaciones LaTeX                       | ✅           |
 | 3    | **Archivos `.tiza`, instaladores y versión web**           | 🧪 en prueba |
-| 4    | **Simulaciones HTML** y páginas web                        | —            |
+| 4    | **Simulaciones HTML** y páginas web                        | 🧪 en prueba |
 | 5    | Servidor MCP para agentes de IA                            | —            |
 | 6    | Imágenes y video                                           | —            |
 | 7    | Modo presentación y vista del presentador                  | —            |
@@ -66,6 +66,14 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 - Formas: tipo, relleno, contorno, grosor, radio de esquinas.
 - Texto: tamaño, color, alineación.
 - Ecuación: tamaño y color.
+
+**HTML incrustado (simulaciones, applets)**
+
+- Botón **HTML**: inserta una página HTML en un recuadro (trae un péndulo de ejemplo). **Cargar archivo…** importa tu `.html`, o pega el código en el editor.
+- Tamaño: la **caja** se ajusta con las asas como cualquier elemento; aparte eliges el **tamaño de la página** (800×600, 1280×720, 1920×1080… o personalizado), que se escala a la caja **encajando** (mantiene proporción) o **estirando**. Botones «Igual a la caja» y «Caja a la proporción».
+- **Doble clic** para usar la página (sliders, botones…); clic fuera para volver a editar. **Recargar** la reinicia.
+- **Aislada y segura**: corre en un iframe sin acceso a Tiza ni a tus archivos, y **sin internet** salvo que marques «Permitir acceso a internet» (p. ej. si carga una librería de un CDN).
+- La página debe ser un solo archivo (scripts y estilos dentro). Se guarda dentro del `.tiza`.
 
 **Archivos `.tiza`**
 

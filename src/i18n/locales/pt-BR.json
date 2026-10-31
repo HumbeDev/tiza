@@ -14,7 +14,8 @@
     "new": "Nova",
     "open": "Abrir…",
     "save": "Salvar",
-    "saveAs": "Salvar como…"
+    "saveAs": "Salvar como…",
+    "html": "HTML"
   },
   "shapes": {
     "rect": "Retângulo",
@@ -60,7 +61,8 @@
     "underline": "Sublinhado",
     "strike": "Tachado",
     "bulletList": "Lista com marcadores",
-    "orderedList": "Lista numerada"
+    "orderedList": "Lista numerada",
+    "sim": "Página HTML"
   },
   "align": {
     "left": "Alinhar à esquerda",
@@ -122,5 +124,29 @@
       "unsafePath": "O arquivo contém caminhos inseguros e não foi aberto.",
       "badExtension": "O nome do arquivo deve terminar em .tiza."
     }
+  },
+  "sim": {
+    "exampleTitle": "Pêndulo simples",
+    "editor": "Editor HTML",
+    "editorHint": "Um único arquivo HTML (scripts e estilos dentro).",
+    "loadFile": "Carregar arquivo…",
+    "reload": "Recarregar",
+    "content": "Conteúdo",
+    "title": "Nome",
+    "editHtml": "Editar HTML",
+    "interact": "Interagir",
+    "stopInteracting": "Parar de interagir",
+    "interactHint": "Clique duas vezes na página para usá-la (clique fora para voltar a editar). No modo apresentação ela é sempre interativa.",
+    "resolution": "Tamanho da página",
+    "custom": "Personalizado",
+    "matchBox": "Igual à caixa",
+    "fitBox": "Caixa na proporção",
+    "fit": "Escala",
+    "fitContain": "Encaixar (manter proporção)",
+    "fitFill": "Esticar até a caixa",
+    "resolutionHint": "A página é desenhada neste tamanho (em pixels) e escalada para a caixa no slide. Redimensione a caixa pelas alças.",
+    "security": "Segurança",
+    "allowNetwork": "Permitir acesso à internet",
+    "networkHint": "Desativado por padrão: a página não pode carregar nada da internet. Ative se ela usa uma biblioteca de um CDN. Ela nunca tem acesso ao Tiza nem aos seus arquivos."
   }
 }

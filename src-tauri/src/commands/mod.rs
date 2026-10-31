@@ -4,11 +4,12 @@ use std::fs;
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, State};
 
 use crate::archive;
 use crate::document::Presentation;
 use crate::error::{AppError, AppResult};
+use crate::sim::SimPages;
 
 /// Version of the Rust core, shown in the UI to confirm the frontend↔backend bridge works.
 #[tauri::command]
@@ -129,6 +130,34 @@ pub async fn clear_recovery(app: AppHandle) -> AppResult<()> {
             }
         }
         Ok(())
+    })
+    .await
+}
+
+// ---------------------------------------------------------------- HTML simulations
+
+/// Makes `html` available at `tizasim://localhost/<id>` and returns the id.
+#[tauri::command]
+pub fn register_sim(pages: State<'_, SimPages>, html: String, allow_network: bool) -> String {
+    pages.register(html, allow_network)
+}
+
+const MAX_HTML_BYTES: u64 = 20 * 1024 * 1024;
+
+/// Reads an .html file chosen by the user in the open dialog.
+#[tauri::command]
+pub async fn read_html_file(path: PathBuf) -> AppResult<String> {
+    let is_html = path
+        .extension()
+        .is_some_and(|e| e.eq_ignore_ascii_case("html") || e.eq_ignore_ascii_case("htm"));
+    if !is_html {
+        return Err(AppError::BadExtension);
+    }
+    blocking(move || {
+        if fs::metadata(&path)?.len() > MAX_HTML_BYTES {
+            return Err(AppError::TooLarge);
+        }
+        Ok(String::from_utf8_lossy(&fs::read(&path)?).into_owned())
     })
     .await
 }

@@ -2,13 +2,16 @@ import { useEditorState } from "@tiptap/react";
 import { type ReactNode, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
-import type { Element, ShapeKind, TextAlign } from "../document";
+import type { Element, ShapeKind, SimFit, TextAlign } from "../document";
+import { reloadSim } from "../elements/sim/reload";
 import {
   type Alignment,
   type ZOrder,
   alignSelected,
   currentSlide,
   deleteSelected,
+  fitSimBoxToView,
+  openHtmlEditor,
   reorderSelected,
   seal,
   selectedElements,
@@ -16,6 +19,7 @@ import {
   setPreamble,
   setSlideBackground,
   startEditing,
+  stopEditing,
   updateElements,
   useEditor,
 } from "../store/editor";
@@ -150,6 +154,126 @@ function MathProperties({ el }: { el: Element & { kind: "math" } }) {
   );
 }
 
+const VIEW_PRESETS: [number, number][] = [
+  [800, 600],
+  [1024, 768],
+  [1120, 630],
+  [1280, 720],
+  [1920, 1080],
+];
+
+function SimProperties({ el }: { el: Element & { kind: "sim" } }) {
+  const { t } = useTranslation();
+  const interacting = useEditor((s) => s.editingId === el.id);
+  const update = (fields: Partial<Element>, field: string) =>
+    updateElements([el.id], fields, `prop:${el.id}:${field}`);
+  const preset = VIEW_PRESETS.findIndex(([w, h]) => w === el.viewWidth && h === el.viewHeight);
+
+  return (
+    <>
+      <Section title={t("sim.content")}>
+        <Field label={t("sim.title")}>
+          <input
+            type="text"
+            className="text-input"
+            value={el.title}
+            onChange={(e) => update({ title: e.target.value } as Partial<Element>, "title")}
+            onBlur={seal}
+          />
+        </Field>
+        <div className="button-row">
+          <button type="button" className="small-button" onClick={() => openHtmlEditor(el.id)}>
+            <Icon name="html" /> {t("sim.editHtml")}
+          </button>
+          <button
+            type="button"
+            className={interacting ? "small-button active" : "small-button"}
+            onClick={() => (interacting ? stopEditing() : startEditing(el.id))}
+          >
+            <Icon name="play" /> {t(interacting ? "sim.stopInteracting" : "sim.interact")}
+          </button>
+          <button type="button" className="small-button" onClick={() => reloadSim(el.id)}>
+            <Icon name="reload" /> {t("sim.reload")}
+          </button>
+        </div>
+        <p className="hint">{t("sim.interactHint")}</p>
+      </Section>
+
+      <Section title={t("sim.resolution")}>
+        <select
+          value={preset}
+          onChange={(e) => {
+            const p = VIEW_PRESETS[Number(e.target.value)];
+            if (p) update({ viewWidth: p[0], viewHeight: p[1] } as Partial<Element>, "view");
+          }}
+        >
+          {preset === -1 && <option value={-1}>{t("sim.custom")}</option>}
+          {VIEW_PRESETS.map(([w, h], i) => (
+            <option key={i} value={i}>
+              {w} × {h}
+            </option>
+          ))}
+        </select>
+        <div className="grid-2">
+          <NumberField
+            label={t("props.width")}
+            value={el.viewWidth}
+            min={50}
+            onChange={(viewWidth) => update({ viewWidth } as Partial<Element>, "viewWidth")}
+          />
+          <NumberField
+            label={t("props.height")}
+            value={el.viewHeight}
+            min={50}
+            onChange={(viewHeight) => update({ viewHeight } as Partial<Element>, "viewHeight")}
+          />
+        </div>
+        <div className="button-row">
+          <button
+            type="button"
+            className="small-button"
+            onClick={() =>
+              update(
+                { viewWidth: Math.round(el.w), viewHeight: Math.round(el.h) } as Partial<Element>,
+                "view",
+              )
+            }
+          >
+            {t("sim.matchBox")}
+          </button>
+          <button type="button" className="small-button" onClick={() => fitSimBoxToView(el.id)}>
+            {t("sim.fitBox")}
+          </button>
+        </div>
+        <Field label={t("sim.fit")}>
+          <select
+            value={el.fit}
+            onChange={(e) => update({ fit: e.target.value as SimFit } as Partial<Element>, "fit")}
+          >
+            <option value="contain">{t("sim.fitContain")}</option>
+            <option value="fill">{t("sim.fitFill")}</option>
+          </select>
+        </Field>
+        <p className="hint">{t("sim.resolutionHint")}</p>
+      </Section>
+
+      <Section title={t("sim.security")}>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={el.allowNetwork}
+            onChange={(e) =>
+              update({ allowNetwork: e.target.checked } as Partial<Element>, "network")
+            }
+          />
+          {t("sim.allowNetwork")}
+        </label>
+        <p className="hint">{t("sim.networkHint")}</p>
+      </Section>
+    </>
+  );
+}
+
 function AlignButtons({ value, onChange }: { value: TextAlign; onChange: (a: TextAlign) => void }) {
   const { t } = useTranslation();
   return (
@@ -258,13 +382,7 @@ function ElementProperties({ el }: { el: Element }) {
 
   return (
     <>
-      <Section
-        title={
-          el.kind === "shape"
-            ? t(`shapes.${el.shape}`)
-            : t(el.kind === "text" ? "props.text" : "props.math")
-        }
-      >
+      <Section title={el.kind === "shape" ? t(`shapes.${el.shape}`) : t(`props.${el.kind}`)}>
         <div className="grid-2">
           <NumberField label="X" value={el.x} onChange={(x) => update({ x }, "x")} />
           <NumberField label="Y" value={el.y} onChange={(y) => update({ y }, "y")} />
@@ -411,6 +529,7 @@ function ElementProperties({ el }: { el: Element }) {
       )}
 
       {el.kind === "math" && <MathProperties el={el} />}
+      {el.kind === "sim" && <SimProperties el={el} />}
     </>
   );
 }

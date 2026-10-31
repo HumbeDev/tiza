@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Péndulo simple</title>
+<style>
+  html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; background: #f7f6f2; color: #1d1d1b; }
+  body { display: flex; flex-direction: column; }
+  canvas { flex: 1; width: 100%; min-height: 0; display: block; }
+  .controls { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; padding: 10px 16px; background: #fff; border-top: 1px solid #ddd; font-size: 15px; }
+  label { display: flex; gap: 8px; align-items: center; }
+  output { min-width: 4.5em; font-variant-numeric: tabular-nums; }
+  button { font: inherit; padding: 4px 12px; border-radius: 6px; border: 1px solid #2f6f4f; background: #2f6f4f; color: #fff; cursor: pointer; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="controls">
+  <label>L <input id="len" type="range" min="0.2" max="2" step="0.05" value="1"><output id="lenOut"></output></label>
+  <label>g <input id="grav" type="range" min="1" max="25" step="0.1" value="9.81"><output id="gravOut"></output></label>
+  <label>θ₀ <input id="amp" type="range" min="5" max="170" step="1" value="40"><output id="ampOut"></output></label>
+  <button id="reset">↺</button>
+  <span>T ≈ <output id="period"></output></span>
+</div>
+<script>
+  // Simple pendulum integrated with RK4: θ'' = -(g/L) sin θ
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const $ = (id) => document.getElementById(id);
+  let theta, omega, trail = [];
+
+  function reset() {
+    theta = (+$("amp").value * Math.PI) / 180;
+    omega = 0;
+    trail = [];
+  }
+
+  function accel(t) { return -(+$("grav").value / +$("len").value) * Math.sin(t); }
+
+  function step(dt) {
+    const k1t = omega, k1w = accel(theta);
+    const k2t = omega + 0.5 * dt * k1w, k2w = accel(theta + 0.5 * dt * k1t);
+    const k3t = omega + 0.5 * dt * k2w, k3w = accel(theta + 0.5 * dt * k2t);
+    const k4t = omega + dt * k3w, k4w = accel(theta + dt * k3t);
+    theta += (dt / 6) * (k1t + 2 * k2t + 2 * k3t + k4t);
+    omega += (dt / 6) * (k1w + 2 * k2w + 2 * k3w + k4w);
+  }
+
+  function updateLabels() {
+    $("lenOut").textContent = (+$("len").value).toFixed(2) + " m";
+    $("gravOut").textContent = (+$("grav").value).toFixed(2) + " m/s²";
+    $("ampOut").textContent = $("amp").value + "°";
+    $("period").textContent = (2 * Math.PI * Math.sqrt(+$("len").value / +$("grav").value)).toFixed(2) + " s";
+  }
+
+  function draw() {
+    const w = (canvas.width = canvas.clientWidth * devicePixelRatio);
+    const h = (canvas.height = canvas.clientHeight * devicePixelRatio);
+    const scale = Math.min(w, h) / 2.6;
+    const ox = w / 2, oy = h * 0.12;
+    const L = +$("len").value * scale;
+    const x = ox + L * Math.sin(theta), y = oy + L * Math.cos(theta);
+    trail.push([x, y]);
+    if (trail.length > 120) trail.shift();
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "rgba(47,111,79,0.25)";
+    ctx.lineWidth = 3 * devicePixelRatio;
+    ctx.beginPath();
+    trail.forEach(([tx, ty], i) => (i ? ctx.lineTo(tx, ty) : ctx.moveTo(tx, ty)));
+    ctx.stroke();
+
+    ctx.strokeStyle = "#555";
+    ctx.lineWidth = 2 * devicePixelRatio;
+    ctx.beginPath(); ctx.moveTo(ox - 60 * devicePixelRatio, oy); ctx.lineTo(ox + 60 * devicePixelRatio, oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(x, y); ctx.stroke();
+    ctx.fillStyle = "#2f6f4f";
+    ctx.beginPath(); ctx.arc(x, y, 18 * devicePixelRatio, 0, 2 * Math.PI); ctx.fill();
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    for (let i = 0; i < 10; i++) step(dt / 10);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  ["len", "grav"].forEach((id) => $(id).addEventListener("input", updateLabels));
+  $("amp").addEventListener("input", () => { updateLabels(); reset(); });
+  $("reset").addEventListener("click", reset);
+  updateLabels();
+  reset();
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

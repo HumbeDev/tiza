@@ -2,7 +2,7 @@ import { lazy, Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMath } from "../math/useMath";
 import { setMathLatex, stopEditing } from "../store/editor";
-import LatexCodeEditor from "./LatexCodeEditor";
+import CodeEditor from "./CodeEditor";
 
 const VisualMathEditor = lazy(() => import("./VisualMathEditor"));
 
@@ -38,7 +38,8 @@ export default function MathEditorPanel({ id, latex }: { id: string; latex: stri
         </button>
       </div>
       {mode === "code" ? (
-        <LatexCodeEditor
+        <CodeEditor
+          language="latex"
           value={latex}
           onChange={onChange}
           onDone={stopEditing}

@@ -11,6 +11,8 @@ export type { RichMark } from "../bindings/RichMark";
 export type { RichNode } from "../bindings/RichNode";
 export type { ShapeElement } from "../bindings/ShapeElement";
 export type { ShapeKind } from "../bindings/ShapeKind";
+export type { SimElement } from "../bindings/SimElement";
+export type { SimFit } from "../bindings/SimFit";
 export type { Slide } from "../bindings/Slide";
 export type { Stroke } from "../bindings/Stroke";
 export type { TextAlign } from "../bindings/TextAlign";
