@@ -10,7 +10,11 @@
     "redo": "Rétablir",
     "newSlide": "Nouvelle diapositive",
     "text": "Texte",
-    "equation": "Équation"
+    "equation": "Équation",
+    "new": "Nouvelle",
+    "open": "Ouvrir…",
+    "save": "Enregistrer",
+    "saveAs": "Enregistrer sous…"
   },
   "shapes": {
     "rect": "Rectangle",
@@ -78,7 +82,11 @@
     "right": "Droite"
   },
   "status": {
-    "slideOf": "Diapositive {{current}} sur {{total}}"
+    "slideOf": "Diapositive {{current}} sur {{total}}",
+    "unsaved": "Modifications non enregistrées",
+    "saved": "Enregistré",
+    "webVersion": "Version web {{version}}",
+    "download": "Télécharger l’application"
   },
   "math": {
     "editor": "Éditeur d’équations",
@@ -95,5 +103,24 @@
     "preambleHint": "Définitions \\newcommand disponibles dans toutes les équations.",
     "insertInline": "Insérer une formule",
     "inlineHint": "Astuce : tapez $x^2$ dans le texte pour insérer une formule."
+  },
+  "file": {
+    "untitled": "Sans titre",
+    "discardQuestion": "« {{name}} » contient des modifications non enregistrées. Les abandonner ?",
+    "discard": "Abandonner",
+    "cancel": "Annuler",
+    "recoverQuestion": "Tiza s’est fermé sans enregistrer les modifications de « {{name}} ». Les récupérer ?",
+    "recover": "Récupérer"
+  },
+  "errors": {
+    "file": {
+      "io": "Impossible de lire ou d’écrire le fichier.",
+      "notTiza": "Ce fichier n’est pas une présentation Tiza.",
+      "invalid": "La présentation est endommagée et ne peut pas être ouverte.",
+      "tooNew": "Cette présentation a été créée avec une version plus récente de Tiza (format {{version}}). Mettez Tiza à jour pour l’ouvrir.",
+      "tooLarge": "Le fichier est trop volumineux.",
+      "unsafePath": "Le fichier contient des chemins dangereux et n’a pas été ouvert.",
+      "badExtension": "Le nom du fichier doit se terminer par .tiza."
+    }
   }
 }

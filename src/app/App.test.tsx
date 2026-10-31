@@ -6,7 +6,15 @@ import { currentSlide, loadDocument, useEditor } from "../store/editor";
 import App from "./App";
 
 vi.mock("@tauri-apps/api/core", () => ({
-  invoke: vi.fn(() => Promise.resolve("0.1.0")),
+  isTauri: () => true,
+  invoke: vi.fn((cmd: string) => Promise.resolve(cmd === "app_version" ? "0.1.0" : null)),
+}));
+
+vi.mock("@tauri-apps/api/window", () => ({
+  getCurrentWindow: () => ({
+    setTitle: () => Promise.resolve(),
+    onCloseRequested: () => Promise.resolve(() => {}),
+  }),
 }));
 
 beforeAll(() => {
@@ -30,6 +38,16 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "Undo" })).toBeTruthy();
     expect(await screen.findByText("Rust core 0.1.0")).toBeTruthy();
     expect(screen.getByText("Slide 1 of 1")).toBeTruthy();
+  });
+
+  it("shows unsaved changes in the title and status bar", async () => {
+    render(<App />);
+    expect(document.title).toBe("Untitled — Tiza");
+    fireEvent.click(screen.getByRole("button", { name: "Ellipse" }));
+    expect(document.title).toBe("● Untitled — Tiza");
+    expect(screen.getByText(/Unsaved changes/)).toBeTruthy();
+    fireEvent.keyDown(window, { key: "z", ctrlKey: true });
+    expect(document.title).toBe("Untitled — Tiza");
   });
 
   it("switches language from the picker", async () => {

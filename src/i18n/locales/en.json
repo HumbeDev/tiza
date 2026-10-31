@@ -10,7 +10,11 @@
     "redo": "Redo",
     "newSlide": "New slide",
     "text": "Text",
-    "equation": "Equation"
+    "equation": "Equation",
+    "new": "New",
+    "open": "Open…",
+    "save": "Save",
+    "saveAs": "Save as…"
   },
   "shapes": {
     "rect": "Rectangle",
@@ -78,7 +82,11 @@
     "right": "Right"
   },
   "status": {
-    "slideOf": "Slide {{current}} of {{total}}"
+    "slideOf": "Slide {{current}} of {{total}}",
+    "unsaved": "Unsaved changes",
+    "saved": "Saved",
+    "webVersion": "Web version {{version}}",
+    "download": "Download the app"
   },
   "math": {
     "editor": "Equation editor",
@@ -95,5 +103,24 @@
     "preambleHint": "\\newcommand definitions available in every equation.",
     "insertInline": "Insert formula",
     "inlineHint": "Tip: type $x^2$ in the text to insert a formula."
+  },
+  "file": {
+    "untitled": "Untitled",
+    "discardQuestion": "“{{name}}” has unsaved changes. Discard them?",
+    "discard": "Discard",
+    "cancel": "Cancel",
+    "recoverQuestion": "Tiza closed without saving changes to “{{name}}”. Recover them?",
+    "recover": "Recover"
+  },
+  "errors": {
+    "file": {
+      "io": "The file could not be read or written.",
+      "notTiza": "This is not a Tiza presentation.",
+      "invalid": "The presentation is damaged and cannot be opened.",
+      "tooNew": "This presentation was made with a newer version of Tiza (format {{version}}). Update Tiza to open it.",
+      "tooLarge": "The file is too large.",
+      "unsafePath": "The file contains unsafe paths and was not opened.",
+      "badExtension": "The file name must end in .tiza."
+    }
   }
 }

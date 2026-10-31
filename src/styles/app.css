@@ -116,6 +116,25 @@ textarea {
   background: var(--accent-soft);
 }
 
+.tool-button {
+  position: relative;
+}
+
+.tool-button.text-only {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
 .tool-button.active {
   border-color: var(--accent);
   background: var(--accent-soft);
@@ -651,10 +670,19 @@ input[type="color"] {
 
 /* ---------------------------------------------------------------- status */
 
+.status-file {
+  flex: 1;
+}
+
+.status-link {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .status-bar {
   grid-area: status;
   display: flex;
-  justify-content: space-between;
+  gap: 24px;
   align-items: center;
   padding: 0 12px;
   font-size: 12px;

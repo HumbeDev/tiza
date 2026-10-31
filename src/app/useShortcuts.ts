@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { newPresentation, openPresentation, save, saveAs } from "../files/session";
 import {
   addSlide,
   copySelected,
@@ -33,9 +34,19 @@ const ARROWS: Record<string, [number, number]> = {
 export function useShortcuts(): void {
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (isTyping(e.target)) return;
       const mod = e.ctrlKey || e.metaKey;
       const key = e.key.toLowerCase();
+
+      // File shortcuts work even while typing.
+      if (mod && ["n", "o", "s"].includes(key)) {
+        e.preventDefault();
+        if (key === "n") void newPresentation();
+        else if (key === "o") void openPresentation();
+        else void (e.shiftKey ? saveAs() : save());
+        return;
+      }
+
+      if (isTyping(e.target)) return;
       let handled = true;
 
       if (mod && key === "z" && !e.shiftKey) undo();
