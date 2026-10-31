@@ -1,6 +1,8 @@
 //! Presentation document model. This is the source of truth for the file format;
 //! TypeScript types in `src/bindings/` are generated from it by `cargo test`.
 
+pub mod migrate;
+
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 

@@ -1,10 +1,12 @@
 import { useTranslation } from "react-i18next";
 import type { ShapeKind } from "../document";
 import { createShape, createText } from "../document/factory";
+import { newPresentation, openPresentation, save, saveAs } from "../files/session";
 import {
   addElement,
   addSlide,
   insertMath,
+  isDirty,
   redo,
   startEditing,
   undo,
@@ -19,6 +21,7 @@ export default function Toolbar() {
   const { t } = useTranslation();
   const canUndo = useEditor((s) => s.past.length > 0);
   const canRedo = useEditor((s) => s.future.length > 0);
+  const dirty = useEditor(isDirty);
   const page = useEditor((s) => s.doc.page);
   const cx = page.width / 2;
   const cy = page.height / 2;
@@ -36,6 +39,35 @@ export default function Toolbar() {
   return (
     <header className="toolbar">
       <span className="brand">{t("app.name")}</span>
+      <div className="tool-group">
+        <ToolButton
+          icon="fileNew"
+          label={t("toolbar.new")}
+          shortcut="Ctrl+N"
+          onClick={newPresentation}
+        />
+        <ToolButton
+          icon="folderOpen"
+          label={t("toolbar.open")}
+          shortcut="Ctrl+O"
+          onClick={openPresentation}
+        />
+        <ToolButton
+          icon="save"
+          label={t("toolbar.save")}
+          shortcut="Ctrl+S"
+          onClick={save}
+          badge={dirty}
+        />
+        <button
+          type="button"
+          className="tool-button text-only"
+          title="Ctrl+Shift+S"
+          onClick={saveAs}
+        >
+          {t("toolbar.saveAs")}
+        </button>
+      </div>
       <div className="tool-group">
         <ToolButton
           icon="undo"
@@ -82,10 +114,12 @@ export default function Toolbar() {
 interface ToolButtonProps {
   icon: IconName;
   label: string;
-  onClick: () => void;
+  onClick: () => unknown;
   shortcut?: string;
   disabled?: boolean;
   showLabel?: boolean;
+  /** Small dot, e.g. for unsaved changes. */
+  badge?: boolean;
 }
 
 export function ToolButton({
@@ -95,6 +129,7 @@ export function ToolButton({
   shortcut,
   disabled,
   showLabel,
+  badge,
 }: ToolButtonProps) {
   return (
     <button
@@ -106,6 +141,7 @@ export function ToolButton({
       disabled={disabled}
     >
       <Icon name={icon} />
+      {badge && <span className="badge" aria-hidden="true" />}
       {showLabel && <span>{label}</span>}
     </button>
   );

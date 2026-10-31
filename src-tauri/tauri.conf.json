@@ -33,6 +33,22 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "fileAssociations": [
+      {
+        "ext": [
+          "tiza"
+        ],
+        "name": "Tiza presentation",
+        "description": "Tiza presentation",
+        "mimeType": "application/x-tiza",
+        "role": "Editor"
+      }
+    ],
+    "shortDescription": "Offline presentations with LaTeX, media and HTML simulations",
+    "category": "Education",
+    "publisher": "Humberto Daniel Lage Rodr\u00edguez",
+    "copyright": "\u00a9 2026 Humberto Daniel Lage Rodr\u00edguez \u2014 MIT OR Apache-2.0",
+    "homepage": "https://github.com/HumbeDev/tiza"
   }
 }

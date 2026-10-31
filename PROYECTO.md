@@ -115,7 +115,7 @@ El autor se inspira en proyectos como ArtCraft, escritos en Rust nativo. Para *e
 | Texto enriquecido | **TipTap** (ProseMirror) | Nodo personalizado para matemáticas inline |
 | Ecuaciones (render) | **MathJax 4** (`@mathjax/src`) empaquetado localmente, salida **SVG** | Soporta `amsmath`, `physics`, `mhchem`, etc. Sin CDN |
 | Ecuaciones (editor visual) | **MathLive** empaquetado localmente | Produce LaTeX; mismo dato que el modo código |
-| Servidor MCP (fase 4) | **rmcp** (SDK oficial de MCP para Rust) + Streamable HTTP | Apache-2.0. Esquemas de herramientas con `schemars` |
+| Servidor MCP (fase 5) | **rmcp** (SDK oficial de MCP para Rust) + Streamable HTTP | Apache-2.0. Esquemas de herramientas con `schemars` |
 | Editor de código | **CodeMirror 6** | Para LaTeX, HTML de simulaciones y vista de código |
 | LaTeX completo (fase 8) | **Tectonic** (motor TeX en Rust) → PDF → SVG | Requiere paquete TeX cacheado para funcionar offline |
 | Tests | `cargo test`, **Vitest**, luego **Playwright** para e2e | |
@@ -350,7 +350,7 @@ Requisito central del autor: **Tiza se construye para agentes.** Un agente conec
 - Las herramientas trabajan sobre la presentación abierta; si la app está cerrada, no hay servidor.
 - Más adelante (opcional): un puente stdio (`tiza --mcp-stdio`) para clientes que no hablan HTTP.
 
-**Herramientas iniciales (fase 4)**
+**Herramientas iniciales (fase 5)**
 
 - Lectura: `get_presentation` (resumen con ids de diapositivas y elementos), `get_slide`, `get_selection`.
 - Diapositivas: `add_slide`, `duplicate_slide`, `delete_slide`, `move_slide`, `set_slide_background`, `go_to_slide`.
@@ -425,7 +425,7 @@ tiza/
 │   │   ├── archive/          # lectura/escritura .tiza (zip, atómica)
 │   │   ├── assets/           # importación, hash, protocolo tiza-asset://
 │   │   ├── autosave/
-│   │   ├── mcp/              # servidor MCP y puente con el frontend (fase 4)
+│   │   ├── mcp/              # servidor MCP y puente con el frontend (fase 5)
 │   │   ├── latex/            # Tectonic (fase 8)
 │   │   └── export/
 │   ├── capabilities/
@@ -462,11 +462,18 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Preámbulo/macros globales del documento.
 - **Aceptación:** escribo una diapositiva con párrafos que mezclan texto y fórmulas, y una ecuación grande editada alternando código y modo visual; todo funciona sin internet.
 
-### Fase 3 — Archivo `.tiza`
+### Fase 3 — Archivo `.tiza` y distribución
 - Guardar/abrir/guardar como (zip, guardado atómico), archivos recientes, indicador de cambios sin guardar, autosave + recuperación, migraciones (aunque solo exista v1, dejar la infraestructura y un test).
+- Distribución: instaladores para Windows/macOS/Linux compilados por GitHub Actions al subir un tag (`scripts/release.sh`), versión web publicada con `scripts/deploy-web.sh` en https://tiza.ingenieriafisica.online/ (guardar = descargar/File System Access API; abrir = elegir archivo).
 - **Aceptación:** cierro la app sin guardar a la fuerza, la vuelvo a abrir y me ofrece recuperar; un archivo guardado en un SO se abre igual en otro.
 
-### Fase 4 — Servidor MCP para agentes
+### Fase 4 — Simulaciones HTML y páginas web
+- Elemento `sim` (iframe sandbox, editor HTML con vista previa, póster).
+- Elemento `web` con iframe, detección de bloqueo de incrustación con mensaje claro, modo interactivo on/off, snapshot.
+- Incluir 2–3 simulaciones de ejemplo en `examples/`.
+- **Aceptación:** inserto una simulación de un péndulo que corre aislada; incrusto una página que lo permita y la uso en vivo; una que lo bloquea muestra un aviso entendible.
+
+### Fase 5 — Servidor MCP para agentes
 - Servidor `rmcp` (Streamable HTTP, localhost, token) + puente Rust ↔ frontend por eventos con `requestId` y timeout.
 - Herramientas iniciales de §7.11 sobre las acciones existentes del store, con esquemas generados desde Rust.
 - `render_slide` (PNG) para que el agente vea el resultado.
@@ -474,15 +481,9 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Tests: cada herramienta en Rust (validación de argumentos) y en Vitest (ejecución sobre el store, un paso de deshacer por llamada); e2e conectando un cliente MCP real.
 - **Aceptación:** conecto Claude Code a Tiza, le pido "arma 3 diapositivas sobre el péndulo simple con títulos y formas" y las veo aparecer en vivo; con Ctrl+Z deshago lo que hizo el agente; con el servidor desactivado, nada escucha en el puerto.
 
-### Fase 5 — Imágenes y video
+### Fase 6 — Imágenes y video
 - Protocolo `tiza-asset://` con range requests. Importar por diálogo, arrastrar y pegar. Recorte/ajuste de imagen. Video con controles, recorte inicio/fin, autoplay, póster.
 - **Aceptación:** inserto un video de 500 MB, puedo adelantarlo sin trabas, guardo, reabro y sigue ahí; el `.tiza` no duplica assets repetidos.
-
-### Fase 6 — Simulaciones HTML y páginas web
-- Elemento `sim` (iframe sandbox, editor HTML con vista previa, póster).
-- Elemento `web` con iframe, detección de bloqueo de incrustación con mensaje claro, modo interactivo on/off, snapshot.
-- Incluir 2–3 simulaciones de ejemplo en `examples/`.
-- **Aceptación:** inserto una simulación de un péndulo que corre aislada; incrusto una página que lo permita y la uso en vivo; una que lo bloquea muestra un aviso entendible.
 
 ### Fase 7 — Modo presentación
 - Pantalla completa en monitor elegido, navegación por teclado/clicker, pantalla negra, simulaciones/web interactivas.
@@ -517,7 +518,7 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 ## 13. Riesgos conocidos y preguntas abiertas
 
 - **Diferencias entre webviews** (WebView2 / WKWebView / WebKitGTK): probar en los tres; especial cuidado con video en Linux y APIs CSS recientes.
-- **Incrustación web:** muchos sitios bloquean iframes; el webview hijo de Tauri es la salida, pero su API puede cambiar. Decidir cuando se llegue a la fase 6.
+- **Incrustación web:** muchos sitios bloquean iframes; el webview hijo de Tauri es la salida, pero su API puede cambiar. Decidir cuando se llegue a la fase 4.
 - **Tectonic offline:** tamaño del paquete TeX cacheado y primera descarga. Alternativa: usar TeX instalado en el sistema.
 - **PDF vectorial:** no trivial desde un webview; la primera versión será rasterizada.
 - **Nombre:** "Tiza"/`.tiza` (decidido). Revisar choques de nombre antes de publicar instaladores.
@@ -545,10 +546,10 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Elementos `shape` (rect, elipse, línea, flecha) y `text` plano. `text` pasará a TipTap en la fase 2, antes de que exista el formato de archivo (sin migración).
 - Reordenar diapositivas con eventos de puntero (no HTML5 drag&drop, que choca con el drag&drop de archivos de Tauri).
 - Pendiente: agrupar (Ctrl+G) queda para después; portapapeles solo interno (no del sistema).
-- Pendiente para la fase 4 (MCP): las acciones de elementos operan sobre la diapositiva actual; agregarles un `slideId` explícito.
+- Pendiente para la fase 5 (MCP): las acciones de elementos operan sobre la diapositiva actual; agregarles un `slideId` explícito.
 - Orden de fases cambiado por el autor (2026-10-30): **2 Ecuaciones → 3 Archivo → 4 MCP**. TikZ/Tectonic sigue en la fase 8.
 
-### Fase 2 — 2026-10-30 🧪 (pendiente de prueba manual del autor)
+### Fase 2 — 2026-10-30 ✅ (probada por el autor)
 - **MathJax 4** (`src/math/mathjax.ts`): sin CDN. Las fuentes que MathJax pide bajo demanda se resuelven con `import.meta.glob` → Vite las parte en chunks locales (10 MB en total, solo se cargan las que se usan). `linebreaks.inline = false` (MathJax 4 parte las fórmulas inline en varios SVG). Los errores TeX se lanzan (no se dibujan) para mostrarlos en el editor. `\href` se elimina del SVG.
 - Tamaño de las fórmulas determinista: `viewBox` en milésimas de em × `fontSize`. Un elemento `math` siempre conserva la proporción; redimensionar escala `fontSize`.
 - Texto enriquecido con **TipTap 3** (JSON en `TextElement.doc`, tipado en Rust como `RichNode`). Se renderiza con un renderizador estático propio (`RichText.tsx`); TipTap solo se carga al editar.
@@ -557,3 +558,15 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Preámbulo global en `Presentation.latex.preamble`; el store lo sincroniza con MathJax (también tras deshacer).
 - Las acciones de elementos ahora buscan por id en todas las diapositivas (preparando la fase MCP).
 - Pendiente: color/tamaño por fragmento de texto; alineación por párrafo.
+- Orden cambiado otra vez por el autor (2026-10-30): **3 Archivo + distribución → 4 Simulaciones HTML → 5 MCP → 6 Imágenes y video**.
+
+### Fase 3 — 2026-10-30 🧪 (pendiente de prueba manual del autor)
+- Formato `.tiza` en Rust (`src-tauri/src/archive/`, crate `zip` 9): guardado atómico (temporal + `fsync` + `rename`), validación (manifest, tamaño, zip-slip), migraciones con `const` assert que obliga a registrar cada versión nueva.
+- Mismo formato en la web con **fflate** (`src/files/format.ts`). Dos fixtures (`tests/fixtures/hello.tiza` escrito por Rust, `from-web.tiza` escrito por la web) se leen desde ambos lados.
+- `src/files/platform.ts` separa escritorio (diálogos nativos con `tauri-plugin-dialog`, comandos Rust) y web (input de archivo, File System Access API o descarga, `localStorage` para recuperación).
+- Cambios sin guardar: `isDirty` compara la entrada actual del historial con la guardada (deshacer hasta lo guardado vuelve a "limpio"). Autoguardado de recuperación cada 15 s; al iniciar ofrece recuperar. Confirmación al cerrar/abrir/nuevo.
+- Errores de archivo con códigos estables (`AppError` en Rust ↔ `FileError` en TS) traducidos en los 4 idiomas.
+- Asociación de archivos `.tiza` (doble clic abre Tiza; el comando `startup_file` lee el argumento). macOS (evento `Opened`) pendiente.
+- Ícono propio (`assets/icon.svg`). Workflows: `ci.yml` (tests en cada push) y `release.yml` (`tauri-action` v1, Windows/macOS Intel+ARM/Linux, release marcado como prerelease mientras sea 0.x).
+- Pendiente: archivos recientes; firma de código (Windows/macOS muestran aviso); actualizaciones automáticas.
+- `npm audit` reporta una vulnerabilidad moderada en `glob`/`rimraf` (dependencias del menú contextual de MathJax, que no usamos ni se empaqueta). Sin acción.

@@ -1,4 +1,7 @@
 const PATHS = {
+  fileNew: "M14 3H6v18h12V7zM14 3v4h4M12 11v6M9 14h6",
+  folderOpen: "M3 7V5h6l2 2h8v3M3 7v12h15l3-9H6l-3 9",
+  save: "M5 3h11l3 3v15H5zM8 3v5h7V3M8 21v-7h8v7",
   undo: "M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3",
   redo: "m15 14 5-5-5-5M20 9H10a6 6 0 0 0 0 12h3",
   slideAdd: "M3 5h18v12H3zM12 8v6M9 11h6",

@@ -10,7 +10,11 @@
     "redo": "Rehacer",
     "newSlide": "Nueva diapositiva",
     "text": "Texto",
-    "equation": "Ecuación"
+    "equation": "Ecuación",
+    "new": "Nueva",
+    "open": "Abrir…",
+    "save": "Guardar",
+    "saveAs": "Guardar como…"
   },
   "shapes": {
     "rect": "Rectángulo",
@@ -78,7 +82,11 @@
     "right": "Derecha"
   },
   "status": {
-    "slideOf": "Diapositiva {{current}} de {{total}}"
+    "slideOf": "Diapositiva {{current}} de {{total}}",
+    "unsaved": "Cambios sin guardar",
+    "saved": "Guardado",
+    "webVersion": "Versión web {{version}}",
+    "download": "Descargar la app"
   },
   "math": {
     "editor": "Editor de ecuaciones",
@@ -95,5 +103,24 @@
     "preambleHint": "Definiciones \\newcommand disponibles en todas las ecuaciones.",
     "insertInline": "Insertar fórmula",
     "inlineHint": "Truco: escribe $x^2$ en el texto para insertar una fórmula."
+  },
+  "file": {
+    "untitled": "Sin título",
+    "discardQuestion": "«{{name}}» tiene cambios sin guardar. ¿Descartarlos?",
+    "discard": "Descartar",
+    "cancel": "Cancelar",
+    "recoverQuestion": "Tiza se cerró sin guardar los cambios de «{{name}}». ¿Recuperarlos?",
+    "recover": "Recuperar"
+  },
+  "errors": {
+    "file": {
+      "io": "No se pudo leer o escribir el archivo.",
+      "notTiza": "Este archivo no es una presentación de Tiza.",
+      "invalid": "La presentación está dañada y no se puede abrir.",
+      "tooNew": "Esta presentación se hizo con una versión más nueva de Tiza (formato {{version}}). Actualiza Tiza para abrirla.",
+      "tooLarge": "El archivo es demasiado grande.",
+      "unsafePath": "El archivo contiene rutas inseguras y no se abrió.",
+      "badExtension": "El nombre del archivo debe terminar en .tiza."
+    }
   }
 }

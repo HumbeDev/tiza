@@ -9,6 +9,9 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 
 > 🚧 En desarrollo temprano. Especificación y hoja de ruta: [PROYECTO.md](PROYECTO.md).
 
+**Probar Tiza:** 🌐 [versión web](https://tiza.ingenieriafisica.online/) (sin instalar) ·
+⬇️ [instaladores para Windows, macOS y Linux](https://github.com/HumbeDev/tiza/releases/latest)
+
 **Stack:** Tauri 2 (Rust) + TypeScript + React · **Idiomas:** Español · Português (Brasil) · Français · English
 
 ## Estado
@@ -17,15 +20,15 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 | ---- | ---------------------------------------------------------- | ------------ |
 | 0    | Entorno, esqueleto Tauri, idiomas                          | ✅           |
 | 1    | Documento y lienzo básico (formas, texto, mover, deshacer) | ✅           |
-| 2    | **Texto enriquecido y ecuaciones LaTeX**                   | 🧪 en prueba |
-| 3    | Archivo `.tiza`, autosave y recuperación                   | —            |
-| 4    | **Servidor MCP para agentes de IA**                        | —            |
-| 5    | Imágenes y video                                           | —            |
-| 6    | Simulaciones HTML y páginas web                            | —            |
+| 2    | Texto enriquecido y ecuaciones LaTeX                       | ✅           |
+| 3    | **Archivos `.tiza`, instaladores y versión web**           | 🧪 en prueba |
+| 4    | **Simulaciones HTML** y páginas web                        | —            |
+| 5    | Servidor MCP para agentes de IA                            | —            |
+| 6    | Imágenes y video                                           | —            |
 | 7    | Modo presentación y vista del presentador                  | —            |
 | 8    | LaTeX completo (TikZ) con Tectonic                         | —            |
 | 9    | Exportar a PDF / HTML / PNG                                | —            |
-| 10   | Temas, pulido e instaladores                               | —            |
+| 10   | Temas, pulido e instaladores firmados                      | —            |
 
 ## Funcionalidades disponibles
 
@@ -64,6 +67,15 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 - Texto: tamaño, color, alineación.
 - Ecuación: tamaño y color.
 
+**Archivos `.tiza`**
+
+- Nueva, Abrir, Guardar, Guardar como (Ctrl+N / Ctrl+O / Ctrl+S / Ctrl+Shift+S).
+- Un solo archivo con toda la presentación; se abre igual en Windows, macOS, Linux y en la versión web.
+- Doble clic sobre un `.tiza` abre Tiza (con la app instalada).
+- Indicador de cambios sin guardar (● en el título y punto en el botón Guardar) y confirmación antes de perderlos.
+- **Recuperación**: si Tiza se cierra de golpe, al volver a abrirla ofrece recuperar los cambios (autoguardado cada 15 s).
+- En la versión web, Guardar descarga el archivo (en Chrome/Edge guarda directamente en el archivo elegido).
+
 **General**
 
 - **Deshacer/rehacer ilimitado** (un arrastre completo = un paso).
@@ -94,6 +106,14 @@ npm install
 npm run tauri dev   # abre la app
 npm test            # tests del frontend
 cd src-tauri && cargo test
+```
+
+### Publicar
+
+```sh
+scripts/release.sh 0.2.0   # sube versión, crea la etiqueta v0.2.0 y la sube a GitHub
+                           # → GitHub Actions compila los instaladores y crea el release
+scripts/deploy-web.sh      # compila la versión web y la sube a tiza.ingenieriafisica.online
 ```
 
 ### Traducciones

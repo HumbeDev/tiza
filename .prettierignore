@@ -1,7 +1,7 @@
 dist
-src-tauri/target
-src-tauri/gen
+src-tauri
 src/bindings
 package-lock.json
 PROYECTO.md
 LICENSE-*
+tests/fixtures

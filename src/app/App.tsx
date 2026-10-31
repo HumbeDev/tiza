@@ -1,5 +1,6 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import Canvas from "../canvas/Canvas";
+import { startSession } from "../files/session";
 import { currentSlide, useEditor } from "../store/editor";
 import PropertiesPanel from "./PropertiesPanel";
 import SlidePanel from "./SlidePanel";
@@ -11,6 +12,7 @@ const MathEditorPanel = lazy(() => import("../editors/MathEditorPanel"));
 
 export default function App() {
   useShortcuts();
+  useEffect(() => startSession(), []);
   return (
     <div className="editor">
       <Toolbar />

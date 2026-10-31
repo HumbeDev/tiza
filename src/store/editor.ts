@@ -19,8 +19,18 @@ interface HistoryEntry {
   mergeKey?: string;
 }
 
+export interface FileInfo {
+  /** Display name, e.g. "charla.tiza"; null for a new, never-saved presentation. */
+  name: string | null;
+  /** Desktop: absolute path. Web: unused. */
+  path: string | null;
+}
+
 export interface EditorState {
   doc: Presentation;
+  file: FileInfo;
+  /** History entry that matches what is on disk (null = the initial state). */
+  savedEntry: HistoryEntry | null;
   past: HistoryEntry[];
   future: HistoryEntry[];
   /** When false, the next change with the same mergeKey joins the last history entry. */
@@ -30,9 +40,11 @@ export interface EditorState {
   editingId: string | null;
 }
 
-function initialState(doc: Presentation): EditorState {
+function initialState(doc: Presentation, file: FileInfo = NO_FILE): EditorState {
   return {
     doc,
+    file,
+    savedEntry: null,
     past: [],
     future: [],
     sealed: true,
@@ -42,6 +54,8 @@ function initialState(doc: Presentation): EditorState {
   };
 }
 
+const NO_FILE: FileInfo = { name: null, path: null };
+
 export const useEditor = create<EditorState>(() =>
   initialState(createPresentation("", navigator.language)),
 );
@@ -49,8 +63,20 @@ export const useEditor = create<EditorState>(() =>
 const get = useEditor.getState;
 const set = useEditor.setState;
 
-export function loadDocument(doc: Presentation): void {
-  set(initialState(doc), true);
+export function loadDocument(doc: Presentation, file: FileInfo = NO_FILE): void {
+  set(initialState(doc, file), true);
+}
+
+/** True when the document differs from the last save (undoing back to it counts as clean). */
+export const isDirty = (s: EditorState): boolean => (s.past.at(-1) ?? null) !== s.savedEntry;
+
+export function markSaved(file: FileInfo): void {
+  set((s) => ({ file, savedEntry: s.past.at(-1) ?? null, sealed: true }));
+}
+
+/** Marks a restored document as unsaved so the user is reminded to save it. */
+export function markUnsaved(): void {
+  set({ savedEntry: { patches: [], inverse: [] } });
 }
 
 // Keep MathJax's global macros in sync with the document, including after undo/redo.
