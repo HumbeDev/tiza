@@ -2,6 +2,7 @@ pub mod archive;
 pub mod commands;
 pub mod document;
 pub mod error;
+pub mod gpu;
 pub mod sim;
 
 use tauri::Manager;
@@ -26,6 +27,7 @@ pub fn run() {
             commands::clear_recovery,
             commands::register_sim,
             commands::read_html_file,
+            commands::system_gpus,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

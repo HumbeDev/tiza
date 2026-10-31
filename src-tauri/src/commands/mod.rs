@@ -161,3 +161,9 @@ pub async fn read_html_file(path: PathBuf) -> AppResult<String> {
     })
     .await
 }
+
+/// Graphics cards reported by the operating system (see `gpu.rs` for why not WebGL).
+#[tauri::command]
+pub async fn system_gpus() -> AppResult<crate::gpu::GpuReport> {
+    blocking(|| Ok(crate::gpu::report())).await
+}
