@@ -291,7 +291,8 @@ Todo el JS de MathJax, MathLive y fuentes matemáticas va **empaquetado con la a
 
 Para incrustar simulaciones HTML/JS autocontenidas (por ejemplo, generadas con un asistente de IA o escritas a mano).
 
-- Se guardan como asset `.html`. Se renderizan en `<iframe sandbox="allow-scripts" srcdoc=…>`.
+- Por ahora el HTML se guarda **dentro del documento** (`SimElement.html`); pasará a asset `.html` cuando exista el sistema de assets (fase 6), con migración. En escritorio se sirve por el protocolo `tizasim://` (Rust, CSP propia por cabecera; un `srcdoc` heredaría la CSP de la app y bloquearía sus scripts); en la web, `srcdoc` + `<meta>` CSP. Siempre `<iframe sandbox="allow-scripts">`.
+- Tamaño: caja en la diapositiva (unidades lógicas) + **resolución interna** `viewWidth × viewHeight` (px CSS de la página) + ajuste `contain`/`fill`.
   - **Nunca** `allow-same-origin` junto con `allow-scripts`: la simulación no debe poder acceder a la app, a los archivos ni a otros elementos.
   - CSP estricta dentro del iframe: sin red por defecto (opción explícita del usuario para permitirla, p. ej. si la simulación carga una librería de un CDN). Mejor: ofrecer "empaquetar dependencias" descargando las librerías una vez dentro del asset.
 - Editor integrado (CodeMirror, HTML) con vista previa al lado, botón "recargar".
@@ -570,3 +571,12 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Ícono propio (`assets/icon.svg`). Workflows: `ci.yml` (tests en cada push) y `release.yml` (`tauri-action` v1, Windows/macOS Intel+ARM/Linux, release marcado como prerelease mientras sea 0.x).
 - Pendiente: archivos recientes; firma de código (Windows/macOS muestran aviso); actualizaciones automáticas.
 - `npm audit` reporta una vulnerabilidad moderada en `glob`/`rimraf` (dependencias del menú contextual de MathJax, que no usamos ni se empaqueta). Sin acción.
+
+### Fase 4 — 2026-10-30 🧪 (pendiente de prueba manual del autor; páginas web por URL aún no)
+- Elemento `sim` con HTML embebido, resolución interna y ajuste, red bloqueada por defecto (CSP en `src-tauri/src/sim.rs` y `src/elements/sim/csp.ts`, mantener iguales).
+- Protocolo `tizasim://` con caché LRU de 64 páginas identificadas por hash SHA-256.
+- Editor HTML (CodeMirror `lang-html`) con «Cargar archivo…» (comando `read_html_file`, solo `.html/.htm`, ≤ 20 MB) y «Recargar».
+- Doble clic = modo interactivo (iframe recibe el puntero). Arreglado: el doble clic nunca llegaba a los elementos por la captura de puntero del lienzo (afectaba también a textos y ecuaciones).
+- Miniaturas muestran un marcador, nunca la página en vivo.
+- Ejemplo: `examples/pendulo.html` (RK4, sliders de L, g, θ₀).
+- Pendiente: elemento `web` (URL en vivo), póster/captura para miniaturas y exportación, API `postMessage` de parámetros.
