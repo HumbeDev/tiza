@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { create } from "zustand";
 import { isDesktop } from "../files/platform";
-import { diagnosticsText, gpuInfo } from "./diagnostics";
+import type { GpuReport } from "../bindings/GpuReport";
+import { diagnosticsText, gpuInUse, gpuInfo, isLinux, systemGpus } from "./diagnostics";
 import Icon from "./Icon";
 import LanguagePicker from "./LanguagePicker";
 import { THEMES, setTheme, useTheme } from "./theme";
@@ -23,7 +24,14 @@ function Dialog() {
   const { t } = useTranslation();
   const theme = useTheme((s) => s.pref);
   const gpu = useMemo(() => gpuInfo(), []);
+  const [system, setSystem] = useState<GpuReport | null>(null);
   const [copied, setCopied] = useState(false);
+  const inUse = gpuInUse(system);
+  const other = system?.devices.find((d) => d !== inUse);
+
+  useEffect(() => {
+    void systemGpus().then(setSystem);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeSettings();
@@ -33,7 +41,7 @@ function Dialog() {
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(diagnosticsText(gpu));
+      await navigator.clipboard.writeText(diagnosticsText(gpu, system));
       setCopied(true);
     } catch {
       setCopied(false);
@@ -88,17 +96,53 @@ function Dialog() {
             <dd>
               {__APP_VERSION__} · {t(isDesktop ? "settings.desktop" : "settings.web")}
             </dd>
-            <dt>{t("settings.gpu")}</dt>
-            <dd>{gpu.renderer ?? t("settings.unknown")}</dd>
-            <dt>{t("settings.acceleration")}</dt>
-            <dd className={gpu.software ? "warn" : "ok"}>
-              {gpu.software ? t("settings.software") : t("settings.hardware")}
+            {system && system.devices.length > 0 && (
+              <>
+                <dt>{t("settings.gpus")}</dt>
+                <dd>
+                  <ul className="gpu-list">
+                    {system.devices.map((d, i) => (
+                      <li key={i}>
+                        {d.vendor} · {d.name}
+                        {d.driver && <span className="muted"> ({d.driver})</span>}
+                        {d.primary && <span className="tag">{t("settings.primary")}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </>
+            )}
+            {inUse && (
+              <>
+                <dt>{t("settings.inUse")}</dt>
+                <dd className="ok">{inUse.name}</dd>
+              </>
+            )}
+            <dt>{t("settings.webEngine")}</dt>
+            <dd>
+              {gpu.renderer ?? t("settings.unknown")}
+              {gpu.masked && <span className="muted"> — {t("settings.masked")}</span>}
             </dd>
+            {!gpu.masked && (
+              <>
+                <dt>{t("settings.acceleration")}</dt>
+                <dd className={gpu.software ? "warn" : "ok"}>
+                  {gpu.software ? t("settings.software") : t("settings.hardware")}
+                </dd>
+              </>
+            )}
             <dt>WebGL</dt>
             <dd>
               {gpu.webgl ? "WebGL ✓" : "WebGL ✗"} · {gpu.webgl2 ? "WebGL 2 ✓" : "WebGL 2 ✗"}
             </dd>
           </dl>
+          {inUse && other && isLinux() && (
+            <p className="hint">
+              {system?.offloadRequested
+                ? t("settings.offloadOn", { name: inUse.name })
+                : t("settings.offloadHint", { name: inUse.name, other: other.name })}
+            </p>
+          )}
           <p className="hint">{t("settings.gpuHint")}</p>
           <button type="button" className="small-button" onClick={copy}>
             <Icon name="copy" /> {copied ? t("settings.copied") : t("settings.copy")}

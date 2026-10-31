@@ -184,13 +184,19 @@
     "version": "Versión",
     "desktop": "app de escritorio",
     "web": "versión web",
-    "gpu": "Gráficos (GPU)",
     "unknown": "Desconocido",
     "acceleration": "Aceleración",
     "software": "Sin aceleración por GPU (dibujo por software)",
     "hardware": "Acelerado por GPU",
-    "gpuHint": "Tiza dibuja con el motor web del sistema, que usa la GPU. En portátiles con dos GPU se usa la integrada por defecto; es suficiente para diapositivas. Para simulaciones 3D pesadas en Linux puedes abrir Tiza con «prime-run tiza»; en Windows elige la GPU en Configuración → Pantalla → Gráficos.",
+    "gpuHint": "Tiza dibuja con el motor web del sistema, que usa la GPU. La integrada es suficiente para diapositivas, ecuaciones y simulaciones 2D. En Windows puedes elegir la GPU en Configuración → Pantalla → Gráficos.",
     "copy": "Copiar diagnóstico",
-    "copied": "Copiado ✓"
+    "copied": "Copiado ✓",
+    "gpus": "Tarjetas gráficas",
+    "primary": "principal",
+    "inUse": "En uso por Tiza",
+    "webEngine": "El motor web informa",
+    "masked": "nombre genérico que WebKit muestra por privacidad, no es tu GPU real",
+    "offloadHint": "Tiza está usando la {{name}}. Para usar la {{other}} en simulaciones 3D pesadas, ábrela con «prime-run tiza».",
+    "offloadOn": "Abierta con la GPU dedicada ({{name}})."
   }
 }

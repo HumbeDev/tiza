@@ -1023,3 +1023,26 @@ input[type="color"] {
   align-items: center;
   gap: 4px;
 }
+
+.gpu-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gpu-list li + li {
+  margin-top: 2px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.tag {
+  margin-left: 6px;
+  padding: 0 6px;
+  font-size: 11px;
+  border-radius: 8px;
+  color: var(--accent);
+  background: var(--accent-soft);
+}

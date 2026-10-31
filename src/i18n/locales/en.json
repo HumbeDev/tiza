@@ -184,13 +184,19 @@
     "version": "Version",
     "desktop": "desktop app",
     "web": "web version",
-    "gpu": "Graphics (GPU)",
     "unknown": "Unknown",
     "acceleration": "Acceleration",
     "software": "No GPU acceleration (software rendering)",
     "hardware": "GPU accelerated",
-    "gpuHint": "Tiza draws through the system's web engine, which uses the GPU. On laptops with two GPUs the integrated one is used by default; it is enough for slides. For heavy 3D simulations on Linux you can start Tiza with “prime-run tiza”; on Windows choose the GPU in Settings → Display → Graphics.",
+    "gpuHint": "Tiza draws through the system's web engine, which uses the GPU. The integrated GPU is enough for slides, equations and 2D simulations. On Windows you can choose the GPU in Settings → Display → Graphics.",
     "copy": "Copy diagnostics",
-    "copied": "Copied ✓"
+    "copied": "Copied ✓",
+    "gpus": "Graphics cards",
+    "primary": "primary",
+    "inUse": "Used by Tiza",
+    "webEngine": "Web engine reports",
+    "masked": "generic name WebKit shows for privacy, not your real GPU",
+    "offloadHint": "Tiza is using the {{name}}. To use the {{other}} for heavy 3D simulations, start it with “prime-run tiza”.",
+    "offloadOn": "Started with the dedicated GPU ({{name}})."
   }
 }
