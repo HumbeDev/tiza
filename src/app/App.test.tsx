@@ -53,7 +53,8 @@ describe("App", () => {
 
   it("switches language from the settings dialog", async () => {
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+    fireEvent.click(screen.getByRole("button", { name: "File" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /Settings/ }));
     await act(async () => {
       fireEvent.change(screen.getByRole("combobox", { name: "Language" }), {
         target: { value: "pt-BR" },
