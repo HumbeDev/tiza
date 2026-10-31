@@ -189,8 +189,9 @@ export default function Canvas() {
   }
 
   function onDoubleClick(e: React.MouseEvent) {
-    const id = (e.target as HTMLElement).closest<HTMLElement>("[data-element-id]")?.dataset
-      .elementId;
+    // Pointer capture retargets the click to the viewport: find what is under the cursor.
+    const hit = document.elementFromPoint(e.clientX, e.clientY);
+    const id = hit?.closest<HTMLElement>("[data-element-id]")?.dataset.elementId;
     const el = id && currentSlide(useEditor.getState()).elements.find((x) => x.id === id);
     if (el && el.kind !== "shape" && !el.locked) startEditing(el.id);
   }

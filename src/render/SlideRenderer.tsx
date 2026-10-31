@@ -2,6 +2,7 @@ import { memo } from "react";
 import type { Element, Page, Slide } from "../document";
 import MathView from "../elements/math/MathView";
 import ShapeView from "../elements/ShapeView";
+import SimView from "../elements/sim/SimView";
 import TextView from "../elements/TextView";
 
 export type RenderMode = "edit" | "thumb";
@@ -30,7 +31,7 @@ function SlideRenderer({ slide, page, mode, editingId }: Props) {
 function ElementView({ el, mode, editing }: { el: Element; mode: RenderMode; editing: boolean }) {
   return (
     <div
-      className="element"
+      className={editing && el.kind === "sim" ? "element interacting" : "element"}
       data-element-id={mode === "edit" ? el.id : undefined}
       style={{
         left: el.x,
@@ -45,8 +46,10 @@ function ElementView({ el, mode, editing }: { el: Element; mode: RenderMode; edi
         <ShapeView el={el} />
       ) : el.kind === "text" ? (
         <TextView el={el} editing={editing} />
-      ) : (
+      ) : el.kind === "math" ? (
         <MathView el={el} />
+      ) : (
+        <SimView el={el} mode={mode} interactive={editing} />
       )}
     </div>
   );

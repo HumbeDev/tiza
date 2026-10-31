@@ -1,4 +1,5 @@
 import { autocompletion, closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
+import { html } from "@codemirror/lang-html";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import {
   bracketMatching,
@@ -7,12 +8,18 @@ import {
   syntaxHighlighting,
 } from "@codemirror/language";
 import { stex } from "@codemirror/legacy-modes/mode/stex";
-import { EditorState } from "@codemirror/state";
+import { EditorState, type Extension } from "@codemirror/state";
 import { EditorView, keymap, placeholder } from "@codemirror/view";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { latexCompletions } from "./latexCompletions";
 
+const LANGUAGES: Record<"latex" | "html", () => Extension[]> = {
+  latex: () => [StreamLanguage.define(stex), autocompletion({ override: [latexCompletions] })],
+  html: () => [html(), autocompletion()],
+};
+
 interface Props {
+  language: keyof typeof LANGUAGES;
   value: string;
   onChange: (value: string) => void;
   onDone?: () => void;
@@ -20,7 +27,8 @@ interface Props {
   autoFocus?: boolean;
 }
 
-export default function LatexCodeEditor({
+export default function CodeEditor({
+  language,
   value,
   onChange,
   onDone,
@@ -44,8 +52,7 @@ export default function LatexCodeEditor({
           history(),
           closeBrackets(),
           bracketMatching(),
-          autocompletion({ override: [latexCompletions] }),
-          StreamLanguage.define(stex),
+          ...LANGUAGES[language](),
           syntaxHighlighting(defaultHighlightStyle),
           EditorView.lineWrapping,
           placeholder(placeholderText ?? ""),
@@ -76,5 +83,5 @@ export default function LatexCodeEditor({
     }
   }, [value]);
 
-  return <div className="latex-code-editor" ref={host} />;
+  return <div className={`code-editor ${language}`} ref={host} />;
 }

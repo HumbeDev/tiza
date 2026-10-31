@@ -92,7 +92,7 @@ export function validate(doc: any): Presentation {
   for (const slide of doc.slides) {
     if (typeof slide?.id !== "string" || !Array.isArray(slide.elements)) fail("slide");
     for (const el of slide.elements) {
-      if (typeof el?.id !== "string" || !["shape", "text", "math"].includes(el.kind)) {
+      if (typeof el?.id !== "string" || !["shape", "text", "math", "sim"].includes(el.kind)) {
         fail(`element ${String(el?.id)}`);
       }
     }
@@ -101,7 +101,10 @@ export function validate(doc: any): Presentation {
   for (const slide of doc.slides) {
     slide.notes ??= "";
     slide.hidden ??= false;
-    for (const el of slide.elements) el.locked ??= false;
+    for (const el of slide.elements) {
+      el.locked ??= false;
+      if (el.kind === "sim") el.allowNetwork ??= false;
+    }
   }
   return doc as Presentation;
 }
