@@ -3,7 +3,7 @@ import { type ReactNode, useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
-import type { Element, ShapeKind, SimFit, TextAlign } from "../document";
+import type { Element, ShapeKind, SimFit, TextAlign, TransitionKind } from "../document";
 import { reloadSim } from "../elements/sim/reload";
 import {
   type Alignment,
@@ -19,6 +19,7 @@ import {
   setMathFontSize,
   setPreamble,
   setSlideBackground,
+  setSlideTransition,
   startEditing,
   stopEditing,
   updateElements,
@@ -96,6 +97,8 @@ export default function PropertiesPanel() {
 function SlideProperties() {
   const { t } = useTranslation();
   const background = useEditor((s) => currentSlide(s).background ?? "#ffffff");
+  const slide = useEditor(currentSlide);
+  const transition = slide.transition ?? { kind: "none" as const, durationMs: 400 };
   const preamble = useEditor((s) => s.doc.latex.preamble);
   useSyncExternalStore(subscribeMath, getMathVersion);
   const preambleError = getPreambleError();
@@ -105,6 +108,32 @@ function SlideProperties() {
         <Field label={t("props.background")}>
           <ColorInput value={background} onChange={setSlideBackground} />
         </Field>
+        <Field label={t("present.transition")}>
+          <select
+            value={transition.kind}
+            onChange={(e) =>
+              setSlideTransition(slide.id, {
+                ...transition,
+                kind: e.target.value as TransitionKind,
+              })
+            }
+          >
+            {(["none", "fade", "slide"] as const).map((k) => (
+              <option key={k} value={k}>
+                {t(`present.transitions.${k}`)}
+              </option>
+            ))}
+          </select>
+        </Field>
+        {transition.kind !== "none" && (
+          <NumberField
+            label={t("present.duration")}
+            value={transition.durationMs}
+            min={50}
+            max={3000}
+            onChange={(durationMs) => setSlideTransition(slide.id, { ...transition, durationMs })}
+          />
+        )}
         <p className="hint">{t("props.noSelection")}</p>
       </Section>
       <Section id="math.preamble" title={t("math.preamble")}>

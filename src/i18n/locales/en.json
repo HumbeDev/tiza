@@ -37,7 +37,11 @@
     "hide": "Hide in presentation",
     "moveUp": "Move up",
     "moveDown": "Move down",
-    "hiddenHint": "Hidden: skipped when presenting"
+    "hiddenHint": "Hidden: skipped when presenting",
+    "newBlank": "New blank slide",
+    "useAsTemplate": "Use as template for new slides",
+    "template": "Template",
+    "templateHint": "New slides start as a copy of this one"
   },
   "props": {
     "panel": "Properties",
@@ -201,5 +205,38 @@
     "restartQuestion": "Tiza will restart to use the selected graphics card. Your unsaved changes will be kept.",
     "restart": "Restart",
     "gpuHelp": "Tiza draws through the system's web engine, which uses the GPU. The integrated GPU is enough for slides, equations and 2D simulations and saves battery. Choose High performance for heavy 3D simulations. If the dedicated GPU fails to start, Tiza goes back to Automatic by itself."
+  },
+  "notes": {
+    "title": "Speaker notes",
+    "placeholder": "Notes for this slide (only you see them, in the presenter view)…"
+  },
+  "present": {
+    "present": "Present",
+    "fromBeginning": "From the beginning",
+    "fromCurrent": "From this slide",
+    "rehearse": "Rehearse in windows",
+    "loading": "Loading…",
+    "timer": "Elapsed time",
+    "pause": "Pause",
+    "resume": "Resume",
+    "reset": "Reset",
+    "prev": "Previous",
+    "next": "Next",
+    "black": "Black",
+    "white": "White",
+    "end": "End",
+    "nextSlide": "Next slide",
+    "endOfShow": "End of the presentation",
+    "noNotes": "No notes for this slide.",
+    "blackShowing": "The audience sees a black screen",
+    "whiteShowing": "The audience sees a white screen",
+    "openPresenter": "Presenter view",
+    "transition": "Transition",
+    "duration": "Duration (ms)",
+    "transitions": {
+      "none": "None",
+      "fade": "Fade",
+      "slide": "Slide in"
+    }
   }
 }

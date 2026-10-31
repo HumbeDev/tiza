@@ -23,6 +23,7 @@ export default function SlidePanel() {
   const slides = useEditor((s) => s.doc.slides);
   const page = useEditor((s) => s.doc.page);
   const currentId = useEditor((s) => s.currentSlideId);
+  const templateId = useEditor((s) => s.doc.templateSlideId);
   const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
   const drag = useRef<{ from: number; startY: number; active: boolean } | null>(null);
   const [dropAt, setDropAt] = useState<number | null>(null);
@@ -99,7 +100,14 @@ export default function SlidePanel() {
                 </span>
               )}
             </span>
-            <Thumbnail slide={slide} page={page} />
+            <div className="thumb-wrap">
+              <Thumbnail slide={slide} page={page} />
+              {slide.id === templateId && (
+                <span className="template-badge" title={t("slides.templateHint")}>
+                  {t("slides.template")}
+                </span>
+              )}
+            </div>
           </li>
         ))}
       </ol>

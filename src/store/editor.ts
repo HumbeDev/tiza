@@ -1,6 +1,6 @@
 import { applyPatches, enablePatches, type Draft, type Patch, produceWithPatches } from "immer";
 import { create } from "zustand";
-import type { Element, Presentation, Slide } from "../document";
+import type { Element, Presentation, Slide, Transition } from "../document";
 import { createMath } from "../document/factory";
 import { aabb, union } from "../document/geometry";
 import {
@@ -213,8 +213,31 @@ export function stopEditing(): void {
 
 // ---------------------------------------------------------------- slides
 
+/** A copy of `source` with fresh ids, as a new slide. */
+function cloneSlide(source: Slide): Slide {
+  const copy: Slide = structuredClone(source);
+  copy.id = newId();
+  copy.elements = copy.elements.map((e) => ({ ...e, id: newId() }));
+  return copy;
+}
+
+/** New slide after the current one; a copy of the template slide if the file has one. */
 export function addSlide(): void {
-  const slide = createSlide();
+  const { doc } = get();
+  const template = doc.templateSlideId
+    ? doc.slides.find((s) => s.id === doc.templateSlideId)
+    : undefined;
+  insertSlideAfterCurrent(
+    template ? { ...cloneSlide(template), notes: "", hidden: false } : createSlide(),
+  );
+}
+
+/** New empty slide, ignoring the template. */
+export function addBlankSlide(): void {
+  insertSlideAfterCurrent(createSlide());
+}
+
+function insertSlideAfterCurrent(slide: Slide): void {
   const index = get().doc.slides.findIndex((s) => s.id === get().currentSlideId);
   change((doc) => {
     doc.slides.splice(index + 1, 0, slide);
@@ -226,9 +249,7 @@ export function duplicateSlide(id: string): void {
   const s = get();
   const index = s.doc.slides.findIndex((sl) => sl.id === id);
   if (index < 0) return;
-  const copy: Slide = structuredClone(s.doc.slides[index]);
-  copy.id = newId();
-  copy.elements = copy.elements.map((e) => ({ ...e, id: newId() }));
+  const copy = cloneSlide(s.doc.slides[index]);
   change((doc) => {
     doc.slides.splice(index + 1, 0, copy);
   });
@@ -242,6 +263,7 @@ export function deleteSlide(id: string): void {
   if (index < 0) return;
   change((doc) => {
     doc.slides.splice(index, 1);
+    if (doc.templateSlideId === id) delete doc.templateSlideId;
   });
   if (s.currentSlideId === id) {
     const slides = get().doc.slides;
@@ -255,6 +277,30 @@ export function moveSlide(from: number, to: number): void {
   change((doc) => {
     const [slide] = doc.slides.splice(from, 1);
     doc.slides.splice(to, 0, slide);
+  });
+}
+
+/** Makes `id` the slide every new slide copies (or clears it with null). */
+export function setTemplateSlide(id: string | null): void {
+  change((doc) => {
+    if (id) doc.templateSlideId = id;
+    else delete doc.templateSlideId;
+  });
+}
+
+export function setSlideNotes(id: string, notes: string, mergeKey = `notes:${id}`): void {
+  change((doc) => {
+    const slide = doc.slides.find((sl) => sl.id === id);
+    if (slide) slide.notes = notes;
+  }, mergeKey);
+}
+
+export function setSlideTransition(id: string, transition: Transition | null): void {
+  change((doc) => {
+    const slide = doc.slides.find((sl) => sl.id === id);
+    if (!slide) return;
+    if (transition && transition.kind !== "none") slide.transition = transition;
+    else delete slide.transition;
   });
 }
 

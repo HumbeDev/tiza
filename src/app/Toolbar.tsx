@@ -18,6 +18,7 @@ import Icon, { type IconName } from "./Icon";
 import { type MenuItem, MenuButton, separator } from "./menu/Menu";
 import { THEME_ICONS, openSettings } from "./SettingsDialog";
 import { THEMES, setTheme, useTheme } from "./theme";
+import { presentFromEditor } from "../present/startFromEditor";
 
 const SHAPES: ShapeKind[] = ["rect", "ellipse", "line", "arrow"];
 
@@ -71,6 +72,26 @@ export default function Toolbar() {
       onSelect: () => addElement(createShape(shape, cx, cy)),
     }));
 
+  const presentMenu = (): MenuItem[] => [
+    {
+      label: t("present.fromBeginning"),
+      icon: "play",
+      shortcut: "F5",
+      onSelect: () => presentFromEditor("beginning"),
+    },
+    {
+      label: t("present.fromCurrent"),
+      shortcut: "Shift+F5",
+      onSelect: () => presentFromEditor("current"),
+    },
+    separator,
+    {
+      label: t("present.rehearse"),
+      icon: "monitor",
+      onSelect: () => presentFromEditor("current", true),
+    },
+  ];
+
   return (
     <header className="toolbar">
       <span className="brand">{t("app.name")}</span>
@@ -108,6 +129,9 @@ export default function Toolbar() {
         <MenuButton label={t("toolbar.shapes")} icon="shapes" items={shapeMenu} />
       </div>
       <div className="spacer" />
+      <div className="present-button">
+        <MenuButton label={t("present.present")} icon="play" items={presentMenu} />
+      </div>
       <ToolButton
         icon={THEME_ICONS[theme]}
         label={`${t("settings.theme")}: ${t(`settings.themes.${theme}`)} → ${t(`settings.themes.${nextTheme}`)}`}

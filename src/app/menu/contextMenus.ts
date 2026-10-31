@@ -1,6 +1,7 @@
 // Right-click menus for elements, the empty canvas and slide thumbnails.
 import i18n from "../../i18n";
 import {
+  addBlankSlide,
   addSlide,
   copySelected,
   currentSlide,
@@ -19,6 +20,7 @@ import {
   selectedElements,
   setLocked,
   setSlideHidden,
+  setTemplateSlide,
   startEditing,
   useEditor,
 } from "../../store/editor";
@@ -117,7 +119,9 @@ export function canvasMenu(): MenuItem[] {
 }
 
 export function slideMenu(slideId: string): MenuItem[] {
-  const slides = state().doc.slides;
+  const { doc } = state();
+  const slides = doc.slides;
+  const isTemplate = doc.templateSlideId === slideId;
   const index = slides.findIndex((s) => s.id === slideId);
   const slide = slides[index];
   if (!slide) return [];
@@ -130,7 +134,23 @@ export function slideMenu(slideId: string): MenuItem[] {
         addSlide();
       },
     },
+    ...(doc.templateSlideId
+      ? [
+          {
+            label: t("slides.newBlank"),
+            onSelect: () => {
+              selectSlide(slideId);
+              addBlankSlide();
+            },
+          },
+        ]
+      : []),
     { label: t("slides.duplicate"), icon: "copy", onSelect: () => duplicateSlide(slideId) },
+    {
+      label: t("slides.useAsTemplate"),
+      checked: isTemplate,
+      onSelect: () => setTemplateSlide(isTemplate ? null : slideId),
+    },
     {
       label: t(slide.hidden ? "slides.show" : "slides.hide"),
       icon: slide.hidden ? "eye" : "eyeOff",

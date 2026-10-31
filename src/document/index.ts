@@ -17,5 +17,7 @@ export type { Slide } from "../bindings/Slide";
 export type { Stroke } from "../bindings/Stroke";
 export type { TextAlign } from "../bindings/TextAlign";
 export type { TextElement } from "../bindings/TextElement";
+export type { Transition } from "../bindings/Transition";
+export type { TransitionKind } from "../bindings/TransitionKind";
 
 export const SCHEMA_VERSION = 1;

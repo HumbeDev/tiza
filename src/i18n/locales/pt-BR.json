@@ -37,7 +37,11 @@
     "hide": "Ocultar na apresentação",
     "moveUp": "Mover para cima",
     "moveDown": "Mover para baixo",
-    "hiddenHint": "Oculto: pulado ao apresentar"
+    "hiddenHint": "Oculto: pulado ao apresentar",
+    "newBlank": "Novo slide em branco",
+    "useAsTemplate": "Usar como modelo para novos slides",
+    "template": "Modelo",
+    "templateHint": "Novos slides começam como uma cópia deste"
   },
   "props": {
     "panel": "Propriedades",
@@ -201,5 +205,38 @@
     "restartQuestion": "O Tiza será reiniciado para usar a placa de vídeo escolhida. Suas alterações não salvas serão mantidas.",
     "restart": "Reiniciar",
     "gpuHelp": "O Tiza desenha com o motor web do sistema, que usa a GPU. A integrada basta para slides, equações e simulações 2D, e economiza bateria. Escolha Alto desempenho para simulações 3D pesadas. Se a GPU dedicada não conseguir iniciar, o Tiza volta sozinho para Automática."
+  },
+  "notes": {
+    "title": "Notas do apresentador",
+    "placeholder": "Notas deste slide (só você as vê, na visão do apresentador)…"
+  },
+  "present": {
+    "present": "Apresentar",
+    "fromBeginning": "Do início",
+    "fromCurrent": "Deste slide",
+    "rehearse": "Ensaiar em janelas",
+    "loading": "Carregando…",
+    "timer": "Tempo decorrido",
+    "pause": "Pausar",
+    "resume": "Retomar",
+    "reset": "Zerar",
+    "prev": "Anterior",
+    "next": "Próximo",
+    "black": "Preto",
+    "white": "Branco",
+    "end": "Encerrar",
+    "nextSlide": "Próximo slide",
+    "endOfShow": "Fim da apresentação",
+    "noNotes": "Este slide não tem notas.",
+    "blackShowing": "O público vê uma tela preta",
+    "whiteShowing": "O público vê uma tela branca",
+    "openPresenter": "Visão do apresentador",
+    "transition": "Transição",
+    "duration": "Duração (ms)",
+    "transitions": {
+      "none": "Nenhuma",
+      "fade": "Esmaecer",
+      "slide": "Deslizar"
+    }
   }
 }

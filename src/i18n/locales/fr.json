@@ -37,7 +37,11 @@
     "hide": "Masquer pendant la présentation",
     "moveUp": "Monter",
     "moveDown": "Descendre",
-    "hiddenHint": "Masquée : ignorée pendant la présentation"
+    "hiddenHint": "Masquée : ignorée pendant la présentation",
+    "newBlank": "Nouvelle diapositive vide",
+    "useAsTemplate": "Utiliser comme modèle des nouvelles diapositives",
+    "template": "Modèle",
+    "templateHint": "Les nouvelles diapositives commencent comme une copie de celle-ci"
   },
   "props": {
     "panel": "Propriétés",
@@ -201,5 +205,38 @@
     "restartQuestion": "Tiza va redémarrer pour utiliser la carte graphique choisie. Vos modifications non enregistrées sont conservées.",
     "restart": "Redémarrer",
     "gpuHelp": "Tiza dessine avec le moteur web du système, qui utilise le GPU. Le GPU intégré suffit pour les diapositives, les équations et les simulations 2D, et économise la batterie. Choisissez Hautes performances pour des simulations 3D lourdes. Si le GPU dédié ne démarre pas, Tiza revient tout seul à Automatique."
+  },
+  "notes": {
+    "title": "Notes de l’orateur",
+    "placeholder": "Notes de cette diapositive (vous seul les voyez, dans le mode présentateur)…"
+  },
+  "present": {
+    "present": "Présenter",
+    "fromBeginning": "Depuis le début",
+    "fromCurrent": "Depuis cette diapositive",
+    "rehearse": "Répéter en fenêtres",
+    "loading": "Chargement…",
+    "timer": "Temps écoulé",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "reset": "Remettre à zéro",
+    "prev": "Précédente",
+    "next": "Suivante",
+    "black": "Noir",
+    "white": "Blanc",
+    "end": "Terminer",
+    "nextSlide": "Diapositive suivante",
+    "endOfShow": "Fin de la présentation",
+    "noNotes": "Cette diapositive n’a pas de notes.",
+    "blackShowing": "Le public voit un écran noir",
+    "whiteShowing": "Le public voit un écran blanc",
+    "openPresenter": "Mode présentateur",
+    "transition": "Transition",
+    "duration": "Durée (ms)",
+    "transitions": {
+      "none": "Aucune",
+      "fade": "Fondu",
+      "slide": "Glissement"
+    }
   }
 }

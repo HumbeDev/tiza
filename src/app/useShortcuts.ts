@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { newPresentation, openPresentation, save, saveAs } from "../files/session";
+import { presentFromEditor } from "../present/startFromEditor";
 import { openSettings } from "./SettingsDialog";
 import {
   addSlide,
@@ -37,6 +38,12 @@ export function useShortcuts(): void {
     function onKeyDown(e: KeyboardEvent) {
       const mod = e.ctrlKey || e.metaKey;
       const key = e.key.toLowerCase();
+
+      if (e.key === "F5") {
+        e.preventDefault();
+        void presentFromEditor(e.shiftKey ? "current" : "beginning");
+        return;
+      }
 
       if (mod && e.key === ",") {
         e.preventDefault();

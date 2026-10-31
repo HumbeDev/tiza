@@ -5,7 +5,11 @@ import ShapeView from "../elements/ShapeView";
 import SimView from "../elements/sim/SimView";
 import TextView from "../elements/TextView";
 
-export type RenderMode = "edit" | "thumb";
+/**
+ * edit: the editor canvas · thumb: thumbnails (no live pages) · present: the audience
+ * (pages interactive) · preview: presenter view (pages live but not interactive).
+ */
+export type RenderMode = "edit" | "thumb" | "present" | "preview";
 
 interface Props {
   slide: Slide;
@@ -49,7 +53,7 @@ function ElementView({ el, mode, editing }: { el: Element; mode: RenderMode; edi
       ) : el.kind === "math" ? (
         <MathView el={el} />
       ) : (
-        <SimView el={el} mode={mode} interactive={editing} />
+        <SimView el={el} mode={mode} interactive={editing || mode === "present"} />
       )}
     </div>
   );

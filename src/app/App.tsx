@@ -5,6 +5,9 @@ import { currentSlide, useEditor } from "../store/editor";
 import PropertiesPanel from "./PropertiesPanel";
 import SlidePanel from "./SlidePanel";
 import { ContextMenuHost } from "./menu/Menu";
+import NotesPanel from "./NotesPanel";
+import WebPresentation from "../present/WebPresentation";
+import { useEndOfPresentation } from "../present/startFromEditor";
 import SettingsDialog from "./SettingsDialog";
 import StatusBar from "./StatusBar";
 import Toolbar from "./Toolbar";
@@ -16,18 +19,23 @@ const HtmlEditorPanel = lazy(() => import("../editors/HtmlEditorPanel"));
 export default function App() {
   useShortcuts();
   useEffect(() => startSession(), []);
+  useEndOfPresentation();
   return (
     <div className="editor">
       <Toolbar />
       <SlidePanel />
       <main className="canvas-area">
-        <Canvas />
-        <MathEditorHost />
-        <HtmlEditorHost />
+        <div className="canvas-wrap">
+          <Canvas />
+          <MathEditorHost />
+          <HtmlEditorHost />
+        </div>
+        <NotesPanel />
       </main>
       <PropertiesPanel />
       <StatusBar />
       <ContextMenuHost />
+      <WebPresentation />
       <SettingsDialog />
     </div>
   );

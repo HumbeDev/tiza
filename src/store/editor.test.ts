@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createPresentation, createShape, createText } from "../document/factory";
 import {
+  addBlankSlide,
   addElement,
   addSlide,
   change,
@@ -16,6 +17,9 @@ import {
   reorderSelected,
   seal,
   select,
+  setSlideNotes,
+  setSlideTransition,
+  setTemplateSlide,
   undo,
   useEditor,
 } from "./editor";
@@ -167,5 +171,50 @@ describe("slides", () => {
     undo();
     expect(state().doc.slides).toHaveLength(1);
     expect(state().currentSlideId).toBe(state().doc.slides[0].id);
+  });
+});
+
+describe("template slide", () => {
+  it("copies the template into new slides with fresh ids", () => {
+    const logo = createShape("rect", 100, 100);
+    addElement(logo);
+    const templateId = state().currentSlideId;
+    setTemplateSlide(templateId);
+    addSlide();
+    const added = slide();
+    expect(added.id).not.toBe(templateId);
+    expect(added.elements).toHaveLength(1);
+    expect(added.elements[0].id).not.toBe(logo.id);
+    addBlankSlide();
+    expect(slide().elements).toHaveLength(0);
+  });
+
+  it("forgets the template when its slide is deleted", () => {
+    addSlide();
+    const id = state().currentSlideId;
+    setTemplateSlide(id);
+    deleteSlide(id);
+    expect(state().doc.templateSlideId).toBeUndefined();
+    undo();
+    expect(state().doc.templateSlideId).toBe(id);
+  });
+});
+
+describe("notes and transitions", () => {
+  it("merges typing into one undo step", () => {
+    const id = state().currentSlideId;
+    for (const n of ["H", "Ho", "Hola"]) setSlideNotes(id, n);
+    seal();
+    expect(slide().notes).toBe("Hola");
+    undo();
+    expect(slide().notes).toBe("");
+  });
+
+  it("removes the transition when set to none", () => {
+    const id = state().currentSlideId;
+    setSlideTransition(id, { kind: "fade", durationMs: 300 });
+    expect(slide().transition?.kind).toBe("fade");
+    setSlideTransition(id, { kind: "none", durationMs: 300 });
+    expect(slide().transition).toBeUndefined();
   });
 });
