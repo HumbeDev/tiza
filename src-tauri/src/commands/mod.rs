@@ -54,6 +54,9 @@ pub fn startup_file() -> Option<PathBuf> {
 pub struct RecoveryInfo {
     /// File the unsaved changes belong to, if it had been saved before.
     pub path: Option<PathBuf>,
+    /// Written by Tiza itself just before restarting: restore without asking.
+    #[serde(default)]
+    pub auto_restore: bool,
     /// ISO 8601 time of the autosave.
     pub saved_at: String,
 }
@@ -105,6 +108,7 @@ pub async fn read_recovery(app: AppHandle) -> AppResult<Option<Recovery>> {
             .and_then(|b| serde_json::from_slice(&b).ok())
             .unwrap_or(RecoveryInfo {
                 path: None,
+                auto_restore: false,
                 saved_at: String::new(),
             });
         match archive::load(&doc_path) {
@@ -166,4 +170,30 @@ pub async fn read_html_file(path: PathBuf) -> AppResult<String> {
 #[tauri::command]
 pub async fn system_gpus() -> AppResult<crate::gpu::GpuReport> {
     blocking(|| Ok(crate::gpu::report())).await
+}
+
+// ---------------------------------------------------------------- GPU preference
+
+#[tauri::command]
+pub fn get_gpu_preference() -> crate::settings::GpuPreference {
+    crate::settings::load().gpu
+}
+
+#[tauri::command]
+pub fn set_gpu_preference(preference: crate::settings::GpuPreference) -> AppResult<()> {
+    let mut settings = crate::settings::load();
+    settings.gpu = preference;
+    crate::settings::save(&settings)?;
+    Ok(())
+}
+
+/// The UI is up: a launch with the chosen GPU worked (see `settings::apply_gpu_preference`).
+#[tauri::command]
+pub fn confirm_gpu_launch() {
+    crate::settings::confirm_launch();
+}
+
+#[tauri::command]
+pub fn restart_app(app: AppHandle) {
+    app.restart();
 }

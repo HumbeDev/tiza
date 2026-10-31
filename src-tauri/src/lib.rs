@@ -3,12 +3,14 @@ pub mod commands;
 pub mod document;
 pub mod error;
 pub mod gpu;
+pub mod settings;
 pub mod sim;
 
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    settings::apply_gpu_preference();
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .manage(sim::SimPages::default())
@@ -28,6 +30,10 @@ pub fn run() {
             commands::register_sim,
             commands::read_html_file,
             commands::system_gpus,
+            commands::get_gpu_preference,
+            commands::set_gpu_preference,
+            commands::confirm_gpu_launch,
+            commands::restart_app,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
