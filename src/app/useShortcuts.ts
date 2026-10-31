@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { newPresentation, openPresentation, save, saveAs } from "../files/session";
+import { openSettings } from "./SettingsDialog";
 import {
   addSlide,
   copySelected,
@@ -36,6 +37,12 @@ export function useShortcuts(): void {
     function onKeyDown(e: KeyboardEvent) {
       const mod = e.ctrlKey || e.metaKey;
       const key = e.key.toLowerCase();
+
+      if (mod && e.key === ",") {
+        e.preventDefault();
+        openSettings();
+        return;
+      }
 
       // File shortcuts work even while typing.
       if (mod && ["n", "o", "s"].includes(key)) {

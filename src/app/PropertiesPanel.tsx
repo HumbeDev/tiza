@@ -1,5 +1,6 @@
 import { useEditorState } from "@tiptap/react";
 import { type ReactNode, useSyncExternalStore } from "react";
+import { create } from "zustand";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import type { Element, ShapeKind, SimFit, TextAlign } from "../document";
@@ -57,7 +58,7 @@ export default function PropertiesPanel() {
 
       {selected.length > 0 && (
         <>
-          <Section title={t("props.align")}>
+          <Section id="props.align" title={t("props.align")}>
             <div className="button-row">
               {ALIGNMENTS.map(([how, icon]) => (
                 <IconButton
@@ -69,7 +70,7 @@ export default function PropertiesPanel() {
               ))}
             </div>
           </Section>
-          <Section title={t("props.arrange")}>
+          <Section id="props.arrange" title={t("props.arrange")}>
             <div className="button-row wrap">
               {Z_ORDERS.map((z) => (
                 <button
@@ -100,13 +101,13 @@ function SlideProperties() {
   const preambleError = getPreambleError();
   return (
     <>
-      <Section title={t("props.slide")}>
+      <Section id="props.slide" title={t("props.slide")}>
         <Field label={t("props.background")}>
           <ColorInput value={background} onChange={setSlideBackground} />
         </Field>
         <p className="hint">{t("props.noSelection")}</p>
       </Section>
-      <Section title={t("math.preamble")}>
+      <Section id="math.preamble" title={t("math.preamble")}>
         <textarea
           className="code-input"
           rows={5}
@@ -130,7 +131,7 @@ function MathProperties({ el }: { el: Element & { kind: "math" } }) {
   const { t } = useTranslation();
   const { error } = useMath(el.latex, true);
   return (
-    <Section title={t("props.style")}>
+    <Section id="props.style" title={t("props.style")}>
       <div className="grid-2">
         <NumberField
           label={t("props.fontSize")}
@@ -171,7 +172,7 @@ function SimProperties({ el }: { el: Element & { kind: "sim" } }) {
 
   return (
     <>
-      <Section title={t("sim.content")}>
+      <Section id="sim.content" title={t("sim.content")}>
         <Field label={t("sim.title")}>
           <input
             type="text"
@@ -199,7 +200,7 @@ function SimProperties({ el }: { el: Element & { kind: "sim" } }) {
         <p className="hint">{t("sim.interactHint")}</p>
       </Section>
 
-      <Section title={t("sim.resolution")}>
+      <Section id="sim.resolution" title={t("sim.resolution")}>
         <select
           value={preset}
           onChange={(e) => {
@@ -257,7 +258,7 @@ function SimProperties({ el }: { el: Element & { kind: "sim" } }) {
         <p className="hint">{t("sim.resolutionHint")}</p>
       </Section>
 
-      <Section title={t("sim.security")}>
+      <Section id="sim.security" title={t("sim.security")}>
         <label className="check">
           <input
             type="checkbox"
@@ -382,47 +383,54 @@ function ElementProperties({ el }: { el: Element }) {
 
   return (
     <>
-      <Section title={el.kind === "shape" ? t(`shapes.${el.shape}`) : t(`props.${el.kind}`)}>
-        <div className="grid-2">
+      <Section
+        id="geometry"
+        title={el.kind === "shape" ? t(`shapes.${el.shape}`) : t(`props.${el.kind}`)}
+      >
+        <div className="grid-4">
           <NumberField label="X" value={el.x} onChange={(x) => update({ x }, "x")} />
           <NumberField label="Y" value={el.y} onChange={(y) => update({ y }, "y")} />
           <NumberField
-            label={t("props.width")}
+            label={t("props.wShort")}
+            title={t("props.width")}
             value={el.w}
             min={1}
             onChange={(w) => update({ w }, "w")}
           />
           <NumberField
-            label={t("props.height")}
+            label={t("props.hShort")}
+            title={t("props.height")}
             value={el.h}
             min={1}
             onChange={(h) => update({ h }, "h")}
           />
+        </div>
+        <div className="geometry-row">
           <NumberField
-            label={t("props.rotation")}
+            label={t("props.rotShort")}
+            title={t("props.rotation")}
             value={el.rotation}
             onChange={(r) => update({ rotation: ((r % 360) + 360) % 360 }, "rotation")}
           />
           <NumberField
-            label={t("props.opacity")}
+            label={t("props.opacityShort")}
+            title={t("props.opacity")}
             value={Math.round(el.opacity * 100)}
             min={0}
             max={100}
             onChange={(o) => update({ opacity: Math.min(1, Math.max(0, o / 100)) }, "opacity")}
           />
-        </div>
-        <label className="check">
-          <input
-            type="checkbox"
-            checked={el.locked}
-            onChange={(e) => update({ locked: e.target.checked }, "locked")}
+          <IconButton
+            icon={el.locked ? "lock" : "unlock"}
+            label={t(el.locked ? "menu.unlock" : "menu.lock")}
+            active={el.locked}
+            onClick={() => update({ locked: !el.locked }, "locked")}
           />
-          {t("props.locked")}
-        </label>
+        </div>
       </Section>
 
       {el.kind === "shape" && (
-        <Section title={t("props.style")}>
+        <Section id="props.style" title={t("props.style")}>
           <Field label={t("props.shape")}>
             <select
               value={el.shape}
@@ -505,7 +513,7 @@ function ElementProperties({ el }: { el: Element }) {
       )}
 
       {el.kind === "text" && (
-        <Section title={t("props.style")}>
+        <Section id="props.style" title={t("props.style")}>
           <div className="grid-2">
             <NumberField
               label={t("props.fontSize")}
@@ -534,11 +542,41 @@ function ElementProperties({ el }: { el: Element }) {
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+const COLLAPSED_KEY = "tiza.collapsedSections";
+
+function readCollapsed(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(COLLAPSED_KEY) ?? "[]") as string[]);
+  } catch {
+    return new Set();
+  }
+}
+
+/** Panel sections can be folded; the choice is remembered per section across sessions. */
+const useCollapsed = create<{ ids: Set<string> }>(() => ({ ids: readCollapsed() }));
+
+function toggleCollapsed(id: string) {
+  const ids = new Set(useCollapsed.getState().ids);
+  if (!ids.delete(id)) ids.add(id);
+  useCollapsed.setState({ ids });
+  try {
+    localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...ids]));
+  } catch {
+    // Not remembered; fine.
+  }
+}
+
+function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+  const collapsed = useCollapsed((s) => s.ids.has(id));
   return (
-    <section className="prop-section">
-      <h2>{title}</h2>
-      {children}
+    <section className={collapsed ? "prop-section collapsed" : "prop-section"}>
+      <h2>
+        <button type="button" aria-expanded={!collapsed} onClick={() => toggleCollapsed(id)}>
+          <Icon name={collapsed ? "chevronRight" : "chevronDown"} small />
+          {title}
+        </button>
+      </h2>
+      {!collapsed && children}
     </section>
   );
 }
@@ -554,15 +592,17 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 interface NumberFieldProps {
   label: string;
+  /** Full name shown as a tooltip when `label` is abbreviated. */
+  title?: string;
   value: number;
   onChange: (value: number) => void;
   min?: number;
   max?: number;
 }
 
-function NumberField({ label, value, onChange, min, max }: NumberFieldProps) {
+function NumberField({ label, title, value, onChange, min, max }: NumberFieldProps) {
   return (
-    <label className="number-field">
+    <label className="number-field" title={title}>
       <span className="field-label">{label}</span>
       <input
         type="number"

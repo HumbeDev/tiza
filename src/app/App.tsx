@@ -4,6 +4,8 @@ import { startSession } from "../files/session";
 import { currentSlide, useEditor } from "../store/editor";
 import PropertiesPanel from "./PropertiesPanel";
 import SlidePanel from "./SlidePanel";
+import { ContextMenuHost } from "./menu/Menu";
+import SettingsDialog from "./SettingsDialog";
 import StatusBar from "./StatusBar";
 import Toolbar from "./Toolbar";
 import { useShortcuts } from "./useShortcuts";
@@ -25,6 +27,8 @@ export default function App() {
       </main>
       <PropertiesPanel />
       <StatusBar />
+      <ContextMenuHost />
+      <SettingsDialog />
     </div>
   );
 }

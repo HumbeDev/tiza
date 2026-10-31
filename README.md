@@ -84,6 +84,14 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 - **Recuperación**: si Tiza se cierra de golpe, al volver a abrirla ofrece recuperar los cambios (autoguardado cada 15 s).
 - En la versión web, Guardar descarga el archivo (en Chrome/Edge guarda directamente en el archivo elegido).
 
+**Interfaz**
+
+- Menú **Archivo** (Nueva, Abrir, Guardar, Guardar como, Ajustes) y grupo **Insertar** (Texto, Ecuación, HTML, Formas ▾).
+- **Clic derecho** en elementos (cortar, copiar, pegar, duplicar, orden, bloquear, eliminar), en el lienzo vacío y en las miniaturas (duplicar, **ocultar en la presentación**, subir/bajar, eliminar).
+- **Tema claro / oscuro / sistema** (botón en la barra o en Ajustes).
+- **Ajustes** (Ctrl+,): idioma, tema y **diagnóstico** (versión, GPU que usa el motor web, WebGL, botón para copiar el informe).
+- Panel de propiedades con **secciones plegables** (recuerda cuáles cerraste) y posición/tamaño compactos.
+
 **General**
 
 - **Deshacer/rehacer ilimitado** (un arrastre completo = un paso).

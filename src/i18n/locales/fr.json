@@ -15,7 +15,10 @@
     "open": "Ouvrir…",
     "save": "Enregistrer",
     "saveAs": "Enregistrer sous…",
-    "html": "HTML"
+    "html": "HTML",
+    "file": "Fichier",
+    "insert": "Insérer",
+    "shapes": "Formes"
   },
   "shapes": {
     "rect": "Rectangle",
@@ -29,7 +32,12 @@
   "slides": {
     "panel": "Diapositives",
     "duplicate": "Dupliquer la diapositive",
-    "delete": "Supprimer la diapositive"
+    "delete": "Supprimer la diapositive",
+    "show": "Afficher pendant la présentation",
+    "hide": "Masquer pendant la présentation",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "hiddenHint": "Masquée : ignorée pendant la présentation"
   },
   "props": {
     "panel": "Propriétés",
@@ -62,7 +70,11 @@
     "strike": "Barré",
     "bulletList": "Liste à puces",
     "orderedList": "Liste numérotée",
-    "sim": "Page HTML"
+    "sim": "Page HTML",
+    "wShort": "L",
+    "hShort": "H",
+    "rotShort": "Rot. °",
+    "opacityShort": "Opac. %"
   },
   "align": {
     "left": "Aligner à gauche",
@@ -148,5 +160,37 @@
     "security": "Sécurité",
     "allowNetwork": "Autoriser l’accès à internet",
     "networkHint": "Désactivé par défaut : la page ne peut rien charger depuis internet. Activez-le si elle utilise une bibliothèque d’un CDN. Elle n’a jamais accès à Tiza ni à vos fichiers."
+  },
+  "menu": {
+    "edit": "Modifier",
+    "cut": "Couper",
+    "copy": "Copier",
+    "paste": "Coller",
+    "duplicate": "Dupliquer",
+    "lock": "Verrouiller",
+    "unlock": "Déverrouiller",
+    "selectAll": "Tout sélectionner"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "close": "Fermer",
+    "theme": "Thème",
+    "themes": {
+      "system": "Système",
+      "light": "Clair",
+      "dark": "Sombre"
+    },
+    "diagnostics": "Diagnostic",
+    "version": "Version",
+    "desktop": "application de bureau",
+    "web": "version web",
+    "gpu": "Graphismes (GPU)",
+    "unknown": "Inconnu",
+    "acceleration": "Accélération",
+    "software": "Pas d’accélération GPU (rendu logiciel)",
+    "hardware": "Accéléré par le GPU",
+    "gpuHint": "Tiza dessine avec le moteur web du système, qui utilise le GPU. Sur les portables à deux GPU, l’intégré est utilisé par défaut ; il suffit pour des diapositives. Pour des simulations 3D lourdes sous Linux, lancez Tiza avec « prime-run tiza » ; sous Windows, choisissez le GPU dans Paramètres → Affichage → Graphiques.",
+    "copy": "Copier le diagnostic",
+    "copied": "Copié ✓"
   }
 }

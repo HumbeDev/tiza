@@ -15,7 +15,9 @@ import {
   useEditor,
 } from "../store/editor";
 import Icon, { type IconName } from "./Icon";
-import LanguagePicker from "./LanguagePicker";
+import { type MenuItem, MenuButton, separator } from "./menu/Menu";
+import { THEME_ICONS, openSettings } from "./SettingsDialog";
+import { THEMES, setTheme, useTheme } from "./theme";
 
 const SHAPES: ShapeKind[] = ["rect", "ellipse", "line", "arrow"];
 
@@ -44,38 +46,35 @@ export default function Toolbar() {
     openHtmlEditor(el.id);
   }
 
+  const theme = useTheme((s) => s.pref);
+  const nextTheme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
+
+  const fileMenu = (): MenuItem[] => [
+    { label: t("toolbar.new"), icon: "fileNew", shortcut: "Ctrl+N", onSelect: newPresentation },
+    {
+      label: t("toolbar.open"),
+      icon: "folderOpen",
+      shortcut: "Ctrl+O",
+      onSelect: openPresentation,
+    },
+    separator,
+    { label: t("toolbar.save"), icon: "save", shortcut: "Ctrl+S", onSelect: save },
+    { label: t("toolbar.saveAs"), shortcut: "Ctrl+Shift+S", onSelect: saveAs },
+    separator,
+    { label: t("settings.title"), icon: "settings", shortcut: "Ctrl+,", onSelect: openSettings },
+  ];
+
+  const shapeMenu = (): MenuItem[] =>
+    SHAPES.map((shape) => ({
+      label: t(`shapes.${shape}`),
+      icon: shape,
+      onSelect: () => addElement(createShape(shape, cx, cy)),
+    }));
+
   return (
     <header className="toolbar">
       <span className="brand">{t("app.name")}</span>
-      <div className="tool-group">
-        <ToolButton
-          icon="fileNew"
-          label={t("toolbar.new")}
-          shortcut="Ctrl+N"
-          onClick={newPresentation}
-        />
-        <ToolButton
-          icon="folderOpen"
-          label={t("toolbar.open")}
-          shortcut="Ctrl+O"
-          onClick={openPresentation}
-        />
-        <ToolButton
-          icon="save"
-          label={t("toolbar.save")}
-          shortcut="Ctrl+S"
-          onClick={save}
-          badge={dirty}
-        />
-        <button
-          type="button"
-          className="tool-button text-only"
-          title="Ctrl+Shift+S"
-          onClick={saveAs}
-        >
-          {t("toolbar.saveAs")}
-        </button>
-      </div>
+      <MenuButton label={t("toolbar.file")} items={fileMenu} badge={dirty} />
       <div className="tool-group">
         <ToolButton
           icon="undo"
@@ -101,21 +100,25 @@ export default function Toolbar() {
           showLabel
         />
       </div>
-      <div className="tool-group">
+      <div className="tool-group insert-group" role="group" aria-label={t("toolbar.insert")}>
+        <span className="group-label">{t("toolbar.insert")}</span>
         <ToolButton icon="text" label={t("toolbar.text")} onClick={insertText} showLabel />
         <ToolButton icon="math" label={t("toolbar.equation")} onClick={insertEquation} showLabel />
         <ToolButton icon="html" label={t("toolbar.html")} onClick={insertHtml} showLabel />
-        {SHAPES.map((shape) => (
-          <ToolButton
-            key={shape}
-            icon={shape}
-            label={t(`shapes.${shape}`)}
-            onClick={() => addElement(createShape(shape, cx, cy))}
-          />
-        ))}
+        <MenuButton label={t("toolbar.shapes")} icon="shapes" items={shapeMenu} />
       </div>
       <div className="spacer" />
-      <LanguagePicker />
+      <ToolButton
+        icon={THEME_ICONS[theme]}
+        label={`${t("settings.theme")}: ${t(`settings.themes.${theme}`)} → ${t(`settings.themes.${nextTheme}`)}`}
+        onClick={() => setTheme(nextTheme)}
+      />
+      <ToolButton
+        icon="settings"
+        label={t("settings.title")}
+        shortcut="Ctrl+,"
+        onClick={openSettings}
+      />
     </header>
   );
 }

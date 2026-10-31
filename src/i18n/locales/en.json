@@ -15,7 +15,10 @@
     "open": "Open…",
     "save": "Save",
     "saveAs": "Save as…",
-    "html": "HTML"
+    "html": "HTML",
+    "file": "File",
+    "insert": "Insert",
+    "shapes": "Shapes"
   },
   "shapes": {
     "rect": "Rectangle",
@@ -29,7 +32,12 @@
   "slides": {
     "panel": "Slides",
     "duplicate": "Duplicate slide",
-    "delete": "Delete slide"
+    "delete": "Delete slide",
+    "show": "Show in presentation",
+    "hide": "Hide in presentation",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "hiddenHint": "Hidden: skipped when presenting"
   },
   "props": {
     "panel": "Properties",
@@ -62,7 +70,11 @@
     "strike": "Strikethrough",
     "bulletList": "Bulleted list",
     "orderedList": "Numbered list",
-    "sim": "HTML page"
+    "sim": "HTML page",
+    "wShort": "W",
+    "hShort": "H",
+    "rotShort": "Rot. °",
+    "opacityShort": "Opac. %"
   },
   "align": {
     "left": "Align left",
@@ -148,5 +160,37 @@
     "security": "Security",
     "allowNetwork": "Allow internet access",
     "networkHint": "Off by default: the page cannot load anything from the internet. Turn it on if it uses a library from a CDN. It never has access to Tiza or your files."
+  },
+  "menu": {
+    "edit": "Edit",
+    "cut": "Cut",
+    "copy": "Copy",
+    "paste": "Paste",
+    "duplicate": "Duplicate",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "selectAll": "Select all"
+  },
+  "settings": {
+    "title": "Settings",
+    "close": "Close",
+    "theme": "Theme",
+    "themes": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "diagnostics": "Diagnostics",
+    "version": "Version",
+    "desktop": "desktop app",
+    "web": "web version",
+    "gpu": "Graphics (GPU)",
+    "unknown": "Unknown",
+    "acceleration": "Acceleration",
+    "software": "No GPU acceleration (software rendering)",
+    "hardware": "GPU accelerated",
+    "gpuHint": "Tiza draws through the system's web engine, which uses the GPU. On laptops with two GPUs the integrated one is used by default; it is enough for slides. For heavy 3D simulations on Linux you can start Tiza with “prime-run tiza”; on Windows choose the GPU in Settings → Display → Graphics.",
+    "copy": "Copy diagnostics",
+    "copied": "Copied ✓"
   }
 }
