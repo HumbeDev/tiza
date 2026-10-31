@@ -1,0 +1,75 @@
+name: Release
+
+# Builds installers for Linux, Windows and macOS and attaches them to a GitHub release.
+# Start it with `scripts/release.sh 0.2.0` (pushes the tag v0.2.0).
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest # Apple Silicon
+            args: --target aarch64-apple-darwin
+          - platform: macos-latest # Intel
+            args: --target x86_64-apple-darwin
+          - platform: ubuntu-22.04
+            args: ""
+          - platform: windows-latest
+            args: ""
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Linux dependencies (WebKitGTK)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      - uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Tiza ${{ github.ref_name }}
+          releaseBody: |
+            ## Descargar / Download
+
+            | Sistema | Archivo |
+            |---|---|
+            | **Windows** | `Tiza_…_x64-setup.exe` (o `.msi`) |
+            | **macOS** (Apple Silicon M1/M2/M3…) | `Tiza_…_aarch64.dmg` |
+            | **macOS** (Intel) | `Tiza_…_x64.dmg` |
+            | **Linux** | `Tiza_…_amd64.AppImage` (cualquier distro) o `.deb` (Ubuntu/Debian) |
+
+            **Aviso:** la app aún no está firmada digitalmente.
+            - Windows: si aparece «Windows protegió su PC», pulsa *Más información → Ejecutar de todas formas*.
+            - macOS: la primera vez, clic derecho sobre Tiza → *Abrir* → *Abrir*.
+            - Linux (AppImage): `chmod +x Tiza_*.AppImage` y ejecútalo.
+
+            Versión web (sin instalar): https://tiza.ingenieriafisica.online/
+          releaseDraft: false
+          prerelease: true
+          args: ${{ matrix.args }}
