@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="board" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3d7a5a"/>
+      <stop offset="1" stop-color="#25503b"/>
+    </linearGradient>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="url(#board)"/>
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="none" stroke="#1b3a2b" stroke-width="16"/>
+  <!-- chalk "T" -->
+  <g fill="none" stroke="#f4f1e8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M290 330 Q520 300 740 320" stroke-width="78"/>
+    <path d="M512 330 Q500 520 520 730" stroke-width="78"/>
+  </g>
+  <!-- chalk dust -->
+  <g fill="#f4f1e8" opacity="0.35">
+    <circle cx="760" cy="300" r="10"/><circle cx="786" cy="336" r="6"/>
+    <circle cx="540" cy="770" r="8"/><circle cx="500" cy="790" r="5"/>
+  </g>
+  <!-- chalk stick -->
+  <g transform="rotate(-28 700 760)">
+    <rect x="600" y="730" width="230" height="58" rx="18" fill="#f4f1e8"/>
+    <rect x="600" y="730" width="60" height="58" rx="18" fill="#dcd6c6"/>
+  </g>
+</svg>

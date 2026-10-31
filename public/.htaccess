@@ -1,0 +1,17 @@
+# Served by Hostinger (LiteSpeed/Apache) for the web version.
+# JS and CSS file names carry a content hash: cache them for a year. index.html must always be fresh.
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "(^index\.html$|\.htaccess$)">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_mime.c>
+  AddType text/javascript .js .mjs
+  AddType application/x-tiza .tiza
+</IfModule>
+
+DirectoryIndex index.html
