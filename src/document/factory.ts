@@ -1,4 +1,5 @@
 import type { Element, Presentation, ShapeKind, Slide } from ".";
+import { plainDoc } from "./richtext";
 import { SCHEMA_VERSION } from ".";
 
 export const newId = (): string => crypto.randomUUID();
@@ -13,6 +14,7 @@ export function createPresentation(title: string, lang: string): Presentation {
     schemaVersion: SCHEMA_VERSION,
     meta: { title, created: now, modified: now, lang },
     page: { aspect: "16:9", width: 1920, height: 1080 },
+    latex: { preamble: "" },
     slides: [createSlide()],
   };
 }
@@ -49,11 +51,36 @@ export function createText(text: string, cx: number, cy: number): Element {
     w,
     h,
     kind: "text",
-    text,
+    doc: plainDoc(text),
     fontSize: 64,
     color: "#1d1d1b",
     align: "left",
-    bold: false,
-    italic: false,
+  };
+}
+
+export const DEFAULT_MATH_SIZE = 80;
+
+/** A formula centered at (cx, cy); `size` is its rendered size in em. */
+export function createMath(
+  latex: string,
+  cx: number,
+  cy: number,
+  size: { width: number; height: number },
+  fontSize = DEFAULT_MATH_SIZE,
+): Element {
+  const w = Math.max(1, size.width * fontSize);
+  const h = Math.max(1, size.height * fontSize);
+  return {
+    ...base,
+    id: newId(),
+    x: cx - w / 2,
+    y: cy - h / 2,
+    w,
+    h,
+    kind: "math",
+    latex,
+    fontSize,
+    color: "#1d1d1b",
+    align: "center",
   };
 }

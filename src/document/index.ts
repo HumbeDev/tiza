@@ -2,9 +2,13 @@
 export type { Aspect } from "../bindings/Aspect";
 export type { Element } from "../bindings/Element";
 export type { ElementContent } from "../bindings/ElementContent";
+export type { LatexSettings } from "../bindings/LatexSettings";
+export type { MathElement } from "../bindings/MathElement";
 export type { Meta } from "../bindings/Meta";
 export type { Page } from "../bindings/Page";
 export type { Presentation } from "../bindings/Presentation";
+export type { RichMark } from "../bindings/RichMark";
+export type { RichNode } from "../bindings/RichNode";
 export type { ShapeElement } from "../bindings/ShapeElement";
 export type { ShapeKind } from "../bindings/ShapeKind";
 export type { Slide } from "../bindings/Slide";

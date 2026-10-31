@@ -9,7 +9,8 @@
     "undo": "Desfazer",
     "redo": "Refazer",
     "newSlide": "Novo slide",
-    "text": "Texto"
+    "text": "Texto",
+    "equation": "Equação"
   },
   "shapes": {
     "rect": "Retângulo",
@@ -50,7 +51,12 @@
     "editTextHint": "Clique duas vezes no texto (ou pressione Enter) para editá-lo.",
     "align": "Alinhar",
     "arrange": "Organizar",
-    "delete": "Excluir"
+    "delete": "Excluir",
+    "math": "Equação",
+    "underline": "Sublinhado",
+    "strike": "Tachado",
+    "bulletList": "Lista com marcadores",
+    "orderedList": "Lista numerada"
   },
   "align": {
     "left": "Alinhar à esquerda",
@@ -73,5 +79,21 @@
   },
   "status": {
     "slideOf": "Slide {{current}} de {{total}}"
+  },
+  "math": {
+    "editor": "Editor de equações",
+    "code": "Código LaTeX",
+    "visual": "Visual",
+    "done": "Concluir",
+    "hint": "Esc ou Ctrl+Enter para terminar",
+    "placeholder": "Digite LaTeX, ex.: \\frac{a}{b}",
+    "ok": "✓ LaTeX válido",
+    "error": "Erro de LaTeX: {{message}}",
+    "edit": "Editar equação",
+    "editHint": "Clique duas vezes na equação (ou pressione Enter) para editá-la. Arraste um canto para redimensioná-la.",
+    "preamble": "Macros LaTeX do documento",
+    "preambleHint": "Definições \\newcommand disponíveis em todas as equações.",
+    "insertInline": "Inserir fórmula",
+    "inlineHint": "Dica: digite $x^2$ no texto para inserir uma fórmula."
   }
 }

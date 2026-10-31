@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { useEditorState } from "@tiptap/react";
+import { type ReactNode, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import type { Element, ShapeKind, TextAlign } from "../document";
@@ -11,10 +12,20 @@ import {
   reorderSelected,
   seal,
   selectedElements,
+  setMathFontSize,
+  setPreamble,
   setSlideBackground,
+  startEditing,
   updateElements,
   useEditor,
 } from "../store/editor";
+import { useActiveTextEditor } from "../elements/text/activeEditor";
+import {
+  getPreambleError,
+  getVersion as getMathVersion,
+  subscribe as subscribeMath,
+} from "../math/mathjax";
+import { useMath } from "../math/useMath";
 import Icon, { type IconName } from "./Icon";
 
 const ALIGNMENTS: [Alignment, IconName][] = [
@@ -80,24 +91,180 @@ export default function PropertiesPanel() {
 function SlideProperties() {
   const { t } = useTranslation();
   const background = useEditor((s) => currentSlide(s).background ?? "#ffffff");
+  const preamble = useEditor((s) => s.doc.latex.preamble);
+  useSyncExternalStore(subscribeMath, getMathVersion);
+  const preambleError = getPreambleError();
   return (
-    <Section title={t("props.slide")}>
-      <Field label={t("props.background")}>
-        <ColorInput value={background} onChange={setSlideBackground} />
-      </Field>
-      <p className="hint">{t("props.noSelection")}</p>
+    <>
+      <Section title={t("props.slide")}>
+        <Field label={t("props.background")}>
+          <ColorInput value={background} onChange={setSlideBackground} />
+        </Field>
+        <p className="hint">{t("props.noSelection")}</p>
+      </Section>
+      <Section title={t("math.preamble")}>
+        <textarea
+          className="code-input"
+          rows={5}
+          spellCheck={false}
+          value={preamble}
+          placeholder={String.raw`\newcommand{\R}{\mathbb{R}}`}
+          onChange={(e) => setPreamble(e.target.value)}
+          onBlur={seal}
+        />
+        {preambleError ? (
+          <p className="hint error">{t("math.error", { message: preambleError })}</p>
+        ) : (
+          <p className="hint">{t("math.preambleHint")}</p>
+        )}
+      </Section>
+    </>
+  );
+}
+
+function MathProperties({ el }: { el: Element & { kind: "math" } }) {
+  const { t } = useTranslation();
+  const { error } = useMath(el.latex, true);
+  return (
+    <Section title={t("props.style")}>
+      <div className="grid-2">
+        <NumberField
+          label={t("props.fontSize")}
+          value={el.fontSize}
+          min={4}
+          onChange={(size) => setMathFontSize(el.id, size, `prop:${el.id}:fontSize`)}
+        />
+        <Field label={t("props.color")}>
+          <ColorInput
+            value={el.color}
+            onChange={(color) => updateElements([el.id], { color }, `prop:${el.id}:color`)}
+          />
+        </Field>
+      </div>
+      <button type="button" className="small-button" onClick={() => startEditing(el.id)}>
+        <Icon name="math" /> {t("math.edit")}
+      </button>
+      {error && <p className="hint error">{t("math.error", { message: error })}</p>}
+      <p className="hint">{t("math.editHint")}</p>
     </Section>
+  );
+}
+
+function AlignButtons({ value, onChange }: { value: TextAlign; onChange: (a: TextAlign) => void }) {
+  const { t } = useTranslation();
+  return (
+    <div className="button-row">
+      {(["left", "center", "right"] as TextAlign[]).map((align) => (
+        <button
+          key={align}
+          type="button"
+          className={value === align ? "small-button active" : "small-button"}
+          onClick={() => onChange(align)}
+        >
+          {t(`textAlign.${align}`)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const MARKS = [
+  { mark: "bold", label: "props.bold", style: { fontWeight: 700 } },
+  { mark: "italic", label: "props.italic", style: { fontStyle: "italic" } },
+  { mark: "underline", label: "props.underline", style: { textDecoration: "underline" } },
+  { mark: "strike", label: "props.strike", style: { textDecoration: "line-through" } },
+] as const;
+
+/** Formatting for the text box being edited. Buttons keep the editor focused. */
+function TextFormatting() {
+  const { t } = useTranslation();
+  const editor = useActiveTextEditor((s) => s.editor);
+  const active = useEditorState({
+    editor,
+    selector: ({ editor: e }) =>
+      e
+        ? {
+            bold: e.isActive("bold"),
+            italic: e.isActive("italic"),
+            underline: e.isActive("underline"),
+            strike: e.isActive("strike"),
+            bulletList: e.isActive("bulletList"),
+            orderedList: e.isActive("orderedList"),
+          }
+        : null,
+  });
+  if (!editor || !active) return null;
+  const keepFocus = (e: React.MouseEvent) => e.preventDefault();
+
+  function insertFormula() {
+    if (!editor) return;
+    const pos = editor.state.selection.from;
+    editor
+      .chain()
+      .focus()
+      .insertContent({ type: "inlineMath", attrs: { latex: "x^2" } })
+      .setNodeSelection(pos)
+      .run();
+  }
+
+  return (
+    <>
+      <div className="button-row">
+        {MARKS.map(({ mark, label, style }) => (
+          <button
+            key={mark}
+            type="button"
+            className={active[mark] ? "small-button active" : "small-button"}
+            style={style}
+            onMouseDown={keepFocus}
+            onClick={() => editor.chain().focus().toggleMark(mark).run()}
+          >
+            {t(label)}
+          </button>
+        ))}
+      </div>
+      <div className="button-row">
+        <IconButton
+          icon="bulletList"
+          label={t("props.bulletList")}
+          active={active.bulletList}
+          onMouseDown={keepFocus}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        />
+        <IconButton
+          icon="orderedList"
+          label={t("props.orderedList")}
+          active={active.orderedList}
+          onMouseDown={keepFocus}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        />
+        <IconButton
+          icon="inlineMath"
+          label={t("math.insertInline")}
+          onMouseDown={keepFocus}
+          onClick={insertFormula}
+        />
+      </div>
+      <p className="hint">{t("math.inlineHint")}</p>
+    </>
   );
 }
 
 function ElementProperties({ el }: { el: Element }) {
   const { t } = useTranslation();
+  const editing = useEditor((s) => s.editingId === el.id);
   const update = (fields: Partial<Element>, field: string) =>
     updateElements([el.id], fields, `prop:${el.id}:${field}`);
 
   return (
     <>
-      <Section title={t(el.kind === "text" ? "props.text" : `shapes.${el.shape}`)}>
+      <Section
+        title={
+          el.kind === "shape"
+            ? t(`shapes.${el.shape}`)
+            : t(el.kind === "text" ? "props.text" : "props.math")
+        }
+      >
         <div className="grid-2">
           <NumberField label="X" value={el.x} onChange={(x) => update({ x }, "x")} />
           <NumberField label="Y" value={el.y} onChange={(y) => update({ y }, "y")} />
@@ -235,39 +402,15 @@ function ElementProperties({ el }: { el: Element }) {
               />
             </Field>
           </div>
-          <div className="button-row">
-            {(["left", "center", "right"] as TextAlign[]).map((align) => (
-              <button
-                key={align}
-                type="button"
-                className={el.align === align ? "small-button active" : "small-button"}
-                onClick={() => update({ align } as Partial<Element>, "align")}
-              >
-                {t(`textAlign.${align}`)}
-              </button>
-            ))}
-          </div>
-          <div className="button-row">
-            <button
-              type="button"
-              className={el.bold ? "small-button active" : "small-button"}
-              style={{ fontWeight: 700 }}
-              onClick={() => update({ bold: !el.bold } as Partial<Element>, "bold")}
-            >
-              {t("props.bold")}
-            </button>
-            <button
-              type="button"
-              className={el.italic ? "small-button active" : "small-button"}
-              style={{ fontStyle: "italic" }}
-              onClick={() => update({ italic: !el.italic } as Partial<Element>, "italic")}
-            >
-              {t("props.italic")}
-            </button>
-          </div>
-          <p className="hint">{t("props.editTextHint")}</p>
+          <AlignButtons
+            value={el.align}
+            onChange={(align) => update({ align } as Partial<Element>, "align")}
+          />
+          {editing ? <TextFormatting /> : <p className="hint">{t("props.editTextHint")}</p>}
         </Section>
       )}
+
+      {el.kind === "math" && <MathProperties el={el} />}
     </>
   );
 }
@@ -323,22 +466,24 @@ function ColorInput({ value, onChange }: { value: string; onChange: (value: stri
   );
 }
 
-function IconButton({
-  icon,
-  label,
-  onClick,
-}: {
+interface IconButtonProps {
   icon: IconName;
   label: string;
   onClick: () => void;
-}) {
+  onMouseDown?: (e: React.MouseEvent) => void;
+  active?: boolean;
+}
+
+function IconButton({ icon, label, onClick, onMouseDown, active }: IconButtonProps) {
   return (
     <button
       type="button"
-      className="tool-button"
+      className={active ? "tool-button active" : "tool-button"}
       title={label}
       aria-label={label}
+      aria-pressed={active}
       onClick={onClick}
+      onMouseDown={onMouseDown}
     >
       <Icon name={icon} />
     </button>

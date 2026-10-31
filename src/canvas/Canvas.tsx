@@ -20,6 +20,7 @@ import {
   seal,
   select,
   startEditing,
+  stopEditing,
   toggleSelected,
   updateElements,
   useEditor,
@@ -43,7 +44,7 @@ type Gesture =
       collapseTo: string | null;
     }
   | { kind: "marquee"; start: Point; base: string[] }
-  | { kind: "resize"; id: string; box: Box; handle: Handle; moved: boolean }
+  | { kind: "resize"; el: Element; box: Box; handle: Handle; moved: boolean }
   | { kind: "rotate"; id: string; box: Box; moved: boolean };
 
 let gestureCounter = 0;
@@ -93,6 +94,8 @@ export default function Canvas() {
     const handleEl = target.closest<HTMLElement>("[data-handle]");
     const elementEl = target.closest<HTMLElement>("[data-element-id]");
 
+    if (state.editingId && elementEl?.dataset.elementId !== state.editingId) stopEditing();
+
     if (handleEl && state.selectedIds.length === 1) {
       const el = els.find((x) => x.id === state.selectedIds[0]);
       if (!el) return;
@@ -101,7 +104,7 @@ export default function Canvas() {
       if (h === "rotate") gesture.current = { kind: "rotate", id: el.id, box, moved: false };
       else {
         const [x, y] = h.split(",").map(Number) as [Handle["x"], Handle["y"]];
-        gesture.current = { kind: "resize", id: el.id, box, handle: { x, y }, moved: false };
+        gesture.current = { kind: "resize", el, box, handle: { x, y }, moved: false };
       }
     } else if (elementEl) {
       const id = elementEl.dataset.elementId!;
@@ -158,8 +161,18 @@ export default function Canvas() {
       select([...new Set([...g.base, ...hits])]);
     } else if (g.kind === "resize") {
       g.moved = true;
-      const b = resizeBox(g.box, g.handle, p, e.shiftKey);
-      updateElements([g.id], { x: b.x, y: b.y, w: b.w, h: b.h }, key);
+      // Formulas always keep their aspect ratio; resizing scales the font.
+      const isMath = g.el.kind === "math";
+      const b = resizeBox(g.box, g.handle, p, e.shiftKey || isMath);
+      updateElements(
+        [g.el.id],
+        (el) => {
+          Object.assign(el, { x: b.x, y: b.y, w: b.w, h: b.h });
+          if (el.kind === "math" && g.el.kind === "math")
+            el.fontSize = (g.el.fontSize * b.h) / g.box.h;
+        },
+        key,
+      );
     } else {
       g.moved = true;
       updateElements([g.id], { rotation: rotationTowards(g.box, p, e.shiftKey ? 15 : null) }, key);
@@ -179,7 +192,7 @@ export default function Canvas() {
     const id = (e.target as HTMLElement).closest<HTMLElement>("[data-element-id]")?.dataset
       .elementId;
     const el = id && currentSlide(useEditor.getState()).elements.find((x) => x.id === id);
-    if (el && el.kind === "text" && !el.locked) startEditing(el.id);
+    if (el && el.kind !== "shape" && !el.locked) startEditing(el.id);
   }
 
   return (

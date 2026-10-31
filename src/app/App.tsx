@@ -1,9 +1,13 @@
+import { lazy, Suspense } from "react";
 import Canvas from "../canvas/Canvas";
+import { currentSlide, useEditor } from "../store/editor";
 import PropertiesPanel from "./PropertiesPanel";
 import SlidePanel from "./SlidePanel";
 import StatusBar from "./StatusBar";
 import Toolbar from "./Toolbar";
 import { useShortcuts } from "./useShortcuts";
+
+const MathEditorPanel = lazy(() => import("../editors/MathEditorPanel"));
 
 export default function App() {
   useShortcuts();
@@ -13,9 +17,22 @@ export default function App() {
       <SlidePanel />
       <main className="canvas-area">
         <Canvas />
+        <MathEditorHost />
       </main>
       <PropertiesPanel />
       <StatusBar />
     </div>
+  );
+}
+
+function MathEditorHost() {
+  const el = useEditor((s) =>
+    s.editingId ? currentSlide(s).elements.find((e) => e.id === s.editingId) : undefined,
+  );
+  if (el?.kind !== "math") return null;
+  return (
+    <Suspense fallback={null}>
+      <MathEditorPanel key={el.id} id={el.id} latex={el.latex} />
+    </Suspense>
   );
 }

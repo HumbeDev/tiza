@@ -52,7 +52,7 @@ export function useShortcuts(): void {
       else if (e.key === "Escape") select([]);
       else if (e.key === "Enter") {
         const sel = selectedElements(useEditor.getState());
-        if (sel.length === 1 && sel[0].kind === "text" && !sel[0].locked) startEditing(sel[0].id);
+        if (sel.length === 1 && sel[0].kind !== "shape" && !sel[0].locked) startEditing(sel[0].id);
         else handled = false;
       } else if (ARROWS[e.key] && !mod) {
         const step = e.shiftKey ? 10 : 1;

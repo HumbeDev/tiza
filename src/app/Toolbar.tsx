@@ -1,7 +1,15 @@
 import { useTranslation } from "react-i18next";
 import type { ShapeKind } from "../document";
 import { createShape, createText } from "../document/factory";
-import { addElement, addSlide, redo, startEditing, undo, useEditor } from "../store/editor";
+import {
+  addElement,
+  addSlide,
+  insertMath,
+  redo,
+  startEditing,
+  undo,
+  useEditor,
+} from "../store/editor";
 import Icon, { type IconName } from "./Icon";
 import LanguagePicker from "./LanguagePicker";
 
@@ -19,6 +27,10 @@ export default function Toolbar() {
     const el = createText(t("canvas.defaultText"), cx, cy);
     addElement(el);
     startEditing(el.id);
+  }
+
+  async function insertEquation() {
+    startEditing(await insertMath(String.raw`E = mc^2`, cx, cy));
   }
 
   return (
@@ -51,6 +63,7 @@ export default function Toolbar() {
       </div>
       <div className="tool-group">
         <ToolButton icon="text" label={t("toolbar.text")} onClick={insertText} showLabel />
+        <ToolButton icon="math" label={t("toolbar.equation")} onClick={insertEquation} showLabel />
         {SHAPES.map((shape) => (
           <ToolButton
             key={shape}
