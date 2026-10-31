@@ -258,6 +258,14 @@ export function moveSlide(from: number, to: number): void {
   });
 }
 
+/** Hidden slides are skipped when presenting. */
+export function setSlideHidden(id: string, hidden: boolean): void {
+  change((doc) => {
+    const slide = doc.slides.find((sl) => sl.id === id);
+    if (slide) slide.hidden = hidden;
+  });
+}
+
 export function setSlideBackground(color: string): void {
   change((doc) => {
     draftSlide(doc).background = color;
@@ -324,6 +332,12 @@ export function deleteSelected(): void {
 }
 
 let clipboard: Element[] = [];
+
+export const hasClipboard = (): boolean => clipboard.length > 0;
+
+export function setLocked(ids: string[], locked: boolean): void {
+  updateElements(ids, { locked });
+}
 
 export function copySelected(): void {
   clipboard = structuredClone(selectedElements(get()));

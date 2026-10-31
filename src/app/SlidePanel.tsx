@@ -10,6 +10,9 @@ import {
   selectSlide,
   useEditor,
 } from "../store/editor";
+import Icon from "./Icon";
+import { slideMenu } from "./menu/contextMenus";
+import { openContextMenu } from "./menu/Menu";
 import { ToolButton } from "./Toolbar";
 
 const THUMB_WIDTH = 168;
@@ -71,6 +74,7 @@ export default function SlidePanel() {
             className={[
               "slide-item",
               slide.id === currentId && "current",
+              slide.hidden && "hidden-slide",
               dropAt === i && "drop-before",
               dropAt === slides.length && i === slides.length - 1 && "drop-after",
             ]
@@ -80,9 +84,21 @@ export default function SlidePanel() {
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              selectSlide(slide.id);
+              openContextMenu(e, slideMenu(slide.id));
+            }}
             aria-current={slide.id === currentId}
           >
-            <span className="slide-number">{i + 1}</span>
+            <span className="slide-number">
+              {i + 1}
+              {slide.hidden && (
+                <span title={t("slides.hiddenHint")}>
+                  <Icon name="eyeOff" small />
+                </span>
+              )}
+            </span>
             <Thumbnail slide={slide} page={page} />
           </li>
         ))}

@@ -25,6 +25,8 @@ import {
   updateElements,
   useEditor,
 } from "../store/editor";
+import { canvasMenu, elementMenu } from "../app/menu/contextMenus";
+import { openContextMenu } from "../app/menu/Menu";
 import SelectionOverlay, { type Guides } from "./SelectionOverlay";
 
 const PADDING = 32;
@@ -196,9 +198,23 @@ export default function Canvas() {
     if (el && el.kind !== "shape" && !el.locked) startEditing(el.id);
   }
 
+  function onContextMenu(e: React.MouseEvent) {
+    e.preventDefault();
+    const hit = document.elementFromPoint(e.clientX, e.clientY);
+    const id = hit?.closest<HTMLElement>("[data-element-id]")?.dataset.elementId;
+    if (!id) {
+      select([]);
+      openContextMenu(e, canvasMenu());
+      return;
+    }
+    if (!useEditor.getState().selectedIds.includes(id)) select([id]);
+    openContextMenu(e, elementMenu());
+  }
+
   return (
     <div
       ref={viewportRef}
+      onContextMenu={onContextMenu}
       className="canvas-viewport"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
