@@ -4,4 +4,8 @@ import type { Meta } from "./Meta";
 import type { Page } from "./Page";
 import type { Slide } from "./Slide";
 
-export type Presentation = { schemaVersion: number, meta: Meta, page: Page, latex: LatexSettings, slides: Array<Slide>, };
+export type Presentation = { schemaVersion: number, meta: Meta, page: Page, latex: LatexSettings, 
+/**
+ * Slide whose content is copied into every new slide (a per-file template).
+ */
+templateSlideId?: string, slides: Array<Slide>, };

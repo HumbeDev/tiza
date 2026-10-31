@@ -19,6 +19,10 @@ pub struct Presentation {
     pub page: Page,
     #[serde(default)]
     pub latex: LatexSettings,
+    /// Slide whose content is copied into every new slide (a per-file template).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub template_slide_id: Option<Id>,
     pub slides: Vec<Slide>,
 }
 
@@ -73,10 +77,33 @@ pub struct Slide {
     pub background: Option<String>,
     /// Array order is z-order: the last element is drawn on top.
     pub elements: Vec<Element>,
+    /// Speaker notes, shown in the presenter view.
     #[serde(default)]
     pub notes: String,
+    /// Hidden slides are skipped when presenting.
     #[serde(default)]
     pub hidden: bool,
+    /// How this slide appears when presenting.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub transition: Option<Transition>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum TransitionKind {
+    None,
+    Fade,
+    Slide,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct Transition {
+    pub kind: TransitionKind,
+    pub duration_ms: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -289,6 +316,7 @@ mod tests {
             latex: LatexSettings {
                 preamble: r"\newcommand{\R}{\mathbb{R}}".into(),
             },
+            template_slide_id: Some("s1".into()),
             slides: vec![Slide {
                 id: "s1".into(),
                 background: Some("#ffffff".into()),
@@ -348,8 +376,12 @@ mod tests {
                         }),
                     },
                 ],
-                notes: String::new(),
+                notes: "Saludar".into(),
                 hidden: false,
+                transition: Some(Transition {
+                    kind: TransitionKind::Fade,
+                    duration_ms: 400,
+                }),
             }],
         }
     }
@@ -383,6 +415,9 @@ mod tests {
         assert_eq!(math["kind"], "math");
         assert_eq!(math["latex"], r"\int_0^1 x^2\,dx");
         assert_eq!(value["latex"]["preamble"], r"\newcommand{\R}{\mathbb{R}}");
+        assert_eq!(value["templateSlideId"], "s1");
+        assert_eq!(value["slides"][0]["transition"]["kind"], "fade");
+        assert_eq!(value["slides"][0]["transition"]["durationMs"], 400);
     }
 
     #[test]

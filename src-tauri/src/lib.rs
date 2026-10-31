@@ -3,6 +3,7 @@ pub mod commands;
 pub mod document;
 pub mod error;
 pub mod gpu;
+pub mod present;
 pub mod settings;
 pub mod sim;
 
@@ -14,6 +15,14 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .manage(sim::SimPages::default())
+        .manage(present::PresentState::default())
+        .on_window_event(|window, event| {
+            // Closing either presentation window (or the editor) ends the presentation.
+            if let tauri::WindowEvent::Destroyed = event {
+                let app = window.app_handle();
+                present::end(app, &app.state::<present::PresentState>());
+            }
+        })
         .register_uri_scheme_protocol("tizasim", |ctx, request| {
             ctx.app_handle()
                 .state::<sim::SimPages>()
@@ -34,6 +43,10 @@ pub fn run() {
             commands::set_gpu_preference,
             commands::confirm_gpu_launch,
             commands::restart_app,
+            present::start_presentation,
+            present::presentation_snapshot,
+            present::present_nav,
+            present::end_presentation,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -137,12 +137,14 @@ mod tests {
                 height: 1080.0,
             },
             latex: LatexSettings::default(),
+            template_slide_id: None,
             slides: vec![Slide {
                 id: "s1".into(),
                 background: None,
                 elements: vec![],
                 notes: String::new(),
                 hidden: false,
+                transition: None,
             }],
         }
     }
