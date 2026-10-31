@@ -15,7 +15,16 @@ pub struct Presentation {
     pub schema_version: u32,
     pub meta: Meta,
     pub page: Page,
+    #[serde(default)]
+    pub latex: LatexSettings,
     pub slides: Vec<Slide>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct LatexSettings {
+    /// `\newcommand` definitions applied to every formula in the presentation.
+    pub preamble: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -96,6 +105,7 @@ pub struct Element {
 pub enum ElementContent {
     Shape(ShapeElement),
     Text(TextElement),
+    Math(MathElement),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -141,19 +151,89 @@ pub enum TextAlign {
     Right,
 }
 
-/// Plain text box. Rich text (TipTap) replaces `text` in phase 2, before the file format exists.
+/// Rich text box. `doc` is a TipTap (ProseMirror) JSON document.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub struct TextElement {
-    pub text: String,
+    pub doc: RichNode,
+    /// Base size and color; marks inside `doc` may override them.
     pub font_size: f64,
     pub color: String,
     pub align: TextAlign,
-    #[serde(default)]
-    pub bold: bool,
-    #[serde(default)]
-    pub italic: bool,
+}
+
+/// A node of a TipTap JSON document (`doc`, `paragraph`, `text`, `inlineMath`, …).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct RichNode {
+    #[serde(rename = "type")]
+    pub node_type: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional, type = "Record<string, unknown>")]
+    pub attrs: Option<serde_json::Map<String, serde_json::Value>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub content: Option<Vec<RichNode>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub marks: Option<Vec<RichMark>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub text: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct RichMark {
+    #[serde(rename = "type")]
+    pub mark_type: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional, type = "Record<string, unknown>")]
+    pub attrs: Option<serde_json::Map<String, serde_json::Value>>,
+}
+
+impl RichNode {
+    /// A document with one paragraph per line of `text`.
+    pub fn plain(text: &str) -> Self {
+        let paragraphs = text
+            .split('\n')
+            .map(|line| RichNode {
+                node_type: "paragraph".into(),
+                attrs: None,
+                content: (!line.is_empty()).then(|| {
+                    vec![RichNode {
+                        node_type: "text".into(),
+                        attrs: None,
+                        content: None,
+                        marks: None,
+                        text: Some(line.into()),
+                    }]
+                }),
+                marks: None,
+                text: None,
+            })
+            .collect();
+        RichNode {
+            node_type: "doc".into(),
+            attrs: None,
+            content: Some(paragraphs),
+            marks: None,
+            text: None,
+        }
+    }
+}
+
+/// Display formula rendered with MathJax. The box keeps the formula's aspect ratio;
+/// `font_size` is the size of 1em in logical units.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct MathElement {
+    pub latex: String,
+    pub font_size: f64,
+    pub color: String,
+    pub align: TextAlign,
 }
 
 #[cfg(test)]
@@ -175,6 +255,9 @@ mod tests {
                 aspect: Aspect::Wide,
                 width: 1920.0,
                 height: 1080.0,
+            },
+            latex: LatexSettings {
+                preamble: r"\newcommand{\R}{\mathbb{R}}".into(),
             },
             slides: vec![Slide {
                 id: "s1".into(),
@@ -211,12 +294,27 @@ mod tests {
                         locked: true,
                         group_id: None,
                         content: ElementContent::Text(TextElement {
-                            text: "Hola".into(),
+                            doc: RichNode::plain("Hola\n\nmundo"),
                             font_size: 48.0,
                             color: "#111".into(),
                             align: TextAlign::Center,
-                            bold: true,
-                            italic: false,
+                        }),
+                    },
+                    Element {
+                        id: "e3".into(),
+                        x: 10.0,
+                        y: 10.0,
+                        w: 300.0,
+                        h: 80.0,
+                        rotation: 0.0,
+                        opacity: 1.0,
+                        locked: false,
+                        group_id: None,
+                        content: ElementContent::Math(MathElement {
+                            latex: r"\int_0^1 x^2\,dx".into(),
+                            font_size: 72.0,
+                            color: "#000000".into(),
+                            align: TextAlign::Left,
                         }),
                     },
                 ],
@@ -248,10 +346,34 @@ mod tests {
         assert_eq!(text["kind"], "text");
         assert_eq!(text["fontSize"], 48.0);
         assert_eq!(text["align"], "center");
+        assert_eq!(text["doc"]["type"], "doc");
+        assert_eq!(text["doc"]["content"][0]["content"][0]["text"], "Hola");
+        assert!(text["doc"]["content"][1].get("content").is_none());
+        let math = &value["slides"][0]["elements"][2];
+        assert_eq!(math["kind"], "math");
+        assert_eq!(math["latex"], r"\int_0^1 x^2\,dx");
+        assert_eq!(value["latex"]["preamble"], r"\newcommand{\R}{\mathbb{R}}");
+    }
+
+    #[test]
+    fn accepts_tiptap_json_with_marks_and_attrs() {
+        let value = json!({
+            "type": "doc",
+            "content": [{
+                "type": "paragraph",
+                "content": [
+                    { "type": "text", "text": "Energy ", "marks": [{ "type": "bold" }] },
+                    { "type": "inlineMath", "attrs": { "latex": "E=mc^2" } }
+                ]
+            }]
+        });
+        let doc: RichNode = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(serde_json::to_value(&doc).unwrap(), value);
     }
 
     #[test]
     fn optional_fields_may_be_missing() {
+        // No `latex` settings: older documents get an empty preamble.
         let value = json!({
             "schemaVersion": 1,
             "meta": { "title": "", "created": "", "modified": "", "lang": "en" },
@@ -265,6 +387,7 @@ mod tests {
             }]
         });
         let doc: Presentation = serde_json::from_value(value).unwrap();
+        assert_eq!(doc.latex.preamble, "");
         let slide = &doc.slides[0];
         assert_eq!(slide.notes, "");
         assert!(!slide.hidden);
