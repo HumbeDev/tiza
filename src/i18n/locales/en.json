@@ -1,10 +1,77 @@
 {
   "app": {
     "name": "Tiza",
-    "hello": "Hello, Tiza",
-    "tagline": "Presentations with LaTeX, video and simulations. Offline.",
     "language": "Language",
-    "backendVersion": "Rust core: version {{version}}",
-    "backendUnavailable": "The Rust core is not available (are you in the browser?)"
+    "backendVersion": "Rust core {{version}}",
+    "backendUnavailable": "Rust core not available (browser mode)"
+  },
+  "toolbar": {
+    "undo": "Undo",
+    "redo": "Redo",
+    "newSlide": "New slide",
+    "text": "Text"
+  },
+  "shapes": {
+    "rect": "Rectangle",
+    "ellipse": "Ellipse",
+    "line": "Line",
+    "arrow": "Arrow"
+  },
+  "canvas": {
+    "defaultText": "Write here"
+  },
+  "slides": {
+    "panel": "Slides",
+    "duplicate": "Duplicate slide",
+    "delete": "Delete slide"
+  },
+  "props": {
+    "panel": "Properties",
+    "slide": "Slide",
+    "background": "Background",
+    "noSelection": "Select an element to edit it. Drag on an empty area to select several.",
+    "multiple": "Selected elements: {{count}}",
+    "text": "Text box",
+    "width": "Width",
+    "height": "Height",
+    "rotation": "Rotation (°)",
+    "opacity": "Opacity (%)",
+    "locked": "Locked",
+    "style": "Style",
+    "shape": "Shape",
+    "fill": "Fill",
+    "stroke": "Outline",
+    "strokeWidth": "Thickness",
+    "radius": "Corner radius",
+    "fontSize": "Font size",
+    "color": "Color",
+    "bold": "Bold",
+    "italic": "Italic",
+    "editTextHint": "Double-click the text (or press Enter) to edit it.",
+    "align": "Align",
+    "arrange": "Arrange",
+    "delete": "Delete"
+  },
+  "align": {
+    "left": "Align left",
+    "centerX": "Center horizontally",
+    "right": "Align right",
+    "top": "Align top",
+    "centerY": "Center vertically",
+    "bottom": "Align bottom"
+  },
+  "zorder": {
+    "front": "Bring to front",
+    "forward": "Bring forward",
+    "backward": "Send backward",
+    "back": "Send to back"
+  },
+  "textAlign": {
+    "left": "Left",
+    "center": "Center",
+    "right": "Right"
+  },
+  "status": {
+    "slideOf": "Slide {{current}} of {{total}}"
   }
 }

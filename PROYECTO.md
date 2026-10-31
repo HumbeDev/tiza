@@ -34,7 +34,8 @@ El objetivo de largo plazo es que sea útil para la comunidad (profesores, estud
 2. **Directo y visual.** Lo que ves es lo que se presenta. Cada elemento se puede tocar y mover.
 3. **Código cuando quieras, UI cuando quieras.** LaTeX se puede escribir a mano o construir visualmente; ambos modos editan lo mismo.
 4. **Archivos portables.** Una presentación es **un solo archivo** con todo adentro (imágenes, videos, simulaciones), que se abre igual en Windows, macOS y Linux.
-5. **Rápido y liviano.** Arranque rápido, poco uso de memoria, fluido incluso con muchas diapositivas.
+5. **Abierto a agentes de IA.** Un agente (Claude Code, Claude Desktop u otro cliente MCP) puede crear y editar la presentación abierta, en vivo, mediante un servidor MCP integrado (§7.11). Todo lo que hace la UI lo puede hacer un agente.
+6. **Rápido y liviano.** Arranque rápido, poco uso de memoria, fluido incluso con muchas diapositivas.
 
 ---
 
@@ -107,15 +108,16 @@ El autor se inspira en proyectos como ArtCraft, escritos en Rust nativo. Para *e
 |---|---|---|
 | Shell de escritorio | **Tauri 2** | Windows (WebView2), macOS (WKWebView), Linux (WebKitGTK) |
 | Backend | **Rust** (edición estable actual) | `serde`, `zip`, `sha2`, `thiserror`, `tokio` |
-| Bindings Rust↔TS | **tauri-specta** (o equivalente) | Tipos TS generados automáticamente desde Rust |
+| Bindings Rust↔TS | **ts-rs** | Tipos TS generados desde Rust con `cargo test` → `src/bindings/` |
 | Frontend | **TypeScript + React + Vite** | Ecosistema más amplio; Claude Code trabaja bien con él |
 | Estado | **Zustand** + **Immer** (parches para deshacer/rehacer) | |
-| Mover/redimensionar/rotar | **Moveable** (+ Selecto para selección por área) | Licencia MIT |
+| Mover/redimensionar/rotar | **Implementación propia** (`src/canvas/`, `src/document/geometry.ts`) | Moveable está sin mantenimiento desde 2023 |
 | Texto enriquecido | **TipTap** (ProseMirror) | Nodo personalizado para matemáticas inline |
 | Ecuaciones (render) | **MathJax** empaquetado localmente, salida **SVG** | Soporta `amsmath`, `physics`, `mhchem`, etc. Sin CDN |
 | Ecuaciones (editor visual) | **MathLive** empaquetado localmente | Produce LaTeX; mismo dato que el modo código |
+| Servidor MCP (fase 4) | **rmcp** (SDK oficial de MCP para Rust) + Streamable HTTP | Apache-2.0. Esquemas de herramientas con `schemars` |
 | Editor de código | **CodeMirror 6** | Para LaTeX, HTML de simulaciones y vista de código |
-| LaTeX completo (fase 7) | **Tectonic** (motor TeX en Rust) → PDF → SVG | Requiere paquete TeX cacheado para funcionar offline |
+| LaTeX completo (fase 8) | **Tectonic** (motor TeX en Rust) → PDF → SVG | Requiere paquete TeX cacheado para funcionar offline |
 | Tests | `cargo test`, **Vitest**, luego **Playwright** para e2e | |
 | Lint/formato | `rustfmt`, `clippy`, **ESLint**, **Prettier** | |
 
@@ -152,6 +154,7 @@ Doble licencia **MIT OR Apache-2.0** (la convención del ecosistema Rust). Todas
 │  · autosave + recuperación                                            │
 │  · latex: compilar bloques con Tectonic, caché por hash               │
 │  · export: PDF / HTML / PNG                                           │
+│  · mcp: servidor MCP local → eventos al frontend (§7.11)              │
 │  · settings, archivos recientes                                       │
 └───────────────────────────────────────────────────────────────────────┘
 ```
@@ -196,13 +199,13 @@ interface BaseElement {
   opacity: number;                               // 0..1
   locked: boolean;
   groupId?: Id;
-  build?: { step: number; effect: "appear" | "fade" };  // revelado paso a paso (fase 6)
+  build?: { step: number; effect: "appear" | "fade" };  // revelado paso a paso (fase 7)
 }
 
 type Element =
   | BaseElement & { kind: "text";  doc: TipTapJSON }               // admite nodos math inline
   | BaseElement & { kind: "math";  latex: string; color?: string; fontSize: number; align: "left"|"center"|"right" }
-  | BaseElement & { kind: "latexBlock"; source: string; renderedSvg?: AssetRef }   // fase 7, Tectonic
+  | BaseElement & { kind: "latexBlock"; source: string; renderedSvg?: AssetRef }   // fase 8, Tectonic
   | BaseElement & { kind: "image"; asset: AssetRef; fit: "contain" | "cover" | "fill"; crop?: Rect }
   | BaseElement & { kind: "video"; asset: AssetRef; autoplay: boolean; loop: boolean; muted: boolean;
                     startS?: number; endS?: number; poster?: AssetRef }
@@ -263,7 +266,7 @@ Reglas:
    - **Modo visual:** MathLive (teclado virtual matemático, plantillas de fracciones, integrales, matrices).
    - Ambos modos editan el **mismo string LaTeX**; cambiar de pestaña no pierde nada.
    - Macros globales del documento (`latex.preamble`) se aplican a todas las ecuaciones.
-3. **Bloque LaTeX completo (`latexBlock`, fase 7):** para TikZ, pgfplots, etc. Se compila con **Tectonic** en Rust en un hilo de fondo → PDF → SVG, se cachea por hash del código fuente. Mientras compila, se muestra el render anterior y un indicador.
+3. **Bloque LaTeX completo (`latexBlock`, fase 8):** para TikZ, pgfplots, etc. Se compila con **Tectonic** en Rust en un hilo de fondo → PDF → SVG, se cachea por hash del código fuente. Mientras compila, se muestra el render anterior y un indicador.
    - Para funcionar **offline**, el paquete de TeX que usa Tectonic debe descargarse una vez y quedar cacheado (ofrecer botón "Preparar LaTeX sin conexión" en ajustes). Alternativa: si el usuario tiene TeX Live/MiKTeX instalado, permitir usar ese.
 
 Todo el JS de MathJax, MathLive y fuentes matemáticas va **empaquetado con la app** (cero CDN).
@@ -302,10 +305,10 @@ Para incrustar simulaciones HTML/JS autocontenidas (por ejemplo, generadas con u
 - Ventana a pantalla completa (en el monitor elegido). Fondo negro con la diapositiva escalada y centrada.
 - Navegación: →, ↓, Espacio, PageDown, clic = siguiente paso; ←, ↑, PageUp = anterior; Home/End; número + Enter = ir a diapositiva; `B` = pantalla negra; Esc = salir.
 - Los clickers de presentación envían PageUp/PageDown: deben funcionar sin configuración.
-- **Vista del presentador** (fase 6): segunda ventana con diapositiva actual, siguiente, notas, cronómetro y reloj, sincronizada por eventos de Tauri.
+- **Vista del presentador** (fase 7): segunda ventana con diapositiva actual, siguiente, notas, cronómetro y reloj, sincronizada por eventos de Tauri.
 - Las simulaciones y páginas web **son interactivas** durante la presentación (con el mouse), sin que el clic avance la diapositiva cuando el puntero está sobre ellas.
 
-### 7.7 Exportación (fase 8)
+### 7.7 Exportación (fase 9)
 
 - **HTML autocontenido:** una carpeta o archivo único con un visor ligero; mantiene video, ecuaciones y simulaciones. Es la exportación natural porque la app ya renderiza con tecnología web.
 - **PDF:** cada diapositiva se renderiza con `SlideRenderer mode="export"`; los elementos interactivos se sustituyen por su póster/snapshot. Primera versión: rasterizar a PNG de alta resolución y componer el PDF en Rust. Mejora posterior: PDF vectorial (texto y ecuaciones como vectores) — investigar la mejor vía por plataforma.
@@ -335,6 +338,36 @@ Requisito central del autor: **español (`es`), portugués de Brasil (`pt-BR`), 
 - Fechas y números con `Intl` según el idioma activo.
 - Agregar un idioma = agregar un JSON + una entrada en `SUPPORTED_LANGUAGES`.
 
+### 7.11 Agentes de IA (servidor MCP)
+
+Requisito central del autor: **Tiza se construye para agentes.** Un agente conectado por MCP puede hacer todo lo que hace un usuario con la UI, sobre la presentación abierta y en vivo.
+
+**Arquitectura**
+
+- Rust aloja un servidor MCP con **rmcp**, transporte **Streamable HTTP** en `127.0.0.1` (puerto configurable) y protegido con un token.
+- El **store del frontend sigue siendo la única autoridad** del documento. Flujo de una herramienta: agente → Rust (valida los argumentos contra el esquema) → evento Tauri con `requestId` → el frontend ejecuta **la misma acción del store que usa la UI** → responde → Rust contesta al agente.
+  - Así los cambios del agente se ven al instante, pasan por las mismas validaciones y son **deshacibles**: cada llamada a una herramienta es un paso de deshacer.
+- Las herramientas trabajan sobre la presentación abierta; si la app está cerrada, no hay servidor.
+- Más adelante (opcional): un puente stdio (`tiza --mcp-stdio`) para clientes que no hablan HTTP.
+
+**Herramientas iniciales (fase 4)**
+
+- Lectura: `get_presentation` (resumen con ids de diapositivas y elementos), `get_slide`, `get_selection`.
+- Diapositivas: `add_slide`, `duplicate_slide`, `delete_slide`, `move_slide`, `set_slide_background`, `go_to_slide`.
+- Elementos: `add_shape`, `add_text`, `update_elements`, `delete_elements`, `align_elements`, `reorder_elements`, `select_elements`.
+- Lote: `apply_operations`: varias operaciones atómicas = un solo paso de deshacer.
+- Vista: `render_slide` → imagen PNG de la diapositiva, para que el agente **vea** el resultado (investigar la mejor técnica: SVG `foreignObject` → canvas, o captura del webview).
+- Archivo: `save`; `open`/`new` piden confirmación al usuario si hay cambios sin guardar.
+
+**Reglas**
+
+- **Cada fase siguiente agrega herramientas MCP para sus funcionalidades nuevas** (ecuaciones, imágenes desde ruta, video, simulaciones HTML, controlar el modo presentación, exportar). Igual que con los idiomas, una funcionalidad no está completa sin su herramienta.
+- Las descripciones de las herramientas y los mensajes de error para el agente van en **inglés** (los agentes trabajan mejor así). Errores con código estable.
+- Coordenadas en unidades lógicas (1920×1080 en 16:9), documentadas en la descripción de cada herramienta.
+- Los esquemas de entrada se generan desde los tipos de Rust (`schemars`): una sola fuente de verdad con el modelo del documento.
+- **Desactivado por defecto**; se activa en ajustes. Indicador visible de "agente conectado". En ajustes, botón "Copiar configuración" que genera el comando listo para el cliente, p. ej. `claude mcp add --transport http tiza http://127.0.0.1:<puerto>/mcp --header "Authorization: Bearer <token>"`.
+- Seguridad: solo `127.0.0.1`, token aleatorio regenerable, se valida la cabecera `Origin` (contra DNS rebinding), límite de tamaño por solicitud. Ninguna herramienta da acceso genérico al sistema de archivos: leer un archivo del disco (p. ej. una imagen) solo con rutas que el usuario apruebe o dentro de carpetas permitidas.
+
 ---
 
 ## 8. Seguridad
@@ -346,6 +379,7 @@ La app ejecuta contenido potencialmente no confiable (HTML de terceros, páginas
 - CSP estricta en la ventana principal.
 - Al abrir un `.tiza`: validar el JSON contra el esquema, rechazar rutas con `..` dentro del zip (zip-slip), limitar tamaños.
 - SVG importados: sanitizar.
+- Servidor MCP: ver reglas en §7.11 (desactivado por defecto, localhost, token, `Origin`).
 - Si una presentación contiene simulaciones o páginas web, mostrar un aviso la primera vez que se abre ("Este archivo contiene contenido interactivo") con opción de confiar.
 
 ---
@@ -379,6 +413,7 @@ tiza/
 │   ├── present/              # modo presentación y vista del presentador
 │   ├── render/               # SlideRenderer compartido
 │   ├── store/                # Zustand, acciones, historial
+│   ├── agent/                # recibe solicitudes MCP y las ejecuta como acciones del store
 │   ├── bindings/             # tipos y comandos generados desde Rust (no editar a mano)
 │   ├── i18n/
 │   └── styles/
@@ -390,7 +425,8 @@ tiza/
 │   │   ├── archive/          # lectura/escritura .tiza (zip, atómica)
 │   │   ├── assets/           # importación, hash, protocolo tiza-asset://
 │   │   ├── autosave/
-│   │   ├── latex/            # Tectonic (fase 7)
+│   │   ├── mcp/              # servidor MCP y puente con el frontend (fase 4)
+│   │   ├── latex/            # Tectonic (fase 8)
 │   │   └── export/
 │   ├── capabilities/
 │   └── tauri.conf.json
@@ -420,41 +456,49 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Agregar/duplicar/borrar/reordenar diapositivas.
 - **Aceptación:** puedo armar varias diapositivas con cuadros y textos, moverlos con precisión y deshacer todo.
 
-### Fase 2 — Archivo `.tiza`
-- Guardar/abrir/guardar como (zip, guardado atómico), archivos recientes, indicador de cambios sin guardar, autosave + recuperación, migraciones (aunque solo exista v1, dejar la infraestructura y un test).
-- **Aceptación:** cierro la app sin guardar a la fuerza, la vuelvo a abrir y me ofrece recuperar; un archivo guardado en un SO se abre igual en otro.
-
-### Fase 3 — Texto enriquecido y ecuaciones
+### Fase 2 — Texto enriquecido y ecuaciones
 - TipTap en elementos de texto con matemática inline `$…$`.
 - Elemento `math` con modo código (CodeMirror + vista previa MathJax SVG) y modo visual (MathLive), sincronizados.
 - Preámbulo/macros globales del documento.
 - **Aceptación:** escribo una diapositiva con párrafos que mezclan texto y fórmulas, y una ecuación grande editada alternando código y modo visual; todo funciona sin internet.
 
-### Fase 4 — Imágenes y video
+### Fase 3 — Archivo `.tiza`
+- Guardar/abrir/guardar como (zip, guardado atómico), archivos recientes, indicador de cambios sin guardar, autosave + recuperación, migraciones (aunque solo exista v1, dejar la infraestructura y un test).
+- **Aceptación:** cierro la app sin guardar a la fuerza, la vuelvo a abrir y me ofrece recuperar; un archivo guardado en un SO se abre igual en otro.
+
+### Fase 4 — Servidor MCP para agentes
+- Servidor `rmcp` (Streamable HTTP, localhost, token) + puente Rust ↔ frontend por eventos con `requestId` y timeout.
+- Herramientas iniciales de §7.11 sobre las acciones existentes del store, con esquemas generados desde Rust.
+- `render_slide` (PNG) para que el agente vea el resultado.
+- Ajustes: activar/desactivar, puerto, token, "copiar configuración"; indicador de agente conectado.
+- Tests: cada herramienta en Rust (validación de argumentos) y en Vitest (ejecución sobre el store, un paso de deshacer por llamada); e2e conectando un cliente MCP real.
+- **Aceptación:** conecto Claude Code a Tiza, le pido "arma 3 diapositivas sobre el péndulo simple con títulos y formas" y las veo aparecer en vivo; con Ctrl+Z deshago lo que hizo el agente; con el servidor desactivado, nada escucha en el puerto.
+
+### Fase 5 — Imágenes y video
 - Protocolo `tiza-asset://` con range requests. Importar por diálogo, arrastrar y pegar. Recorte/ajuste de imagen. Video con controles, recorte inicio/fin, autoplay, póster.
 - **Aceptación:** inserto un video de 500 MB, puedo adelantarlo sin trabas, guardo, reabro y sigue ahí; el `.tiza` no duplica assets repetidos.
 
-### Fase 5 — Simulaciones HTML y páginas web
+### Fase 6 — Simulaciones HTML y páginas web
 - Elemento `sim` (iframe sandbox, editor HTML con vista previa, póster).
 - Elemento `web` con iframe, detección de bloqueo de incrustación con mensaje claro, modo interactivo on/off, snapshot.
 - Incluir 2–3 simulaciones de ejemplo en `examples/`.
 - **Aceptación:** inserto una simulación de un péndulo que corre aislada; incrusto una página que lo permita y la uso en vivo; una que lo bloquea muestra un aviso entendible.
 
-### Fase 6 — Modo presentación
+### Fase 7 — Modo presentación
 - Pantalla completa en monitor elegido, navegación por teclado/clicker, pantalla negra, simulaciones/web interactivas.
 - Revelado paso a paso (`build`), transiciones simples.
 - Vista del presentador con notas, siguiente diapositiva y cronómetro.
 - **Aceptación:** doy una charla completa con proyector usando solo un clicker.
 
-### Fase 7 — LaTeX completo
+### Fase 8 — LaTeX completo
 - Bloques `latexBlock` con Tectonic, compilación en segundo plano, caché, errores legibles, modo offline preparado.
 - **Aceptación:** una figura TikZ se compila, se ve nítida al escalarla y funciona sin internet tras la preparación inicial.
 
-### Fase 8 — Exportación
+### Fase 9 — Exportación
 - HTML autocontenido, PDF (con pósters para lo interactivo, opción de un paso por página), PNG.
 - **Aceptación:** exporto a PDF y se ve fiel a la presentación; el HTML exportado se abre en un navegador sin la app.
 
-### Fase 9 — Pulido y comunidad
+### Fase 10 — Pulido y comunidad
 - Temas y diapositivas maestras, formas/flechas avanzadas, bloques de código, revisión de traducciones por hablantes nativos, accesibilidad (navegación por teclado, contraste), instaladores para los tres sistemas, documentación de usuario, guía de contribución.
 
 ---
@@ -473,7 +517,7 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 ## 13. Riesgos conocidos y preguntas abiertas
 
 - **Diferencias entre webviews** (WebView2 / WKWebView / WebKitGTK): probar en los tres; especial cuidado con video en Linux y APIs CSS recientes.
-- **Incrustación web:** muchos sitios bloquean iframes; el webview hijo de Tauri es la salida, pero su API puede cambiar. Decidir cuando se llegue a la fase 5.
+- **Incrustación web:** muchos sitios bloquean iframes; el webview hijo de Tauri es la salida, pero su API puede cambiar. Decidir cuando se llegue a la fase 6.
 - **Tectonic offline:** tamaño del paquete TeX cacheado y primera descarga. Alternativa: usar TeX instalado en el sistema.
 - **PDF vectorial:** no trivial desde un webview; la primera versión será rasterizada.
 - **Nombre:** "Tiza"/`.tiza` (decidido). Revisar choques de nombre antes de publicar instaladores.
@@ -493,3 +537,13 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - i18n con es / pt-BR / fr / en y tests de consistencia (§7.10).
 - ESLint, Prettier, rustfmt, clippy (`-D warnings`), Vitest, `cargo test`.
 - Pendiente del autor: cambiar Rust del paquete de Arch a `rustup` (`sudo pacman -S rustup` → `rustup default stable`), e instalar `gst-plugins-base` para video en WebKitGTK.
+
+### Fase 1 — 2026-10-30 🧪 (pendiente de prueba manual del autor)
+- Modelo de datos en Rust (`src-tauri/src/document/`) con tests de JSON; tipos TS generados con **ts-rs** (tauri-specta 2 sigue en RC).
+- Store Zustand + Immer con parches: deshacer/rehacer ilimitado; los gestos continuos se agrupan con `mergeKey` y `seal()`.
+- Mover/redimensionar/rotar y guías magnéticas **implementados a mano** en vez de Moveable (sin releases desde 2023, riesgo con React 19). La geometría es pura y tiene tests.
+- Elementos `shape` (rect, elipse, línea, flecha) y `text` plano. `text` pasará a TipTap en la fase 2, antes de que exista el formato de archivo (sin migración).
+- Reordenar diapositivas con eventos de puntero (no HTML5 drag&drop, que choca con el drag&drop de archivos de Tauri).
+- Pendiente: agrupar (Ctrl+G) queda para después; portapapeles solo interno (no del sistema).
+- Pendiente para la fase 4 (MCP): las acciones de elementos operan sobre la diapositiva actual; agregarles un `slideId` explícito.
+- Orden de fases cambiado por el autor (2026-10-30): **2 Ecuaciones → 3 Archivo → 4 MCP**. TikZ/Tectonic sigue en la fase 8.

@@ -1,3 +1,5 @@
+pub mod document;
+
 /// Version of the Rust core, shown in the UI to confirm the frontend↔backend bridge works.
 #[tauri::command]
 fn app_version() -> &'static str {

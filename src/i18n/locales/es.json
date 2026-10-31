@@ -1,10 +1,77 @@
 {
   "app": {
     "name": "Tiza",
-    "hello": "Hola, Tiza",
-    "tagline": "Presentaciones con LaTeX, video y simulaciones. Sin conexión.",
     "language": "Idioma",
-    "backendVersion": "Núcleo en Rust: versión {{version}}",
-    "backendUnavailable": "El núcleo en Rust no está disponible (¿estás en el navegador?)"
+    "backendVersion": "Núcleo Rust {{version}}",
+    "backendUnavailable": "Núcleo Rust no disponible (modo navegador)"
+  },
+  "toolbar": {
+    "undo": "Deshacer",
+    "redo": "Rehacer",
+    "newSlide": "Nueva diapositiva",
+    "text": "Texto"
+  },
+  "shapes": {
+    "rect": "Rectángulo",
+    "ellipse": "Elipse",
+    "line": "Línea",
+    "arrow": "Flecha"
+  },
+  "canvas": {
+    "defaultText": "Escribe aquí"
+  },
+  "slides": {
+    "panel": "Diapositivas",
+    "duplicate": "Duplicar diapositiva",
+    "delete": "Eliminar diapositiva"
+  },
+  "props": {
+    "panel": "Propiedades",
+    "slide": "Diapositiva",
+    "background": "Fondo",
+    "noSelection": "Selecciona un elemento para editarlo. Arrastra sobre un área vacía para seleccionar varios.",
+    "multiple": "Elementos seleccionados: {{count}}",
+    "text": "Cuadro de texto",
+    "width": "Ancho",
+    "height": "Alto",
+    "rotation": "Rotación (°)",
+    "opacity": "Opacidad (%)",
+    "locked": "Bloqueado",
+    "style": "Estilo",
+    "shape": "Forma",
+    "fill": "Relleno",
+    "stroke": "Contorno",
+    "strokeWidth": "Grosor",
+    "radius": "Radio de esquina",
+    "fontSize": "Tamaño de letra",
+    "color": "Color",
+    "bold": "Negrita",
+    "italic": "Cursiva",
+    "editTextHint": "Haz doble clic en el texto (o pulsa Enter) para editarlo.",
+    "align": "Alinear",
+    "arrange": "Organizar",
+    "delete": "Eliminar"
+  },
+  "align": {
+    "left": "Alinear a la izquierda",
+    "centerX": "Centrar horizontalmente",
+    "right": "Alinear a la derecha",
+    "top": "Alinear arriba",
+    "centerY": "Centrar verticalmente",
+    "bottom": "Alinear abajo"
+  },
+  "zorder": {
+    "front": "Traer al frente",
+    "forward": "Traer adelante",
+    "backward": "Enviar atrás",
+    "back": "Enviar al fondo"
+  },
+  "textAlign": {
+    "left": "Izquierda",
+    "center": "Centro",
+    "right": "Derecha"
+  },
+  "status": {
+    "slideOf": "Diapositiva {{current}} de {{total}}"
   }
 }

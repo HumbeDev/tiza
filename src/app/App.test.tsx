@@ -1,32 +1,59 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { createPresentation } from "../document/factory";
 import i18n from "../i18n";
+import { currentSlide, loadDocument, useEditor } from "../store/editor";
 import App from "./App";
 
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: vi.fn(() => Promise.resolve("0.1.0")),
 }));
 
-afterEach(async () => {
-  cleanup();
+beforeAll(() => {
+  globalThis.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+});
+
+beforeEach(async () => {
+  loadDocument(createPresentation("Test", "en"));
   await act(() => i18n.changeLanguage("en"));
 });
 
+afterEach(cleanup);
+
 describe("App", () => {
-  it("greets and shows the backend version", async () => {
-    await act(() => i18n.changeLanguage("en"));
+  it("shows the editor and the backend version", async () => {
     render(<App />);
-    expect(screen.getByRole("heading").textContent).toBe("Hello, Tiza");
-    expect(await screen.findByText("Rust core: version 0.1.0")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Undo" })).toBeTruthy();
+    expect(await screen.findByText("Rust core 0.1.0")).toBeTruthy();
+    expect(screen.getByText("Slide 1 of 1")).toBeTruthy();
   });
 
   it("switches language from the picker", async () => {
-    await act(() => i18n.changeLanguage("en"));
     render(<App />);
     await act(async () => {
-      fireEvent.change(screen.getByRole("combobox"), { target: { value: "pt-BR" } });
+      fireEvent.change(screen.getByRole("combobox", { name: "Language" }), {
+        target: { value: "pt-BR" },
+      });
     });
-    expect(screen.getByRole("heading").textContent).toBe("Olá, Tiza");
+    expect(screen.getByRole("button", { name: "Desfazer" })).toBeTruthy();
     expect(document.documentElement.lang).toBe("pt-BR");
+  });
+
+  it("inserts a shape and undoes it with the keyboard", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Rectangle" }));
+    expect(currentSlide(useEditor.getState()).elements).toHaveLength(1);
+    fireEvent.keyDown(window, { key: "z", ctrlKey: true });
+    expect(currentSlide(useEditor.getState()).elements).toHaveLength(0);
+  });
+
+  it("adds a slide from the toolbar", () => {
+    render(<App />);
+    fireEvent.click(screen.getAllByRole("button", { name: "New slide" })[0]);
+    expect(screen.getByText("Slide 2 of 2")).toBeTruthy();
   });
 });
