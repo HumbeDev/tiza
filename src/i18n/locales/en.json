@@ -204,7 +204,8 @@
     "gpuHigh": "High performance",
     "restartQuestion": "Tiza will restart to use the selected graphics card. Your unsaved changes will be kept.",
     "restart": "Restart",
-    "gpuHelp": "Tiza draws through the system's web engine, which uses the GPU. The integrated GPU is enough for slides, equations and 2D simulations and saves battery. Choose High performance for heavy 3D simulations. If the dedicated GPU fails to start, Tiza goes back to Automatic by itself."
+    "gpuHelp": "Tiza draws through the system's web engine, which uses the GPU. The integrated GPU is enough for slides, equations and 2D simulations and saves battery. Choose High performance for heavy 3D simulations. If the dedicated GPU fails to start, Tiza goes back to Automatic by itself.",
+    "restartManually": "Saved. This is a development build, which can't restart itself: close Tiza and run “npm run tauri dev” again to use the selected graphics card."
   },
   "notes": {
     "title": "Speaker notes",

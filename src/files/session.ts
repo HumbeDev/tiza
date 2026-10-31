@@ -168,9 +168,13 @@ export function startSession(): () => void {
   };
 }
 
-/** Restarts the desktop app, carrying unsaved changes over without asking. */
+/**
+ * Restarts the desktop app, carrying unsaved changes over without asking. Development
+ * builds can't restart themselves (see `restart_app`): the user is told to do it.
+ */
 export async function restartApp(): Promise<void> {
   const s = state();
   if (isDirty(s)) await platform.writeRecovery(s.doc, s.file, true);
-  await invoke("restart_app");
+  const restarted = await invoke<boolean>("restart_app");
+  if (!restarted) await platform.alert(t("settings.restartManually"));
 }

@@ -204,7 +204,8 @@
     "gpuHigh": "Alto desempenho",
     "restartQuestion": "O Tiza será reiniciado para usar a placa de vídeo escolhida. Suas alterações não salvas serão mantidas.",
     "restart": "Reiniciar",
-    "gpuHelp": "O Tiza desenha com o motor web do sistema, que usa a GPU. A integrada basta para slides, equações e simulações 2D, e economiza bateria. Escolha Alto desempenho para simulações 3D pesadas. Se a GPU dedicada não conseguir iniciar, o Tiza volta sozinho para Automática."
+    "gpuHelp": "O Tiza desenha com o motor web do sistema, que usa a GPU. A integrada basta para slides, equações e simulações 2D, e economiza bateria. Escolha Alto desempenho para simulações 3D pesadas. Se a GPU dedicada não conseguir iniciar, o Tiza volta sozinho para Automática.",
+    "restartManually": "Salvo. Esta é uma versão de desenvolvimento, que não consegue reiniciar sozinha: feche o Tiza e execute “npm run tauri dev” de novo para usar a placa de vídeo escolhida."
   },
   "notes": {
     "title": "Notas do apresentador",

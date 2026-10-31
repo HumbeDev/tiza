@@ -193,7 +193,13 @@ pub fn confirm_gpu_launch() {
     crate::settings::confirm_launch();
 }
 
+/// Restarts Tiza and returns `true`, except in development builds: there the UI is served
+/// by the `tauri dev` server, which stops as soon as this process exits, so the new
+/// process would show "connection refused". Returns `false` and the user restarts by hand.
 #[tauri::command]
-pub fn restart_app(app: AppHandle) {
+pub fn restart_app(app: AppHandle) -> bool {
+    if cfg!(debug_assertions) {
+        return false;
+    }
     app.restart();
 }

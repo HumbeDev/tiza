@@ -204,7 +204,8 @@
     "gpuHigh": "Hautes performances",
     "restartQuestion": "Tiza va redémarrer pour utiliser la carte graphique choisie. Vos modifications non enregistrées sont conservées.",
     "restart": "Redémarrer",
-    "gpuHelp": "Tiza dessine avec le moteur web du système, qui utilise le GPU. Le GPU intégré suffit pour les diapositives, les équations et les simulations 2D, et économise la batterie. Choisissez Hautes performances pour des simulations 3D lourdes. Si le GPU dédié ne démarre pas, Tiza revient tout seul à Automatique."
+    "gpuHelp": "Tiza dessine avec le moteur web du système, qui utilise le GPU. Le GPU intégré suffit pour les diapositives, les équations et les simulations 2D, et économise la batterie. Choisissez Hautes performances pour des simulations 3D lourdes. Si le GPU dédié ne démarre pas, Tiza revient tout seul à Automatique.",
+    "restartManually": "Enregistré. Ceci est une version de développement, qui ne peut pas redémarrer seule : fermez Tiza et relancez « npm run tauri dev » pour utiliser la carte graphique choisie."
   },
   "notes": {
     "title": "Notes de l’orateur",

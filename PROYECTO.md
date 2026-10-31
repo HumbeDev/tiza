@@ -593,11 +593,14 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Notas del orador editables bajo el lienzo; tamaño de letra de las notas ajustable en la vista del presentador.
 - Pendiente: revelado paso a paso (builds), elegir manualmente la pantalla del público, puntero láser.
 
+- El reinicio automático tras cambiar de GPU no funciona en `tauri dev` (el servidor de Vite muere con el proceso original): en builds de desarrollo `restart_app` devuelve `false` y se pide reiniciar a mano.
+
 ### Plan acordado (2026-10-31)
 - **Fase 6 — Imágenes y video**: sistema de assets (hash, `tiza-asset://`, range requests). Requisito para importar.
 - **Fase 7 — Importar presentaciones** como objetos editables:
   - **PPTX** (Office Open XML): parser en Rust (`zip` + XML): diapositivas, cuadros de texto con formato, imágenes, formas básicas, notas, posiciones (EMU → unidades lógicas). Lo que no se pueda representar se importa como imagen.
   - **ODP** (OpenDocument): parser equivalente sobre `content.xml`.
-  - **PPT** (binario antiguo) y casos difíciles: convertir a PPTX con LibreOffice si está instalado (`soffice --headless --convert-to pptx`).
+  - **PPT** (binario antiguo de PowerPoint 97–2003): parser propio en Rust, **sin depender de LibreOffice ni de ningún programa instalado** (decisión del autor). El archivo es un contenedor OLE/CFB (crate `cfb`) con registros binarios [MS-PPT]: se extraen texto con formato básico, imágenes y posiciones; lo que no se pueda reconstruir se importa como imagen o se omite con aviso.
+  - Regla general: **ninguna importación requiere software externo**; todo va dentro de Tiza.
   - **PDF**: cada página → texto editable con su posición/fuente (pdf.js `getTextContent`) + imágenes extraídas; los gráficos vectoriales que no se puedan reconstruir quedan como imagen de fondo de la página.
 - Luego: MCP (8), LaTeX completo (9), exportación (10), pulido (11).
