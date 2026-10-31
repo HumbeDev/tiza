@@ -9,7 +9,8 @@
     "undo": "Undo",
     "redo": "Redo",
     "newSlide": "New slide",
-    "text": "Text"
+    "text": "Text",
+    "equation": "Equation"
   },
   "shapes": {
     "rect": "Rectangle",
@@ -50,7 +51,12 @@
     "editTextHint": "Double-click the text (or press Enter) to edit it.",
     "align": "Align",
     "arrange": "Arrange",
-    "delete": "Delete"
+    "delete": "Delete",
+    "math": "Equation",
+    "underline": "Underline",
+    "strike": "Strikethrough",
+    "bulletList": "Bulleted list",
+    "orderedList": "Numbered list"
   },
   "align": {
     "left": "Align left",
@@ -73,5 +79,21 @@
   },
   "status": {
     "slideOf": "Slide {{current}} of {{total}}"
+  },
+  "math": {
+    "editor": "Equation editor",
+    "code": "LaTeX code",
+    "visual": "Visual",
+    "done": "Done",
+    "hint": "Esc or Ctrl+Enter to finish",
+    "placeholder": "Type LaTeX, e.g. \\frac{a}{b}",
+    "ok": "✓ Valid LaTeX",
+    "error": "LaTeX error: {{message}}",
+    "edit": "Edit equation",
+    "editHint": "Double-click the equation (or press Enter) to edit it. Drag a corner to scale it.",
+    "preamble": "Document LaTeX macros",
+    "preambleHint": "\\newcommand definitions available in every equation.",
+    "insertInline": "Insert formula",
+    "inlineHint": "Tip: type $x^2$ in the text to insert a formula."
   }
 }

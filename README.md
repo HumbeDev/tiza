@@ -16,8 +16,8 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 | Fase | Contenido                                                  | Estado       |
 | ---- | ---------------------------------------------------------- | ------------ |
 | 0    | Entorno, esqueleto Tauri, idiomas                          | ✅           |
-| 1    | Documento y lienzo básico (formas, texto, mover, deshacer) | 🧪 en prueba |
-| 2    | **Texto enriquecido y ecuaciones LaTeX**                   | —            |
+| 1    | Documento y lienzo básico (formas, texto, mover, deshacer) | ✅           |
+| 2    | **Texto enriquecido y ecuaciones LaTeX**                   | 🧪 en prueba |
 | 3    | Archivo `.tiza`, autosave y recuperación                   | —            |
 | 4    | **Servidor MCP para agentes de IA**                        | —            |
 | 5    | Imágenes y video                                           | —            |
@@ -44,11 +44,25 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 - Bloquear elementos para que no se muevan.
 - Editar texto con doble clic o Enter.
 
+**Ecuaciones LaTeX** (100 % sin internet)
+
+- Botón **Ecuación**: bloque de ecuación movible y escalable (arrastrar una esquina escala la fórmula).
+- Editor con dos pestañas que editan lo mismo: **Código LaTeX** (resaltado, autocompletado al escribir `\`, cierre de llaves) y **Visual** (MathLive: fracciones, raíces, matrices sin escribir código).
+- Vista previa en vivo en la diapositiva; si el LaTeX tiene un error se muestra el mensaje y se mantiene el último resultado válido.
+- **Fórmulas dentro del texto**: escribe `$E=mc^2$` y se convierte en fórmula. Haz clic en ella para editar su LaTeX. (`$5 y $10` se quedan como texto.)
+- **Macros del documento**: `\newcommand` globales para todas las ecuaciones (panel derecho, sin nada seleccionado).
+- Paquetes incluidos: `amsmath`, `physics`, `mhchem` (química), `mathtools`, `braket`, `cancel`, `cases`, `color`, `boldsymbol`, `gensymb`, `enclose`.
+
+**Texto enriquecido**
+
+- Negrita, cursiva, subrayado, tachado, listas con viñetas y numeradas (mientras editas el texto).
+
 **Propiedades**
 
 - Posición, tamaño, rotación y opacidad exactas.
 - Formas: tipo, relleno, contorno, grosor, radio de esquinas.
-- Texto: tamaño, color, alineación, negrita, cursiva.
+- Texto: tamaño, color, alineación.
+- Ecuación: tamaño y color.
 
 **General**
 

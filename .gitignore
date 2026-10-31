@@ -27,3 +27,4 @@ test-results/
 # Logs
 *.log
 npm-debug.log*
+public/vendor/

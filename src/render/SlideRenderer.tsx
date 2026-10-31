@@ -1,5 +1,6 @@
 import { memo } from "react";
 import type { Element, Page, Slide } from "../document";
+import MathView from "../elements/math/MathView";
 import ShapeView from "../elements/ShapeView";
 import TextView from "../elements/TextView";
 
@@ -40,7 +41,13 @@ function ElementView({ el, mode, editing }: { el: Element; mode: RenderMode; edi
         opacity: el.opacity,
       }}
     >
-      {el.kind === "shape" ? <ShapeView el={el} /> : <TextView el={el} editing={editing} />}
+      {el.kind === "shape" ? (
+        <ShapeView el={el} />
+      ) : el.kind === "text" ? (
+        <TextView el={el} editing={editing} />
+      ) : (
+        <MathView el={el} />
+      )}
     </div>
   );
 }

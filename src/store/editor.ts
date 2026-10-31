@@ -1,7 +1,14 @@
 import { applyPatches, enablePatches, type Draft, type Patch, produceWithPatches } from "immer";
 import { create } from "zustand";
 import type { Element, Presentation, Slide } from "../document";
+import { createMath } from "../document/factory";
 import { aabb, union } from "../document/geometry";
+import {
+  type MathRender,
+  renderMath,
+  renderMathSync,
+  setPreamble as setMathPreamble,
+} from "../math/mathjax";
 import { createPresentation, createSlide, newId } from "../document/factory";
 
 enablePatches();
@@ -45,6 +52,10 @@ const set = useEditor.setState;
 export function loadDocument(doc: Presentation): void {
   set(initialState(doc), true);
 }
+
+// Keep MathJax's global macros in sync with the document, including after undo/redo.
+setMathPreamble(get().doc.latex.preamble);
+useEditor.subscribe((s) => setMathPreamble(s.doc.latex.preamble));
 
 // ---------------------------------------------------------------- history
 
@@ -131,6 +142,13 @@ export function selectedElements(s: EditorState): Element[] {
 function draftSlide(doc: Draft<Presentation>): Draft<Slide> {
   const id = get().currentSlideId;
   return doc.slides.find((sl) => sl.id === id) ?? doc.slides[0];
+}
+
+/** Elements with these ids on any slide (ids are unique across the presentation). */
+function* draftElements(doc: Draft<Presentation>, ids: Set<string>): Generator<Draft<Element>> {
+  for (const slide of doc.slides) {
+    for (const el of slide.elements) if (ids.has(el.id)) yield el;
+  }
 }
 
 // ---------------------------------------------------------------- selection
@@ -232,8 +250,7 @@ export function updateElements(
 ): void {
   const wanted = new Set(ids);
   change((doc) => {
-    for (const el of draftSlide(doc).elements) {
-      if (!wanted.has(el.id)) continue;
+    for (const el of draftElements(doc, wanted)) {
       if (typeof fields === "function") fields(el);
       else Object.assign(el, fields);
     }
@@ -248,7 +265,7 @@ export function moveElements(
   mergeKey?: string,
 ): void {
   change((doc) => {
-    for (const el of draftSlide(doc).elements) {
+    for (const el of draftElements(doc, new Set(origin.keys()))) {
       const o = origin.get(el.id);
       if (!o || el.locked) continue;
       el.x = o.x + dx;
@@ -370,4 +387,76 @@ export function alignSelected(how: Alignment): void {
       el.y += o.dy;
     }
   });
+}
+
+// ---------------------------------------------------------------- LaTeX
+
+export function setPreamble(preamble: string, mergeKey = "preamble"): void {
+  change((doc) => {
+    doc.latex.preamble = preamble;
+  }, mergeKey);
+}
+
+/** Resizes a formula's box to its rendered size, keeping it anchored per `align`. */
+function fitMath(el: Draft<Element>, render: MathRender): void {
+  if (el.kind !== "math") return;
+  const w = render.width * el.fontSize;
+  const h = render.height * el.fontSize;
+  if (el.align === "center") el.x += (el.w - w) / 2;
+  else if (el.align === "right") el.x += el.w - w;
+  el.y += (el.h - h) / 2;
+  el.w = w;
+  el.h = h;
+}
+
+function refitMath(id: string, latex: string, mergeKey?: string): void {
+  void renderMath(latex, true).then((r) => {
+    if (!r.ok) return;
+    updateElements(
+      [id],
+      (el) => {
+        if (el.kind === "math" && el.latex === latex) fitMath(el, r.render);
+      },
+      mergeKey,
+    );
+  });
+}
+
+/** Changes a formula; the box follows the new size. Invalid LaTeX is kept as typed. */
+export function setMathLatex(id: string, latex: string, mergeKey?: string): void {
+  const r = renderMathSync(latex, true);
+  updateElements(
+    [id],
+    (el) => {
+      if (el.kind !== "math") return;
+      el.latex = latex;
+      if (r?.ok) fitMath(el, r.render);
+    },
+    mergeKey,
+  );
+  if (!r) refitMath(id, latex, mergeKey);
+}
+
+export function setMathFontSize(id: string, fontSize: number, mergeKey?: string): void {
+  const el = currentSlide(get()).elements.find((e) => e.id === id);
+  if (el?.kind !== "math") return;
+  const r = renderMathSync(el.latex, true);
+  updateElements(
+    [id],
+    (d) => {
+      if (d.kind !== "math") return;
+      d.fontSize = fontSize;
+      if (r?.ok) fitMath(d, r.render);
+    },
+    mergeKey,
+  );
+  if (!r) refitMath(id, el.latex, mergeKey);
+}
+
+/** Adds a formula to the current slide, centered at (cx, cy). Resolves to its id. */
+export async function insertMath(latex: string, cx: number, cy: number): Promise<string> {
+  const r = await renderMath(latex, true);
+  const el = createMath(latex, cx, cy, r.ok ? r.render : { width: 4, height: 1.2 });
+  addElement(el);
+  return el.id;
 }

@@ -113,7 +113,7 @@ El autor se inspira en proyectos como ArtCraft, escritos en Rust nativo. Para *e
 | Estado | **Zustand** + **Immer** (parches para deshacer/rehacer) | |
 | Mover/redimensionar/rotar | **Implementación propia** (`src/canvas/`, `src/document/geometry.ts`) | Moveable está sin mantenimiento desde 2023 |
 | Texto enriquecido | **TipTap** (ProseMirror) | Nodo personalizado para matemáticas inline |
-| Ecuaciones (render) | **MathJax** empaquetado localmente, salida **SVG** | Soporta `amsmath`, `physics`, `mhchem`, etc. Sin CDN |
+| Ecuaciones (render) | **MathJax 4** (`@mathjax/src`) empaquetado localmente, salida **SVG** | Soporta `amsmath`, `physics`, `mhchem`, etc. Sin CDN |
 | Ecuaciones (editor visual) | **MathLive** empaquetado localmente | Produce LaTeX; mismo dato que el modo código |
 | Servidor MCP (fase 4) | **rmcp** (SDK oficial de MCP para Rust) + Streamable HTTP | Apache-2.0. Esquemas de herramientas con `schemars` |
 | Editor de código | **CodeMirror 6** | Para LaTeX, HTML de simulaciones y vista de código |
@@ -538,7 +538,7 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - ESLint, Prettier, rustfmt, clippy (`-D warnings`), Vitest, `cargo test`.
 - Pendiente del autor: cambiar Rust del paquete de Arch a `rustup` (`sudo pacman -S rustup` → `rustup default stable`), e instalar `gst-plugins-base` para video en WebKitGTK.
 
-### Fase 1 — 2026-10-30 🧪 (pendiente de prueba manual del autor)
+### Fase 1 — 2026-10-30 ✅ (probada por el autor)
 - Modelo de datos en Rust (`src-tauri/src/document/`) con tests de JSON; tipos TS generados con **ts-rs** (tauri-specta 2 sigue en RC).
 - Store Zustand + Immer con parches: deshacer/rehacer ilimitado; los gestos continuos se agrupan con `mergeKey` y `seal()`.
 - Mover/redimensionar/rotar y guías magnéticas **implementados a mano** en vez de Moveable (sin releases desde 2023, riesgo con React 19). La geometría es pura y tiene tests.
@@ -547,3 +547,13 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Pendiente: agrupar (Ctrl+G) queda para después; portapapeles solo interno (no del sistema).
 - Pendiente para la fase 4 (MCP): las acciones de elementos operan sobre la diapositiva actual; agregarles un `slideId` explícito.
 - Orden de fases cambiado por el autor (2026-10-30): **2 Ecuaciones → 3 Archivo → 4 MCP**. TikZ/Tectonic sigue en la fase 8.
+
+### Fase 2 — 2026-10-30 🧪 (pendiente de prueba manual del autor)
+- **MathJax 4** (`src/math/mathjax.ts`): sin CDN. Las fuentes que MathJax pide bajo demanda se resuelven con `import.meta.glob` → Vite las parte en chunks locales (10 MB en total, solo se cargan las que se usan). `linebreaks.inline = false` (MathJax 4 parte las fórmulas inline en varios SVG). Los errores TeX se lanzan (no se dibujan) para mostrarlos en el editor. `\href` se elimina del SVG.
+- Tamaño de las fórmulas determinista: `viewBox` en milésimas de em × `fontSize`. Un elemento `math` siempre conserva la proporción; redimensionar escala `fontSize`.
+- Texto enriquecido con **TipTap 3** (JSON en `TextElement.doc`, tipado en Rust como `RichNode`). Se renderiza con un renderizador estático propio (`RichText.tsx`); TipTap solo se carga al editar.
+- Fórmula inline: nodo `inlineMath` con regla de entrada propia estilo Pandoc (no empieza ni termina con espacio).
+- Editor de ecuaciones: CodeMirror 6 (modo `stex` + autocompletado) y MathLive (cargado bajo demanda; fuentes copiadas a `public/vendor/` por `postinstall`).
+- Preámbulo global en `Presentation.latex.preamble`; el store lo sincroniza con MathJax (también tras deshacer).
+- Las acciones de elementos ahora buscan por id en todas las diapositivas (preparando la fase MCP).
+- Pendiente: color/tamaño por fragmento de texto; alineación por párrafo.

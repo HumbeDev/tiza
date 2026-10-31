@@ -9,7 +9,8 @@
     "undo": "Annuler",
     "redo": "Rétablir",
     "newSlide": "Nouvelle diapositive",
-    "text": "Texte"
+    "text": "Texte",
+    "equation": "Équation"
   },
   "shapes": {
     "rect": "Rectangle",
@@ -50,7 +51,12 @@
     "editTextHint": "Double-cliquez sur le texte (ou appuyez sur Entrée) pour le modifier.",
     "align": "Aligner",
     "arrange": "Organiser",
-    "delete": "Supprimer"
+    "delete": "Supprimer",
+    "math": "Équation",
+    "underline": "Souligné",
+    "strike": "Barré",
+    "bulletList": "Liste à puces",
+    "orderedList": "Liste numérotée"
   },
   "align": {
     "left": "Aligner à gauche",
@@ -73,5 +79,21 @@
   },
   "status": {
     "slideOf": "Diapositive {{current}} sur {{total}}"
+  },
+  "math": {
+    "editor": "Éditeur d’équations",
+    "code": "Code LaTeX",
+    "visual": "Visuel",
+    "done": "Terminé",
+    "hint": "Échap ou Ctrl+Entrée pour terminer",
+    "placeholder": "Tapez du LaTeX, p. ex. \\frac{a}{b}",
+    "ok": "✓ LaTeX valide",
+    "error": "Erreur LaTeX : {{message}}",
+    "edit": "Modifier l’équation",
+    "editHint": "Double-cliquez sur l’équation (ou appuyez sur Entrée) pour la modifier. Faites glisser un coin pour la redimensionner.",
+    "preamble": "Macros LaTeX du document",
+    "preambleHint": "Définitions \\newcommand disponibles dans toutes les équations.",
+    "insertInline": "Insérer une formule",
+    "inlineHint": "Astuce : tapez $x^2$ dans le texte pour insérer une formule."
   }
 }

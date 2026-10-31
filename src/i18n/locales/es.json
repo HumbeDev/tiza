@@ -9,7 +9,8 @@
     "undo": "Deshacer",
     "redo": "Rehacer",
     "newSlide": "Nueva diapositiva",
-    "text": "Texto"
+    "text": "Texto",
+    "equation": "Ecuación"
   },
   "shapes": {
     "rect": "Rectángulo",
@@ -50,7 +51,12 @@
     "editTextHint": "Haz doble clic en el texto (o pulsa Enter) para editarlo.",
     "align": "Alinear",
     "arrange": "Organizar",
-    "delete": "Eliminar"
+    "delete": "Eliminar",
+    "math": "Ecuación",
+    "underline": "Subrayado",
+    "strike": "Tachado",
+    "bulletList": "Lista con viñetas",
+    "orderedList": "Lista numerada"
   },
   "align": {
     "left": "Alinear a la izquierda",
@@ -73,5 +79,21 @@
   },
   "status": {
     "slideOf": "Diapositiva {{current}} de {{total}}"
+  },
+  "math": {
+    "editor": "Editor de ecuaciones",
+    "code": "Código LaTeX",
+    "visual": "Visual",
+    "done": "Listo",
+    "hint": "Esc o Ctrl+Enter para terminar",
+    "placeholder": "Escribe LaTeX, p. ej. \\frac{a}{b}",
+    "ok": "✓ LaTeX válido",
+    "error": "Error de LaTeX: {{message}}",
+    "edit": "Editar ecuación",
+    "editHint": "Haz doble clic en la ecuación (o pulsa Enter) para editarla. Arrastra una esquina para escalarla.",
+    "preamble": "Macros LaTeX del documento",
+    "preambleHint": "Definiciones \\newcommand disponibles en todas las ecuaciones.",
+    "insertInline": "Insertar fórmula",
+    "inlineHint": "Truco: escribe $x^2$ en el texto para insertar una fórmula."
   }
 }
