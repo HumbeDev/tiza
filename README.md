@@ -16,19 +16,18 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 
 ## Estado
 
-| Fase | Contenido                                                  | Estado       |
-| ---- | ---------------------------------------------------------- | ------------ |
-| 0    | Entorno, esqueleto Tauri, idiomas                          | ✅           |
-| 1    | Documento y lienzo básico (formas, texto, mover, deshacer) | ✅           |
-| 2    | Texto enriquecido y ecuaciones LaTeX                       | ✅           |
-| 3    | **Archivos `.tiza`, instaladores y versión web**           | 🧪 en prueba |
-| 4    | **Simulaciones HTML** y páginas web                        | 🧪 en prueba |
-| 5    | Servidor MCP para agentes de IA                            | —            |
-| 6    | Imágenes y video                                           | —            |
-| 7    | Modo presentación y vista del presentador                  | —            |
-| 8    | LaTeX completo (TikZ) con Tectonic                         | —            |
-| 9    | Exportar a PDF / HTML / PNG                                | —            |
-| 10   | Temas, pulido e instaladores firmados                      | —            |
+| Fase | Contenido                                                                     | Estado       |
+| ---- | ----------------------------------------------------------------------------- | ------------ |
+| 0–2  | Entorno, lienzo, texto enriquecido y ecuaciones LaTeX                         | ✅           |
+| 3    | Archivos `.tiza`, instaladores y versión web                                  | ✅           |
+| 4    | Simulaciones HTML (páginas web por URL: pendiente)                            | ✅           |
+| 5    | **Modo presentación**, vista del presentador, notas, plantilla de diapositiva | 🧪 en prueba |
+| 6    | Imágenes y video (sistema de assets)                                          | —            |
+| 7    | **Importar PPTX, ODP, PDF y PPT** como diapositivas editables                 | —            |
+| 8    | Servidor MCP para agentes de IA                                               | —            |
+| 9    | LaTeX completo (TikZ) con Tectonic                                            | —            |
+| 10   | Exportar a PDF / HTML / PNG                                                   | —            |
+| 11   | Temas, pulido e instaladores firmados                                         | —            |
 
 ## Funcionalidades disponibles
 
@@ -84,12 +83,25 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 - **Recuperación**: si Tiza se cierra de golpe, al volver a abrirla ofrece recuperar los cambios (autoguardado cada 15 s).
 - En la versión web, Guardar descarga el archivo (en Chrome/Edge guarda directamente en el archivo elegido).
 
+**Modo presentación** (F5 desde el principio, Shift+F5 desde la diapositiva actual)
+
+- Con dos pantallas: el **público** ve la presentación a pantalla completa en la **pantalla externa** y tú ves la **vista del presentador** en la otra: diapositiva actual, la siguiente, **notas**, cronómetro (pausar/reiniciar) y reloj.
+- Con una sola pantalla: solo la vista del público. «Ensayar en ventanas» abre ambas vistas en ventanas normales para practicar.
+- Teclado y **clicker**: →, ↓, Espacio, Av Pág, clic = siguiente · ←, ↑, Re Pág, clic derecho = anterior · Inicio/Fin · número + Enter = ir a esa diapositiva · **B** pantalla negra · **W** pantalla blanca · Esc = terminar.
+- Las diapositivas **ocultas** se saltan. Las páginas HTML son **interactivas** durante la presentación (un clic sobre ellas no avanza).
+- **Transiciones** por diapositiva: fundido o deslizar, con duración.
+- Versión web: pantalla completa en la pestaña; botón «Vista del presentador» abre una ventana sincronizada (arrástrala a la otra pantalla).
+
+**Notas del orador**: panel debajo del lienzo en cada diapositiva (se pliega).
+
+**Plantilla de diapositiva del archivo**: clic derecho en una miniatura → «Usar como plantilla de nuevas diapositivas». Cada diapositiva nueva empieza como copia de esa (logos, barras de un evento…). «Nueva diapositiva en blanco» la ignora.
+
 **Interfaz**
 
 - Menú **Archivo** (Nueva, Abrir, Guardar, Guardar como, Ajustes) y grupo **Insertar** (Texto, Ecuación, HTML, Formas ▾).
 - **Clic derecho** en elementos (cortar, copiar, pegar, duplicar, orden, bloquear, eliminar), en el lienzo vacío y en las miniaturas (duplicar, **ocultar en la presentación**, subir/bajar, eliminar).
 - **Tema claro / oscuro / sistema** (botón en la barra o en Ajustes).
-- **Ajustes** (Ctrl+,): idioma, tema y **diagnóstico** (versión, GPU que usa el motor web, WebGL, botón para copiar el informe).
+- **Ajustes** (Ctrl+, o menú Archivo): idioma, tema, **tarjeta gráfica** (automática o alto rendimiento; Tiza se reinicia sola y conserva tus cambios) y **diagnóstico** (las GPU reales del sistema, cuál usa Tiza, WebGL).
 - Panel de propiedades con **secciones plegables** (recuerda cuáles cerraste) y posición/tamaño compactos.
 
 **General**

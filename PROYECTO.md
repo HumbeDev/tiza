@@ -580,3 +580,24 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Miniaturas muestran un marcador, nunca la página en vivo.
 - Ejemplo: `examples/pendulo.html` (RK4, sliders de L, g, θ₀).
 - Pendiente: elemento `web` (URL en vivo), póster/captura para miniaturas y exportación, API `postMessage` de parámetros.
+
+### Mejoras de UI — 2026-10-31 (rama `mejoras-ui`)
+- Menú Archivo, grupo Insertar, menús contextuales, ocultar diapositivas, tema claro/oscuro/sistema, Ajustes, panel plegable.
+- GPU: WebKit oculta la GPU real ("Apple GPU"); Rust la lee del sistema (`src-tauri/src/gpu.rs`: sysfs + pci.ids en Linux, CIM en Windows, system_profiler en macOS). Preferencia en `settings.json` del directorio de configuración, aplicada como variables de entorno **antes** de iniciar WebKit (PRIME offload + `WEBKIT_DISABLE_DMABUF_RENDERER` con NVIDIA; `--force_high_performance_gpu` en WebView2). Si el arranque con la GPU dedicada no llega a mostrar la UI, el siguiente arranque vuelve a la automática (marcador `gpu-launch-pending`). Reinicio con `restart_app` y restauración silenciosa de cambios (`RecoveryInfo.autoRestore`).
+- CodeMirror con `classHighlighter` + colores por variables CSS (legible en oscuro).
+
+### Fase 5 — Modo presentación — 2026-10-31 🧪 (pendiente de prueba con proyector)
+- Rust (`src-tauri/src/present.rs`) crea las ventanas `audience` (pantalla completa) y `presenter`, guarda el estado (diapositiva visible actual, pantalla negra/blanca) y lo emite como evento `present:status`. Pantalla del público = externa; presentador = panel interno (`eDP`/`LVDS`/`DSI`) o la principal. En **Hyprland** (Wayland no deja posicionar ventanas) se usa `hyprctl dispatch focusmonitor` antes de abrir cada ventana.
+- Ambas ventanas cargan el mismo bundle con `#audience` / `#presenter`. Web: pantalla completa en la pestaña + vista del presentador en otra ventana vía `BroadcastChannel`.
+- Modelo: `Slide.transition` (fade/slide + duración) y `Presentation.templateSlideId` (plantilla por archivo), ambos opcionales y compatibles con archivos anteriores (sin cambio de `schemaVersion`).
+- Notas del orador editables bajo el lienzo; tamaño de letra de las notas ajustable en la vista del presentador.
+- Pendiente: revelado paso a paso (builds), elegir manualmente la pantalla del público, puntero láser.
+
+### Plan acordado (2026-10-31)
+- **Fase 6 — Imágenes y video**: sistema de assets (hash, `tiza-asset://`, range requests). Requisito para importar.
+- **Fase 7 — Importar presentaciones** como objetos editables:
+  - **PPTX** (Office Open XML): parser en Rust (`zip` + XML): diapositivas, cuadros de texto con formato, imágenes, formas básicas, notas, posiciones (EMU → unidades lógicas). Lo que no se pueda representar se importa como imagen.
+  - **ODP** (OpenDocument): parser equivalente sobre `content.xml`.
+  - **PPT** (binario antiguo) y casos difíciles: convertir a PPTX con LibreOffice si está instalado (`soffice --headless --convert-to pptx`).
+  - **PDF**: cada página → texto editable con su posición/fuente (pdf.js `getTextContent`) + imágenes extraídas; los gráficos vectoriales que no se puedan reconstruir quedan como imagen de fondo de la página.
+- Luego: MCP (8), LaTeX completo (9), exportación (10), pulido (11).
