@@ -188,7 +188,6 @@
     "acceleration": "Aceleração",
     "software": "Sem aceleração por GPU (renderização por software)",
     "hardware": "Acelerado por GPU",
-    "gpuHint": "O Tiza desenha com o motor web do sistema, que usa a GPU. A integrada basta para slides, equações e simulações 2D. No Windows você pode escolher a GPU em Configurações → Tela → Gráficos.",
     "copy": "Copiar diagnóstico",
     "copied": "Copiado ✓",
     "gpus": "Placas de vídeo",
@@ -196,7 +195,11 @@
     "inUse": "Em uso pelo Tiza",
     "webEngine": "O motor web informa",
     "masked": "nome genérico que o WebKit mostra por privacidade, não é sua GPU real",
-    "offloadHint": "O Tiza está usando a {{name}}. Para usar a {{other}} em simulações 3D pesadas, abra-o com “prime-run tiza”.",
-    "offloadOn": "Aberto com a GPU dedicada ({{name}})."
+    "gpuChoice": "Placa de vídeo",
+    "gpuDefault": "Automática (economia de energia)",
+    "gpuHigh": "Alto desempenho",
+    "restartQuestion": "O Tiza será reiniciado para usar a placa de vídeo escolhida. Suas alterações não salvas serão mantidas.",
+    "restart": "Reiniciar",
+    "gpuHelp": "O Tiza desenha com o motor web do sistema, que usa a GPU. A integrada basta para slides, equações e simulações 2D, e economiza bateria. Escolha Alto desempenho para simulações 3D pesadas. Se a GPU dedicada não conseguir iniciar, o Tiza volta sozinho para Automática."
   }
 }

@@ -188,7 +188,6 @@
     "acceleration": "Accélération",
     "software": "Pas d’accélération GPU (rendu logiciel)",
     "hardware": "Accéléré par le GPU",
-    "gpuHint": "Tiza dessine avec le moteur web du système, qui utilise le GPU. Le GPU intégré suffit pour les diapositives, les équations et les simulations 2D. Sous Windows, vous pouvez choisir le GPU dans Paramètres → Affichage → Graphiques.",
     "copy": "Copier le diagnostic",
     "copied": "Copié ✓",
     "gpus": "Cartes graphiques",
@@ -196,7 +195,11 @@
     "inUse": "Utilisée par Tiza",
     "webEngine": "Le moteur web indique",
     "masked": "nom générique affiché par WebKit pour la confidentialité, pas votre vrai GPU",
-    "offloadHint": "Tiza utilise la {{name}}. Pour utiliser la {{other}} dans des simulations 3D lourdes, lancez-le avec « prime-run tiza ».",
-    "offloadOn": "Lancé avec le GPU dédié ({{name}})."
+    "gpuChoice": "Carte graphique",
+    "gpuDefault": "Automatique (économie d’énergie)",
+    "gpuHigh": "Hautes performances",
+    "restartQuestion": "Tiza va redémarrer pour utiliser la carte graphique choisie. Vos modifications non enregistrées sont conservées.",
+    "restart": "Redémarrer",
+    "gpuHelp": "Tiza dessine avec le moteur web du système, qui utilise le GPU. Le GPU intégré suffit pour les diapositives, les équations et les simulations 2D, et économise la batterie. Choisissez Hautes performances pour des simulations 3D lourdes. Si le GPU dédié ne démarre pas, Tiza revient tout seul à Automatique."
   }
 }

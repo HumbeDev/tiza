@@ -113,12 +113,6 @@ export default function Toolbar() {
         label={`${t("settings.theme")}: ${t(`settings.themes.${theme}`)} → ${t(`settings.themes.${nextTheme}`)}`}
         onClick={() => setTheme(nextTheme)}
       />
-      <ToolButton
-        icon="settings"
-        label={t("settings.title")}
-        shortcut="Ctrl+,"
-        onClick={openSettings}
-      />
     </header>
   );
 }

@@ -2,8 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { create } from "zustand";
 import { isDesktop } from "../files/platform";
+import { invoke } from "@tauri-apps/api/core";
+import type { GpuPreference } from "../bindings/GpuPreference";
 import type { GpuReport } from "../bindings/GpuReport";
-import { diagnosticsText, gpuInUse, gpuInfo, isLinux, systemGpus } from "./diagnostics";
+import { platform } from "../files/platform";
+import { restartApp } from "../files/session";
+import { diagnosticsText, gpuInUse, gpuInfo, systemGpus } from "./diagnostics";
 import Icon from "./Icon";
 import LanguagePicker from "./LanguagePicker";
 import { THEMES, setTheme, useTheme } from "./theme";
@@ -26,12 +30,31 @@ function Dialog() {
   const gpu = useMemo(() => gpuInfo(), []);
   const [system, setSystem] = useState<GpuReport | null>(null);
   const [copied, setCopied] = useState(false);
+  const [gpuPref, setGpuPref] = useState<GpuPreference | null>(null);
   const inUse = gpuInUse(system);
-  const other = system?.devices.find((d) => d !== inUse);
+  const primary = system?.devices.find((d) => d.primary);
+  const dedicated = system?.devices.find((d) => !d.primary);
+  const isWindows = /Windows/i.test(navigator.userAgent);
+  const canChooseGpu = isDesktop && ((system?.devices.length ?? 0) > 1 || isWindows);
 
   useEffect(() => {
     void systemGpus().then(setSystem);
+    if (isDesktop) {
+      invoke<GpuPreference>("get_gpu_preference").then(setGpuPref, () => setGpuPref("default"));
+    }
   }, []);
+
+  async function changeGpu(preference: GpuPreference) {
+    const ok = await platform.confirm(
+      t("settings.restartQuestion"),
+      t("settings.restart"),
+      t("file.cancel"),
+    );
+    if (!ok) return;
+    await invoke("set_gpu_preference", { preference });
+    setGpuPref(preference);
+    await restartApp();
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeSettings();
@@ -89,6 +112,29 @@ function Dialog() {
           </div>
         </section>
 
+        {canChooseGpu && (
+          <section className="modal-section">
+            <h3>
+              {t("settings.gpuChoice")}
+              <HelpTip text={t("settings.gpuHelp")} />
+            </h3>
+            <select
+              value={gpuPref ?? "default"}
+              disabled={gpuPref === null}
+              onChange={(e) => void changeGpu(e.target.value as GpuPreference)}
+            >
+              <option value="default">
+                {t("settings.gpuDefault")}
+                {primary ? ` — ${primary.name}` : ""}
+              </option>
+              <option value="highPerformance">
+                {t("settings.gpuHigh")}
+                {dedicated ? ` — ${dedicated.name}` : ""}
+              </option>
+            </select>
+          </section>
+        )}
+
         <section className="modal-section">
           <h3>{t("settings.diagnostics")}</h3>
           <dl className="diagnostics">
@@ -136,19 +182,23 @@ function Dialog() {
               {gpu.webgl ? "WebGL ✓" : "WebGL ✗"} · {gpu.webgl2 ? "WebGL 2 ✓" : "WebGL 2 ✗"}
             </dd>
           </dl>
-          {inUse && other && isLinux() && (
-            <p className="hint">
-              {system?.offloadRequested
-                ? t("settings.offloadOn", { name: inUse.name })
-                : t("settings.offloadHint", { name: inUse.name, other: other.name })}
-            </p>
-          )}
-          <p className="hint">{t("settings.gpuHint")}</p>
           <button type="button" className="small-button" onClick={copy}>
             <Icon name="copy" /> {copied ? t("settings.copied") : t("settings.copy")}
           </button>
         </section>
       </div>
     </div>
+  );
+}
+
+/** A small (?) that shows `text` on hover or keyboard focus. */
+function HelpTip({ text }: { text: string }) {
+  return (
+    <span className="help-tip" tabIndex={0} aria-label={text}>
+      ?
+      <span className="help-tip-text" role="tooltip">
+        {text}
+      </span>
+    </span>
   );
 }

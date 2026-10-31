@@ -1,15 +1,11 @@
 import { autocompletion, closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
 import { html } from "@codemirror/lang-html";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import {
-  bracketMatching,
-  defaultHighlightStyle,
-  StreamLanguage,
-  syntaxHighlighting,
-} from "@codemirror/language";
+import { bracketMatching, StreamLanguage, syntaxHighlighting } from "@codemirror/language";
 import { stex } from "@codemirror/legacy-modes/mode/stex";
 import { EditorState, type Extension } from "@codemirror/state";
 import { EditorView, keymap, placeholder } from "@codemirror/view";
+import { classHighlighter } from "@lezer/highlight";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { latexCompletions } from "./latexCompletions";
 
@@ -53,7 +49,8 @@ export default function CodeEditor({
           closeBrackets(),
           bracketMatching(),
           ...LANGUAGES[language](),
-          syntaxHighlighting(defaultHighlightStyle),
+          // Token classes (.tok-*) are colored in app.css, so they follow the light/dark theme.
+          syntaxHighlighting(classHighlighter),
           EditorView.lineWrapping,
           placeholder(placeholderText ?? ""),
           keymap.of([

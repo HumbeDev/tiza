@@ -1,4 +1,5 @@
 // New / open / save / save as, autosave with crash recovery, window title and close guard.
+import { invoke } from "@tauri-apps/api/core";
 import type { Presentation } from "../document";
 import { createPresentation } from "../document/factory";
 import i18n from "../i18n";
@@ -11,7 +12,7 @@ import {
   useEditor,
 } from "../store/editor";
 import { type FileError, toFileError } from "./format";
-import { platform } from "./platform";
+import { isDesktop, platform } from "./platform";
 
 const AUTOSAVE_MS = 15_000;
 const t = i18n.t.bind(i18n);
@@ -103,7 +104,14 @@ let startupDone = false;
 async function startup(): Promise<void> {
   if (startupDone) return;
   startupDone = true;
+  if (isDesktop) void invoke("confirm_gpu_launch").catch(() => {});
   const recovered = await platform.readRecovery().catch(() => null);
+  if (recovered?.autoRestore) {
+    loadDocument(recovered.doc, recovered.file);
+    markUnsaved();
+    await platform.clearRecovery();
+    return;
+  }
   if (recovered) {
     const restore = await platform.confirm(
       t("file.recoverQuestion", { name: recovered.file.name ?? untitled() }),
@@ -158,4 +166,11 @@ export function startSession(): () => void {
     clearInterval(timer);
     offClose();
   };
+}
+
+/** Restarts the desktop app, carrying unsaved changes over without asking. */
+export async function restartApp(): Promise<void> {
+  const s = state();
+  if (isDirty(s)) await platform.writeRecovery(s.doc, s.file, true);
+  await invoke("restart_app");
 }

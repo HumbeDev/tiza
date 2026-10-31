@@ -13,6 +13,8 @@ export interface Recovered {
   doc: Presentation;
   file: FileInfo;
   savedAt: string;
+  /** Saved by Tiza right before restarting itself: restore without asking. */
+  autoRestore?: boolean;
 }
 
 export interface Platform {
@@ -31,7 +33,7 @@ export interface Platform {
   confirm(message: string, okLabel: string, cancelLabel: string): Promise<boolean>;
   alert(message: string): Promise<void>;
   setTitle(title: string): void;
-  writeRecovery(doc: Presentation, file: FileInfo): Promise<void>;
+  writeRecovery(doc: Presentation, file: FileInfo, autoRestore?: boolean): Promise<void>;
   readRecovery(): Promise<Recovered | null>;
   clearRecovery(): Promise<void>;
   startupFile(): Promise<string | null>;
