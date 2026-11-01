@@ -753,6 +753,13 @@ input[type="color"] {
   background: #fff;
 }
 
+.sim-paint-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
 .element.interacting {
   outline: 6px solid var(--accent);
 }

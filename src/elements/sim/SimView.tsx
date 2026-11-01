@@ -60,6 +60,8 @@ function SimFrame({ el, interactive }: { el: SimEl; interactive: boolean }) {
           }}
         />
       )}
+      {/* WebKitGTK may never paint the iframe unless another layer overlaps it. */}
+      <div className="sim-paint-layer" aria-hidden="true" />
     </div>
   );
 }

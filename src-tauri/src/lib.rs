@@ -11,6 +11,7 @@ use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    settings::apply_webkit_workarounds();
     settings::apply_gpu_preference();
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())

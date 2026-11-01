@@ -88,13 +88,21 @@ pub fn high_performance_env(devices: &[gpu::GpuDevice]) -> Vec<(&'static str, &'
             ("__NV_PRIME_RENDER_OFFLOAD", "1"),
             ("__GLX_VENDOR_LIBRARY_NAME", "nvidia"),
             ("__VK_LAYER_NV_optimus", "NVIDIA_only"),
-            // WebKitGTK's DMA-BUF renderer shows a blank window on the proprietary driver.
-            ("WEBKIT_DISABLE_DMABUF_RENDERER", "1"),
         ]
     } else if devices.len() > 1 {
         vec![("DRI_PRIME", "1")]
     } else {
         Vec::new()
+    }
+}
+
+/// Linux: WebKitGTK's DMA-BUF renderer fails to paint iframes on some GPUs/compositors
+/// (HTML simulations showed as an empty box on Intel + Hyprland). The shared-memory path
+/// still uses the GPU for compositing. Users can override it by setting the variable.
+pub fn apply_webkit_workarounds() {
+    if cfg!(target_os = "linux") && std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none() {
+        // SAFETY: runs at startup on the main thread before any other thread exists.
+        unsafe { std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1") };
     }
 }
 
@@ -150,7 +158,6 @@ mod tests {
     fn picks_prime_variables_on_linux() {
         let nvidia = high_performance_env(&[dev("i915", true), dev("nvidia", false)]);
         assert!(nvidia.contains(&("__NV_PRIME_RENDER_OFFLOAD", "1")));
-        assert!(nvidia.contains(&("WEBKIT_DISABLE_DMABUF_RENDERER", "1")));
         let amd = high_performance_env(&[dev("i915", true), dev("amdgpu", false)]);
         assert_eq!(amd, vec![("DRI_PRIME", "1")]);
         assert!(high_performance_env(&[dev("i915", true)]).is_empty());
