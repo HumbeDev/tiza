@@ -33,9 +33,19 @@ export interface Platform {
   pickImportFile(): Promise<{ name: string; bytes: Uint8Array } | null>;
   /** An informational message (not an error). */
   notify(message: string): Promise<void>;
+  /** Lets the user choose a CSV/TSV file and returns its text; null when cancelled. */
+  pickCsvFile(): Promise<{ name: string; text: string } | null>;
   /** Lets the user choose an .html file and returns its contents; null when cancelled. */
   pickHtmlFile(): Promise<{ name: string; text: string } | null>;
   confirm(message: string, okLabel: string, cancelLabel: string): Promise<boolean>;
+  /**
+   * Asks what to do with recovered changes. Closing the dialog (or the app closing while it
+   * is open) must never lose them: that is "later".
+   */
+  askRecovery(
+    message: string,
+    labels: { recover: string; discard: string; later: string; discardSure: string },
+  ): Promise<"recover" | "discard" | "later">;
   alert(message: string): Promise<void>;
   setTitle(title: string): void;
   writeRecovery(doc: Presentation, file: FileInfo, autoRestore?: boolean): Promise<void>;
@@ -53,8 +63,8 @@ const APP_VERSION = __APP_VERSION__;
 const baseName = (path: string) => path.split(/[\\/]/).pop() ?? path;
 const withExtension = (name: string) => (/\.tiza$/i.test(name) ? name : `${name}.tiza`);
 const FILTERS = [{ name: "Tiza", extensions: ["tiza"] }];
-/** Formats Tiza can import (more will follow: odp, pdf, ppt). */
-const IMPORT_EXTENSIONS = ["pptx"];
+/** Formats Tiza can import (more will follow: odp, ppt). */
+const IMPORT_EXTENSIONS = ["pptx", "pdf"];
 
 // ---------------------------------------------------------------- desktop
 
@@ -95,7 +105,7 @@ const desktop: Platform = {
     const path = await dialog.open({
       multiple: false,
       directory: false,
-      filters: [{ name: "PowerPoint", extensions: IMPORT_EXTENSIONS }],
+      filters: [{ name: "PowerPoint, PDF", extensions: IMPORT_EXTENSIONS }],
     });
     if (typeof path !== "string") return null;
     const buffer = await wrap(invoke<ArrayBuffer>("read_import_file", { path }));
@@ -104,6 +114,16 @@ const desktop: Platform = {
 
   async notify(message) {
     await dialog.message(message, { title: "Tiza", kind: "info" });
+  },
+
+  async pickCsvFile() {
+    const path = await dialog.open({
+      multiple: false,
+      directory: false,
+      filters: [{ name: "CSV", extensions: ["csv", "tsv", "txt"] }],
+    });
+    if (typeof path !== "string") return null;
+    return { name: baseName(path), text: await wrap(invoke<string>("read_text_file", { path })) };
   },
 
   async pickHtmlFile() {
@@ -123,6 +143,19 @@ const desktop: Platform = {
 
   async alert(message) {
     await dialog.message(message, { title: "Tiza", kind: "error" });
+  },
+
+  async askRecovery(message, labels) {
+    const result = await dialog
+      .message(message, {
+        title: "Tiza",
+        kind: "warning",
+        buttons: { yes: labels.recover, no: labels.discard, cancel: labels.later },
+      })
+      .catch(() => null);
+    if (result === labels.recover || result === "Yes") return "recover";
+    if (result === labels.discard || result === "No") return "discard";
+    return "later";
   },
 
   setTitle(title) {
@@ -253,12 +286,31 @@ const web: Platform = {
 
   notify: (message) => Promise.resolve(window.alert(message)),
 
+  async pickCsvFile() {
+    const picked = await pickFile(".csv,.tsv,.txt,text/csv");
+    if (!picked) return null;
+    // Excel on Windows writes Latin-1: fall back to it when the text isn't valid UTF-8.
+    const bytes = new Uint8Array(await picked.arrayBuffer());
+    let text: string;
+    try {
+      text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    } catch {
+      text = new TextDecoder("latin1").decode(bytes);
+    }
+    return { name: picked.name, text };
+  },
+
   async pickHtmlFile() {
     const picked = await pickFile(".html,.htm,text/html");
     return picked ? { name: picked.name, text: await picked.text() } : null;
   },
 
   confirm: (message) => Promise.resolve(window.confirm(message)),
+
+  askRecovery(message, labels) {
+    if (window.confirm(message)) return Promise.resolve("recover");
+    return Promise.resolve(window.confirm(labels.discardSure) ? "discard" : "later");
+  },
   alert: (message) => Promise.resolve(window.alert(message)),
 
   setTitle(title) {

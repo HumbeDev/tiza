@@ -20,6 +20,17 @@ const state = useEditor.getState;
 
 export const untitled = (): string => t("file.untitled");
 
+/**
+ * True when the user chose "Later" for changes recovered from a previous session: that
+ * recovery file belongs to them, so this session must not overwrite or delete it.
+ */
+let recoveryPending = false;
+
+/** Deletes this session's recovery file, never a pending one from an earlier session. */
+async function clearOwnRecovery(): Promise<void> {
+  if (!recoveryPending) await platform.clearRecovery().catch(() => {});
+}
+
 function suggestedName(s: EditorState): string {
   const base = s.file.name ?? (s.doc.meta.title.trim() || untitled());
   return /\.tiza$/i.test(base) ? base : `${base}.tiza`;
@@ -45,7 +56,7 @@ async function confirmDiscard(): Promise<boolean> {
 export async function newPresentation(): Promise<void> {
   if (!(await confirmDiscard())) return;
   loadDocument(createPresentation("", i18n.language));
-  await platform.clearRecovery();
+  await clearOwnRecovery();
 }
 
 export async function openPresentation(): Promise<void> {
@@ -54,7 +65,7 @@ export async function openPresentation(): Promise<void> {
     const opened = await platform.open();
     if (!opened) return;
     loadDocument(opened.doc, opened.file);
-    await platform.clearRecovery();
+    await clearOwnRecovery();
   } catch (e) {
     await showFileError(e);
   }
@@ -82,7 +93,7 @@ async function saveWith(forceDialog: boolean): Promise<boolean> {
     // Only mark clean if nothing changed while the dialog was open.
     if ((state().past.at(-1) ?? null) === savedEntry) markSaved(file);
     else useEditor.setState({ file });
-    await platform.clearRecovery();
+    await clearOwnRecovery();
     return true;
   } catch (e) {
     await showFileError(e);
@@ -109,21 +120,27 @@ async function startup(): Promise<void> {
   if (recovered?.autoRestore) {
     loadDocument(recovered.doc, recovered.file);
     markUnsaved();
-    await platform.clearRecovery();
+    await clearOwnRecovery();
     return;
   }
   if (recovered) {
-    const restore = await platform.confirm(
+    const choice = await platform.askRecovery(
       t("file.recoverQuestion", { name: recovered.file.name ?? untitled() }),
-      t("file.recover"),
-      t("file.discard"),
+      {
+        recover: t("file.recover"),
+        discard: t("file.discard"),
+        later: t("file.later"),
+        discardSure: t("file.discardRecoverySure"),
+      },
     );
-    if (restore) {
+    if (choice === "recover") {
       loadDocument(recovered.doc, recovered.file);
       markUnsaved();
       return;
     }
-    await platform.clearRecovery();
+    // Only an explicit "Discard" deletes the recovered changes.
+    if (choice === "discard") await platform.clearRecovery();
+    else recoveryPending = true;
   }
   const path = await platform.startupFile().catch(() => null);
   if (path) await openPath(path);
@@ -148,13 +165,13 @@ export function startSession(): () => void {
     const head = s.past.at(-1) ?? null;
     if (!isDirty(s) || head === lastAutosaved) return;
     lastAutosaved = head;
-    void platform.writeRecovery(s.doc, s.file).catch(() => {});
+    if (!recoveryPending) void platform.writeRecovery(s.doc, s.file).catch(() => {});
   }, AUTOSAVE_MS);
 
   const offClose = platform.onClose(
     async () => {
       const ok = await confirmDiscard();
-      if (ok) await platform.clearRecovery().catch(() => {});
+      if (ok) await clearOwnRecovery();
       return ok;
     },
     () => isDirty(state()),
@@ -174,7 +191,7 @@ export function startSession(): () => void {
  */
 export async function restartApp(): Promise<void> {
   const s = state();
-  if (isDirty(s)) await platform.writeRecovery(s.doc, s.file, true);
+  if (isDirty(s) && !recoveryPending) await platform.writeRecovery(s.doc, s.file, true);
   const restarted = await invoke<boolean>("restart_app");
   if (!restarted) await platform.alert(t("settings.restartManually"));
 }
@@ -192,18 +209,14 @@ export async function importPresentation(): Promise<void> {
   if (!picked) return;
   const base = picked.name.replace(/\.[^.]+$/, "");
   try {
-    const [{ importPptx }, { putAsset }] = await Promise.all([
-      import("../import/pptx"),
-      import("../assets/store"),
-    ]);
-    const { doc, skipped } = await importPptx(picked.bytes, {
-      lang: i18n.language,
-      title: base,
-      putAsset,
-    });
+    const { putAsset } = await import("../assets/store");
+    const options = { lang: i18n.language, title: base, putAsset };
+    const { doc, skipped } = /\.pdf$/i.test(picked.name)
+      ? await (await import("../import/pdf")).importPdf(picked.bytes, options)
+      : await (await import("../import/pptx")).importPptx(picked.bytes, options);
     loadDocument(doc, { name: `${base}.tiza`, path: null });
     markUnsaved();
-    await platform.clearRecovery();
+    await clearOwnRecovery();
     const missing = Object.entries(skipped)
       .map(([kind, n]) => `${t(`import.kinds.${kind}`, { defaultValue: kind })}: ${n}`)
       .join(", ");

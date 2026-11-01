@@ -126,7 +126,7 @@ export function validate(doc: any): Presentation {
     for (const el of slide.elements) {
       if (
         typeof el?.id !== "string" ||
-        !["shape", "text", "math", "sim", "image"].includes(el.kind)
+        !["shape", "text", "math", "sim", "image", "video", "table"].includes(el.kind)
       ) {
         fail(`element ${String(el?.id)}`);
       }
@@ -139,7 +139,11 @@ export function validate(doc: any): Presentation {
     for (const el of slide.elements) {
       el.locked ??= false;
       if (el.kind === "sim") el.allowNetwork ??= false;
-      if (el.kind === "image" && !ASSET_NAME.test(String(el.asset))) fail(`image ${String(el.id)}`);
+      if ((el.kind === "image" || el.kind === "video") && !ASSET_NAME.test(String(el.asset))) {
+        fail(`${String(el.kind)} ${String(el.id)}`);
+      }
+      if (el.kind === "table" && !(Array.isArray(el.rows) && el.rows.every(Array.isArray)))
+        fail(`table ${String(el.id)}`);
     }
   }
   return doc as Presentation;
