@@ -80,7 +80,7 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 - Un solo archivo con toda la presentación; se abre igual en Windows, macOS, Linux y en la versión web.
 - Doble clic sobre un `.tiza` abre Tiza (con la app instalada).
 - Indicador de cambios sin guardar (● en el título y punto en el botón Guardar) y confirmación antes de perderlos.
-- **Recuperación**: si Tiza se cierra de golpe, al volver a abrirla ofrece recuperar los cambios (autoguardado cada 15 s).
+- **Recuperación**: si Tiza se cierra de golpe, al volver a abrirla ofrece **Recuperar / Descartar / Más tarde** (autoguardado cada 15 s). Cerrar el aviso nunca borra los cambios recuperados.
 - En la versión web, Guardar descarga el archivo (en Chrome/Edge guarda directamente en el archivo elegido).
 
 **Modo presentación** (F5 desde el principio, Shift+F5 desde la diapositiva actual)
@@ -94,11 +94,19 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 
 **Notas del orador**: panel debajo del lienzo en cada diapositiva (se pliega).
 
-**Plantilla de diapositiva del archivo**: clic derecho en una miniatura → «Usar como plantilla de nuevas diapositivas». Cada diapositiva nueva empieza como copia de esa (logos, barras de un evento…). «Nueva diapositiva en blanco» la ignora.
+**Plantilla de diapositiva del archivo**: clic derecho en una miniatura → «Guardar como plantilla de nuevas diapositivas». Se guarda **una copia en ese momento**: cada diapositiva nueva empieza así (logos, barras de un evento…) aunque después cambies la original. «Nueva diapositiva en blanco» la ignora; «Quitar la plantilla» la borra.
 
 **Imágenes**: botón **Imagen** (PNG, JPG, GIF, WebP, SVG, BMP, AVIF). Se guardan **dentro del `.tiza`** (una sola copia aunque la repitas). Encuadre: imagen completa, rellenar y recortar, o estirar.
 
-**Importar PowerPoint (.pptx)**: _Archivo → Importar PowerPoint…_ crea una presentación nueva con todo **editable**: textos (negrita, cursiva, subrayado, tachado, tamaños, colores, alineación, viñetas), imágenes, formas y líneas con sus colores, fondos, diapositivas ocultas, **notas del orador** y los elementos de los patrones/diseños (logos, barras). Sin programas externos: funciona igual en la app y en la web. Aún no convierte tablas, gráficos, SmartArt ni ecuaciones de Office (avisa cuántos omitió).
+**Video**: botón **Video** (WebM, MP4, MOV, OGV). En el editor muestra un cuadro (doble clic para reproducirlo ahí); al presentar tiene controles y no cambia de diapositiva al hacer clic. Opciones: reproducir al aparecer la diapositiva, repetir, sin sonido, y reproducir solo un tramo (inicio/fin). Viaja dentro del `.tiza`.
+
+**Tablas tipo Excel**: botón **Tabla** → tabla vacía o **desde un CSV** (detecta `,` `;` o tabulador; acentos de Excel en Windows incluidos). Encabezado fijo al desplazar, filas de colores alternos, números alineados a la derecha, 5 combinaciones de colores. Las tablas grandes **se desplazan dentro de su caja**, también al presentar. Doble clic para editar celdas (Enter baja, Tab avanza); agregar o quitar filas y columnas desde el panel.
+
+**Animaciones paso a paso (como `\pause` de Beamer)**: clic derecho → _Aparecer en el siguiente clic_, o en el panel _Animación_: aparecer o fundido, y en qué clic. Al presentar, cada clic revela el siguiente paso antes de pasar de diapositiva; al retroceder se ve la diapositiva anterior completa. En el editor cada elemento animado muestra su número de clic.
+
+**Importar PowerPoint (.pptx)**: _Archivo → Importar PowerPoint…_ crea una presentación nueva con todo **editable**: textos (negrita, cursiva, subrayado, tachado, tamaños, colores, alineación, viñetas), imágenes, formas y líneas con sus colores, fondos, diapositivas ocultas, **notas del orador** y los elementos de los patrones/diseños (logos, barras). Sin programas externos: funciona igual en la app y en la web. Las **tablas** de PowerPoint se importan como tablas y los **videos** incrustados como video. Aún no convierte gráficos, SmartArt ni ecuaciones de Office (avisa cuántos omitió).
+
+**Importar PDF**: _Archivo → Importar PowerPoint o PDF…_. Cada página es una diapositiva: lo gráfico (figuras, fondos, gráficos) queda como imagen de fondo y **el texto encima, editable**, con su posición, tamaño, color, negrita y cursiva.
 
 **Interfaz**
 
