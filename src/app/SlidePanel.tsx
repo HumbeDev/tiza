@@ -23,7 +23,8 @@ export default function SlidePanel() {
   const slides = useEditor((s) => s.doc.slides);
   const page = useEditor((s) => s.doc.page);
   const currentId = useEditor((s) => s.currentSlideId);
-  const templateId = useEditor((s) => s.doc.templateSlideId);
+  // The template is a copy; it keeps the id of the slide it was taken from.
+  const templateId = useEditor((s) => s.doc.template?.id);
   const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
   const drag = useRef<{ from: number; startY: number; active: boolean } | null>(null);
   const [dropAt, setDropAt] = useState<number | null>(null);

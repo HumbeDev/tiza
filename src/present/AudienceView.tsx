@@ -27,13 +27,22 @@ export default function AudienceView({ client }: { client: PresentClient }) {
   return (
     <div
       className={cursorHidden ? "audience no-cursor" : "audience"}
-      onClick={() => client.nav({ kind: "next" })}
+      onClick={(e) => {
+        // Tables, videos and pages are used with the mouse; clicking them doesn't advance.
+        if (!(e.target as HTMLElement).closest("[data-interactive]")) client.nav({ kind: "next" });
+      }}
       onContextMenu={(e) => {
         e.preventDefault();
         client.nav({ kind: "prev" });
       }}
     >
-      <SlideStage slide={current} page={snapshot.doc.page} mode="present" animate />
+      <SlideStage
+        slide={current}
+        page={snapshot.doc.page}
+        mode="present"
+        animate
+        step={status.step}
+      />
       {status.blank !== "none" && <div className={`blank-screen ${status.blank}`} />}
     </div>
   );

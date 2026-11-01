@@ -1,6 +1,6 @@
 import { applyPatches, enablePatches, type Draft, type Patch, produceWithPatches } from "immer";
 import { create } from "zustand";
-import type { Element, Presentation, Slide, Transition } from "../document";
+import type { Build, Element, Presentation, Slide, Transition } from "../document";
 import { createMath } from "../document/factory";
 import { aabb, union } from "../document/geometry";
 import {
@@ -223,10 +223,7 @@ function cloneSlide(source: Slide): Slide {
 
 /** New slide after the current one; a copy of the template slide if the file has one. */
 export function addSlide(): void {
-  const { doc } = get();
-  const template = doc.templateSlideId
-    ? doc.slides.find((s) => s.id === doc.templateSlideId)
-    : undefined;
+  const { template } = get().doc;
   insertSlideAfterCurrent(
     template ? { ...cloneSlide(template), notes: "", hidden: false } : createSlide(),
   );
@@ -263,7 +260,6 @@ export function deleteSlide(id: string): void {
   if (index < 0) return;
   change((doc) => {
     doc.slides.splice(index, 1);
-    if (doc.templateSlideId === id) delete doc.templateSlideId;
   });
   if (s.currentSlideId === id) {
     const slides = get().doc.slides;
@@ -280,11 +276,15 @@ export function moveSlide(from: number, to: number): void {
   });
 }
 
-/** Makes `id` the slide every new slide copies (or clears it with null). */
+/**
+ * Saves a copy of slide `id` as the template every new slide starts from (null removes
+ * it). It is a snapshot: editing that slide later doesn't change the template.
+ */
 export function setTemplateSlide(id: string | null): void {
+  const slide = id ? get().doc.slides.find((s) => s.id === id) : undefined;
   change((doc) => {
-    if (id) doc.templateSlideId = id;
-    else delete doc.templateSlideId;
+    if (slide) doc.template = structuredClone(slide);
+    else delete doc.template;
   });
 }
 
@@ -581,4 +581,45 @@ export function fitSimBoxToView(id: string): void {
     el.y += (el.h - h) / 2;
     el.h = h;
   });
+}
+
+// ---------------------------------------------------------------- builds (step-by-step reveal)
+
+/** Highest build step used on a slide (0 when nothing builds). */
+export function maxBuildStep(slide: Slide): number {
+  return Math.max(0, ...slide.elements.map((e) => e.build?.step ?? 0));
+}
+
+/** Sets or removes (null) the build of these elements. */
+export function setBuild(ids: string[], build: Build | null, mergeKey?: string): void {
+  updateElements(
+    ids,
+    (el) => {
+      if (build) el.build = { ...build };
+      else delete el.build;
+    },
+    mergeKey,
+  );
+}
+
+/** The selected elements appear together on the next click after the current last step. */
+export function buildOnNextClick(): void {
+  const s = get();
+  const slide = currentSlide(s);
+  const ids = new Set(s.selectedIds);
+  const others = slide.elements.filter((e) => !ids.has(e.id));
+  const step = Math.max(0, ...others.map((e) => e.build?.step ?? 0)) + 1;
+  setBuild(s.selectedIds, { step, effect: "appear" });
+}
+
+// ---------------------------------------------------------------- tables
+
+export function setTableRows(id: string, rows: string[][], mergeKey?: string): void {
+  updateElements(
+    [id],
+    (el) => {
+      if (el.kind === "table") el.rows = rows.map((r) => [...r]);
+    },
+    mergeKey,
+  );
 }

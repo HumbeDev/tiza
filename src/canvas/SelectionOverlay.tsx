@@ -1,7 +1,7 @@
 import { useShallow } from "zustand/react/shallow";
 import type { Element } from "../document";
 import type { Rect } from "../document/geometry";
-import { selectedElements, useEditor } from "../store/editor";
+import { currentSlide, selectedElements, useEditor } from "../store/editor";
 
 export interface Guides {
   x: number[];
@@ -40,12 +40,30 @@ export default function SelectionOverlay({ scale, guides, marquee }: Props) {
   const page = useEditor((s) => s.doc.page);
   const selected = useEditor(useShallow(selectedElements));
   const editingId = useEditor((s) => s.editingId);
+  const elements = useEditor((s) => currentSlide(s).elements);
   const px = 1 / scale;
   const single =
     selected.length === 1 && !selected[0].locked && editingId === null ? selected[0] : null;
 
   return (
     <div className="overlay" style={{ width: page.width, height: page.height }}>
+      {elements
+        .filter((el) => el.build)
+        .map((el) => (
+          <div
+            key={`b${el.id}`}
+            className="build-badge"
+            style={{
+              left: el.x - 12 * px,
+              top: el.y - 12 * px,
+              width: 24 * px,
+              height: 24 * px,
+              fontSize: 13 * px,
+            }}
+          >
+            {el.build!.step}
+          </div>
+        ))}
       {selected.map((el) => (
         <div
           key={el.id}

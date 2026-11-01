@@ -8,10 +8,12 @@ interface Props {
   mode: RenderMode;
   /** Play the slide's transition when it appears. */
   animate?: boolean;
+  /** Build step: elements that appear on a later click are hidden. Omit to show all. */
+  step?: number;
 }
 
 /** A slide scaled to fit its container, centered, letterboxed on black. */
-export default function SlideStage({ slide, page, mode, animate }: Props) {
+export default function SlideStage({ slide, page, mode, animate, step }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
@@ -40,7 +42,7 @@ export default function SlideStage({ slide, page, mode, animate }: Props) {
           style={{ width: page.width * scale, height: page.height * scale, ...style }}
         >
           <div style={{ transform: `scale(${scale})`, transformOrigin: "0 0" }}>
-            <SlideRenderer slide={slide} page={page} mode={mode} />
+            <SlideRenderer slide={slide} page={page} mode={mode} step={step} />
           </div>
         </div>
       )}

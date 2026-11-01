@@ -3,12 +3,24 @@ import { type ReactNode, useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
-import type { Element, ImageFit, ShapeKind, SimFit, TextAlign, TransitionKind } from "../document";
+import type {
+  BuildEffect,
+  Element,
+  ImageFit,
+  ShapeKind,
+  SimFit,
+  TableTheme,
+  TextAlign,
+  TransitionKind,
+} from "../document";
+import { parseCsv } from "../elements/table/csv";
+import { platform } from "../files/platform";
 import { reloadSim } from "../elements/sim/reload";
 import {
   type Alignment,
   type ZOrder,
   alignSelected,
+  buildOnNextClick,
   currentSlide,
   deleteSelected,
   fitSimBoxToView,
@@ -16,10 +28,12 @@ import {
   reorderSelected,
   seal,
   selectedElements,
+  setBuild,
   setMathFontSize,
   setPreamble,
   setSlideBackground,
   setSlideTransition,
+  setTableRows,
   startEditing,
   stopEditing,
   updateElements,
@@ -56,6 +70,8 @@ export default function PropertiesPanel() {
       {selected.length > 1 && (
         <p className="hint">{t("props.multiple", { count: selected.length })}</p>
       )}
+
+      {selected.length > 0 && <BuildSection elements={selected} />}
 
       {selected.length > 0 && (
         <>
@@ -180,6 +196,205 @@ function MathProperties({ el }: { el: Element & { kind: "math" } }) {
       </button>
       {error && <p className="hint error">{t("math.error", { message: error })}</p>}
       <p className="hint">{t("math.editHint")}</p>
+    </Section>
+  );
+}
+
+/** Step-by-step reveal when presenting (like Beamer's \pause). */
+function BuildSection({ elements }: { elements: Element[] }) {
+  const { t } = useTranslation();
+  const ids = elements.map((e) => e.id);
+  const first = elements[0].build;
+  const same = elements.every(
+    (e) => (e.build?.step ?? 0) === (first?.step ?? 0) && e.build?.effect === first?.effect,
+  );
+  const effect = same ? (first?.effect ?? "none") : "mixed";
+  return (
+    <Section id="build" title={t("build.title")}>
+      <div className="grid-2">
+        <Field label={t("build.effect")}>
+          <select
+            value={effect}
+            onChange={(e) => {
+              const v = e.target.value as BuildEffect | "none";
+              setBuild(ids, v === "none" ? null : { step: first?.step ?? 1, effect: v });
+            }}
+          >
+            {effect === "mixed" && <option value="mixed">—</option>}
+            <option value="none">{t("build.none")}</option>
+            <option value="appear">{t("build.appear")}</option>
+            <option value="fade">{t("build.fade")}</option>
+          </select>
+        </Field>
+        {first && same && (
+          <NumberField
+            label={t("build.step")}
+            value={first.step}
+            min={1}
+            onChange={(step) =>
+              setBuild(
+                ids,
+                { ...first, step: Math.max(1, Math.round(step)) },
+                `build:${ids.join()}`,
+              )
+            }
+          />
+        )}
+      </div>
+      <button type="button" className="small-button" onClick={buildOnNextClick}>
+        <Icon name="build" /> {t("build.onNextClick")}
+      </button>
+      <p className="hint">{t("build.hint")}</p>
+    </Section>
+  );
+}
+
+function VideoProperties({ el }: { el: Element & { kind: "video" } }) {
+  const { t } = useTranslation();
+  const update = (fields: Partial<Element>, field: string) =>
+    updateElements([el.id], fields, `prop:${el.id}:${field}`);
+  const optional = (v: number) => (Number.isFinite(v) && v > 0 ? v : undefined);
+  return (
+    <Section id="video" title={t("props.video")}>
+      {(["autoplay", "loop", "muted"] as const).map((k) => (
+        <label key={k} className="check">
+          <input
+            type="checkbox"
+            checked={el[k]}
+            onChange={(e) => update({ [k]: e.target.checked } as Partial<Element>, k)}
+          />
+          {t(`video.${k}`)}
+        </label>
+      ))}
+      <div className="grid-2">
+        <NumberField
+          label={t("video.start")}
+          value={el.start ?? 0}
+          min={0}
+          onChange={(v) => update({ start: optional(v) } as Partial<Element>, "start")}
+        />
+        <NumberField
+          label={t("video.end")}
+          value={el.end ?? 0}
+          min={0}
+          onChange={(v) => update({ end: optional(v) } as Partial<Element>, "end")}
+        />
+      </div>
+      <p className="hint">{t("video.hint")}</p>
+    </Section>
+  );
+}
+
+const TABLE_THEMES: TableTheme[] = ["green", "blue", "gray", "orange", "purple"];
+
+function TableProperties({ el }: { el: Element & { kind: "table" } }) {
+  const { t } = useTranslation();
+  const editing = useEditor((s) => s.editingId === el.id);
+  const update = (fields: Partial<Element>, field: string) =>
+    updateElements([el.id], fields, `prop:${el.id}:${field}`);
+  const width = Math.max(1, ...el.rows.map((r) => r.length));
+  const grid = el.rows.map((r) => Array.from({ length: width }, (_, i) => r[i] ?? ""));
+
+  async function importCsv() {
+    const file = await platform.pickCsvFile();
+    if (file) setTableRows(el.id, parseCsv(file.text));
+  }
+
+  return (
+    <Section id="table" title={t("props.table")}>
+      <div className="button-row wrap">
+        <button
+          type="button"
+          className={editing ? "small-button active" : "small-button"}
+          onClick={() => (editing ? stopEditing() : startEditing(el.id))}
+        >
+          <Icon name="edit" /> {t("table.editCells")}
+        </button>
+        <button type="button" className="small-button" onClick={importCsv}>
+          <Icon name="import" /> {t("table.fromCsv")}
+        </button>
+      </div>
+      <div className="button-row wrap">
+        <button
+          type="button"
+          className="small-button"
+          onClick={() => setTableRows(el.id, [...grid, Array(width).fill("")])}
+        >
+          + {t("table.row")}
+        </button>
+        <button
+          type="button"
+          className="small-button"
+          onClick={() =>
+            setTableRows(
+              el.id,
+              grid.map((r) => [...r, ""]),
+            )
+          }
+        >
+          + {t("table.col")}
+        </button>
+        <button
+          type="button"
+          className="small-button"
+          disabled={grid.length <= 1}
+          onClick={() => setTableRows(el.id, grid.slice(0, -1))}
+        >
+          − {t("table.row")}
+        </button>
+        <button
+          type="button"
+          className="small-button"
+          disabled={width <= 1}
+          onClick={() =>
+            setTableRows(
+              el.id,
+              grid.map((r) => r.slice(0, -1)),
+            )
+          }
+        >
+          − {t("table.col")}
+        </button>
+      </div>
+      <Field label={t("table.theme")}>
+        <div className="button-row wrap">
+          {TABLE_THEMES.map((theme) => (
+            <button
+              key={theme}
+              type="button"
+              className={
+                el.theme === theme ? `swatch theme-${theme} active` : `swatch theme-${theme}`
+              }
+              aria-label={t(`table.themes.${theme}`)}
+              title={t(`table.themes.${theme}`)}
+              onClick={() => update({ theme } as Partial<Element>, "theme")}
+            />
+          ))}
+        </div>
+      </Field>
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={el.headerRow}
+          onChange={(e) => update({ headerRow: e.target.checked } as Partial<Element>, "header")}
+        />
+        {t("table.header")}
+      </label>
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={el.striped}
+          onChange={(e) => update({ striped: e.target.checked } as Partial<Element>, "striped")}
+        />
+        {t("table.striped")}
+      </label>
+      <NumberField
+        label={t("props.fontSize")}
+        value={el.fontSize}
+        min={6}
+        onChange={(fontSize) => update({ fontSize } as Partial<Element>, "fontSize")}
+      />
+      <p className="hint">{t("table.hint", { rows: grid.length, cols: width })}</p>
     </Section>
   );
 }
@@ -567,6 +782,8 @@ function ElementProperties({ el }: { el: Element }) {
 
       {el.kind === "math" && <MathProperties el={el} />}
       {el.kind === "sim" && <SimProperties el={el} />}
+      {el.kind === "video" && <VideoProperties el={el} />}
+      {el.kind === "table" && <TableProperties el={el} />}
       {el.kind === "image" && (
         <Section id="props.style" title={t("props.style")}>
           <Field label={t("image.fit")}>

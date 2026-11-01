@@ -24,7 +24,7 @@ const formatElapsed = (ms: number) => {
 /** The speaker's screen: current and next slide, notes, timer and clock. */
 export default function PresenterView({ client }: { client: PresentClient }) {
   const { t } = useTranslation();
-  const { snapshot, status, slides, current } = usePresentation(client);
+  const { snapshot, status, slides, current, steps } = usePresentation(client);
   const [now, setNow] = useState(() => Date.now());
   const [timer, setTimer] = useState(() => ({
     start: Date.now(),
@@ -81,6 +81,12 @@ export default function PresenterView({ client }: { client: PresentClient }) {
         </div>
         <div className="slide-counter">
           {t("status.slideOf", { current: status.index + 1, total: status.count })}
+          {steps > 0 && (
+            <span className="step-counter">
+              {" "}
+              · {t("present.stepOf", { current: status.step, total: steps })}
+            </span>
+          )}
         </div>
         <div className="clock">{clock}</div>
         <div className="presenter-actions">
@@ -129,7 +135,7 @@ export default function PresenterView({ client }: { client: PresentClient }) {
 
       <main className="presenter-main">
         <section className="presenter-current">
-          <SlideStage slide={current} page={snapshot.doc.page} mode="preview" />
+          <SlideStage slide={current} page={snapshot.doc.page} mode="preview" step={status.step} />
           {status.blank !== "none" && (
             <div className="blank-badge">{t(`present.${status.blank}Showing`)}</div>
           )}

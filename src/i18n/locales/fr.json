@@ -20,7 +20,9 @@
     "insert": "Insérer",
     "shapes": "Formes",
     "image": "Image",
-    "import": "Importer PowerPoint…"
+    "import": "Importer PowerPoint ou PDF…",
+    "video": "Vidéo",
+    "table": "Tableau"
   },
   "shapes": {
     "rect": "Rectangle",
@@ -41,9 +43,10 @@
     "moveDown": "Descendre",
     "hiddenHint": "Masquée : ignorée pendant la présentation",
     "newBlank": "Nouvelle diapositive vide",
-    "useAsTemplate": "Utiliser comme modèle des nouvelles diapositives",
+    "useAsTemplate": "Enregistrer comme modèle des nouvelles diapositives",
     "template": "Modèle",
-    "templateHint": "Les nouvelles diapositives commencent comme une copie de celle-ci"
+    "templateHint": "Les nouvelles diapositives commencent comme une copie de celle-ci, telle qu’elle était quand vous l’avez enregistrée comme modèle",
+    "removeTemplate": "Retirer le modèle"
   },
   "props": {
     "panel": "Propriétés",
@@ -81,7 +84,9 @@
     "hShort": "H",
     "rotShort": "Rot. °",
     "opacityShort": "Opac. %",
-    "image": "Image"
+    "image": "Image",
+    "video": "Vidéo",
+    "table": "Tableau"
   },
   "align": {
     "left": "Aligner à gauche",
@@ -131,7 +136,9 @@
     "discard": "Abandonner",
     "cancel": "Annuler",
     "recoverQuestion": "Tiza s’est fermé sans enregistrer les modifications de « {{name}} ». Les récupérer ?",
-    "recover": "Récupérer"
+    "recover": "Récupérer",
+    "later": "Plus tard",
+    "discardRecoverySure": "Supprimer définitivement les modifications récupérées ? (Annuler les conserve pour la prochaine fois.)"
   },
   "errors": {
     "file": {
@@ -241,7 +248,8 @@
       "none": "Aucune",
       "fade": "Fondu",
       "slide": "Glissement"
-    }
+    },
+    "stepOf": "étape {{current}}/{{total}}"
   },
   "image": {
     "fit": "Cadrage",
@@ -265,5 +273,44 @@
       "imageFormat": "images dans des formats non pris en charge (EMF/WMF/TIFF)",
       "shapeApprox": "formes dessinées comme des rectangles"
     }
+  },
+  "video": {
+    "autoplay": "Lire à l’apparition de la diapositive",
+    "loop": "En boucle",
+    "muted": "Sans son",
+    "start": "Début (s)",
+    "end": "Fin (s, 0 = jusqu’à la fin)",
+    "play": "Lire ici",
+    "hint": "Double-cliquez sur la vidéo pour la lire dans l’éditeur. Pendant la présentation elle a des commandes et cliquer dessus ne change pas de diapositive. WebM fonctionne partout ; MP4 nécessite les codecs du système sous Linux."
+  },
+  "table": {
+    "empty": "Tableau vide",
+    "fromCsv": "Depuis un CSV…",
+    "column": "Colonne {{n}}",
+    "editCells": "Modifier les cellules",
+    "row": "ligne",
+    "col": "colonne",
+    "theme": "Couleurs",
+    "themes": {
+      "green": "Vert",
+      "blue": "Bleu",
+      "gray": "Gris",
+      "orange": "Orange",
+      "purple": "Violet"
+    },
+    "header": "La première ligne est l’en-tête",
+    "striped": "Lignes de couleurs alternées",
+    "hint": "{{rows}} lignes × {{cols}} colonnes. Les grands tableaux défilent dans leur boîte (aussi pendant la présentation). Double-cliquez pour modifier ; Entrée descend, Tab avance."
+  },
+  "build": {
+    "title": "Animation",
+    "effect": "Apparaît",
+    "none": "Toujours visible",
+    "appear": "Au clic",
+    "fade": "Au clic, en fondu",
+    "step": "Numéro du clic",
+    "onNextClick": "Apparaître au prochain clic",
+    "remove": "Retirer l’animation",
+    "hint": "Comme \\pause dans Beamer : chaque clic révèle l’étape suivante avant de passer à la diapositive suivante."
   }
 }

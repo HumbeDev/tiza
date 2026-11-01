@@ -14,23 +14,28 @@ export type { NavAction, PresentSnapshot, PresentStatus };
 
 export const visibleSlides = (doc: Presentation): Slide[] => doc.slides.filter((s) => !s.hidden);
 
+/** Build steps of each visible slide. Same as `build_steps` in src-tauri/src/present.rs. */
+export const buildSteps = (doc: Presentation): number[] =>
+  visibleSlides(doc).map((s) => Math.max(0, ...s.elements.map((e) => e.build?.step ?? 0)));
+
 /** Same rules as `PresentStatus::apply` in src-tauri/src/present.rs. */
-export function applyNav(status: PresentStatus, action: NavAction): PresentStatus {
+export function applyNav(status: PresentStatus, action: NavAction, steps: number[]): PresentStatus {
   const last = Math.max(0, status.count - 1);
+  const stepsOf = (i: number) => steps[i] ?? 0;
   if (action.kind === "black" || action.kind === "white") {
     return { ...status, blank: status.blank === action.kind ? "none" : action.kind };
   }
-  const index =
-    action.kind === "next"
-      ? Math.min(status.index + 1, last)
-      : action.kind === "prev"
-        ? Math.max(status.index - 1, 0)
-        : action.kind === "first"
-          ? 0
-          : action.kind === "last"
-            ? last
-            : Math.min(action.index, last);
-  return { ...status, index, blank: "none" };
+  let { index, step } = status;
+  if (action.kind === "next") {
+    if (step < stepsOf(index)) step += 1;
+    else if (index < last) [index, step] = [index + 1, 0];
+  } else if (action.kind === "prev") {
+    if (step > 0) step -= 1;
+    else if (index > 0) [index, step] = [index - 1, stepsOf(index - 1)];
+  } else if (action.kind === "first") [index, step] = [0, 0];
+  else if (action.kind === "last") [index, step] = [last, 0];
+  else [index, step] = [Math.min(action.index, last), 0];
+  return { ...status, index, step, blank: "none" };
 }
 
 export interface PresentClient {
@@ -83,7 +88,7 @@ const isHostTab = !location.hash;
 function webNav(action: NavAction) {
   const snapshot = useWebPresentation.getState().snapshot;
   if (!snapshot) return;
-  const status = applyNav(snapshot.status, action);
+  const status = applyNav(snapshot.status, action, snapshot.steps);
   useWebPresentation.setState({ snapshot: { ...snapshot, status } });
   post({ type: "status", status });
 }
@@ -167,8 +172,13 @@ export async function startPresentation(
     await invoke("start_presentation", { doc, start, rehearse });
     return;
   }
-  const status: PresentStatus = { index: Math.min(start, count - 1), count, blank: "none" };
-  useWebPresentation.setState({ snapshot: { doc, status } });
+  const status: PresentStatus = {
+    index: Math.min(start, count - 1),
+    count,
+    step: 0,
+    blank: "none",
+  };
+  useWebPresentation.setState({ snapshot: { doc, status, steps: buildSteps(doc) } });
   if (!rehearse) await document.documentElement.requestFullscreen?.().catch(() => {});
 }
 

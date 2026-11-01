@@ -48,5 +48,11 @@ export function usePresentation(client: PresentClient) {
   }, [client]);
 
   const slides = snapshot ? visibleSlides(snapshot.doc) : [];
-  return { snapshot, status, slides, current: status ? slides[status.index] : undefined };
+  return {
+    snapshot,
+    status,
+    slides,
+    current: status ? slides[status.index] : undefined,
+    steps: snapshot && status ? (snapshot.steps[status.index] ?? 0) : 0,
+  };
 }

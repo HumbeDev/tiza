@@ -135,3 +135,43 @@ export function createImage(
     fit: "contain",
   };
 }
+
+/** A video box at its natural proportions (16:9 when unknown). */
+export function createVideo(asset: string, cx: number, cy: number, width = 1120): Element {
+  const w = width;
+  const h = (width * 9) / 16;
+  return {
+    ...base,
+    id: newId(),
+    x: cx - w / 2,
+    y: cy - h / 2,
+    w,
+    h,
+    kind: "video",
+    asset,
+    autoplay: false,
+    loop: false,
+    muted: false,
+  };
+}
+
+/** A table sized for its content (it scrolls inside its box when larger). */
+export function createTable(rows: string[][], cx: number, cy: number, fontSize = 30): Element {
+  const cols = Math.max(1, ...rows.map((r) => r.length));
+  const w = Math.min(1700, Math.max(600, cols * 240));
+  const h = Math.min(820, Math.max(240, rows.length * fontSize * 1.9 + 8));
+  return {
+    ...base,
+    id: newId(),
+    x: cx - w / 2,
+    y: cy - h / 2,
+    w,
+    h,
+    kind: "table",
+    rows,
+    headerRow: true,
+    striped: true,
+    theme: "green",
+    fontSize,
+  };
+}

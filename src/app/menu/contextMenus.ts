@@ -2,6 +2,8 @@
 import i18n from "../../i18n";
 import {
   addBlankSlide,
+  buildOnNextClick,
+  setBuild,
   addSlide,
   copySelected,
   currentSlide,
@@ -39,6 +41,12 @@ export function elementMenu(): MenuItem[] {
       label: t("menu.edit"),
       icon: "edit",
       shortcut: "Enter",
+      onSelect: () => startEditing(single.id),
+    });
+  } else if (single?.kind === "table" || single?.kind === "video") {
+    edit.push({
+      label: t(single.kind === "table" ? "table.editCells" : "video.play"),
+      icon: "edit",
       onSelect: () => startEditing(single.id),
     });
   } else if (single?.kind === "sim") {
@@ -79,6 +87,11 @@ export function elementMenu(): MenuItem[] {
       shortcut: "Ctrl+Shift+[",
       onSelect: () => reorderSelected("back"),
     },
+    separator,
+    { label: t("build.onNextClick"), icon: "build", onSelect: buildOnNextClick },
+    ...(selected.some((e) => e.build)
+      ? [{ label: t("build.remove"), onSelect: () => setBuild(state().selectedIds, null) }]
+      : []),
     separator,
     {
       label: t(allLocked ? "menu.unlock" : "menu.lock"),
@@ -121,7 +134,6 @@ export function canvasMenu(): MenuItem[] {
 export function slideMenu(slideId: string): MenuItem[] {
   const { doc } = state();
   const slides = doc.slides;
-  const isTemplate = doc.templateSlideId === slideId;
   const index = slides.findIndex((s) => s.id === slideId);
   const slide = slides[index];
   if (!slide) return [];
@@ -134,7 +146,7 @@ export function slideMenu(slideId: string): MenuItem[] {
         addSlide();
       },
     },
-    ...(doc.templateSlideId
+    ...(doc.template
       ? [
           {
             label: t("slides.newBlank"),
@@ -146,11 +158,10 @@ export function slideMenu(slideId: string): MenuItem[] {
         ]
       : []),
     { label: t("slides.duplicate"), icon: "copy", onSelect: () => duplicateSlide(slideId) },
-    {
-      label: t("slides.useAsTemplate"),
-      checked: isTemplate,
-      onSelect: () => setTemplateSlide(isTemplate ? null : slideId),
-    },
+    { label: t("slides.useAsTemplate"), onSelect: () => setTemplateSlide(slideId) },
+    ...(doc.template
+      ? [{ label: t("slides.removeTemplate"), onSelect: () => setTemplateSlide(null) }]
+      : []),
     {
       label: t(slide.hidden ? "slides.show" : "slides.hide"),
       icon: slide.hidden ? "eye" : "eyeOff",

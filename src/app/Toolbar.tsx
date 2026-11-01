@@ -1,7 +1,16 @@
 import { useTranslation } from "react-i18next";
 import type { ShapeKind } from "../document";
-import { pickImage } from "../assets/store";
-import { createImage, createShape, createSim, createText } from "../document/factory";
+import { pickImage, pickVideo } from "../assets/store";
+import { parseCsv } from "../elements/table/csv";
+import {
+  createImage,
+  createShape,
+  createSim,
+  createTable,
+  createText,
+  createVideo,
+} from "../document/factory";
+import { platform } from "../files/platform";
 import { showFileError } from "../files/session";
 import pendulum from "../../examples/pendulo.html?raw";
 import {
@@ -57,6 +66,50 @@ export default function Toolbar() {
       await showFileError(e);
     }
   }
+
+  async function insertVideo() {
+    try {
+      const picked = await pickVideo();
+      if (picked) addElement(createVideo(picked.name, cx, cy));
+    } catch (e) {
+      await showFileError(e);
+    }
+  }
+
+  async function insertCsvTable() {
+    try {
+      const file = await platform.pickCsvFile();
+      if (!file) return;
+      const rows = parseCsv(file.text);
+      if (rows.length) addElement(createTable(rows, cx, cy));
+    } catch (e) {
+      await showFileError(e);
+    }
+  }
+
+  const tableMenu = (): MenuItem[] => [
+    {
+      label: t("table.empty"),
+      icon: "table",
+      onSelect: () =>
+        addElement(
+          createTable(
+            [
+              [
+                t("table.column", { n: 1 }),
+                t("table.column", { n: 2 }),
+                t("table.column", { n: 3 }),
+              ],
+              ["", "", ""],
+              ["", "", ""],
+            ],
+            cx,
+            cy,
+          ),
+        ),
+    },
+    { label: t("table.fromCsv"), icon: "import", onSelect: insertCsvTable },
+  ];
 
   function insertHtml() {
     const el = createSim(pendulum, t("sim.exampleTitle"), cx, cy);
@@ -144,6 +197,8 @@ export default function Toolbar() {
         <ToolButton icon="text" label={t("toolbar.text")} onClick={insertText} showLabel />
         <ToolButton icon="math" label={t("toolbar.equation")} onClick={insertEquation} showLabel />
         <ToolButton icon="image" label={t("toolbar.image")} onClick={insertImage} showLabel />
+        <ToolButton icon="video" label={t("toolbar.video")} onClick={insertVideo} showLabel />
+        <MenuButton label={t("toolbar.table")} icon="table" items={tableMenu} />
         <ToolButton icon="html" label={t("toolbar.html")} onClick={insertHtml} showLabel />
         <MenuButton label={t("toolbar.shapes")} icon="shapes" items={shapeMenu} />
       </div>

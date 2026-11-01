@@ -1546,3 +1546,189 @@ input[type="color"] {
   height: 100%;
   user-select: none;
 }
+
+/* ---------------------------------------------------------------- builds */
+
+.build-fade {
+  transition: opacity 0.45s ease-out;
+}
+
+.build-pending.build-appear {
+  visibility: hidden;
+}
+
+.build-pending.build-fade {
+  opacity: 0 !important;
+}
+
+.step-counter {
+  color: #f0c674;
+}
+
+/* ---------------------------------------------------------------- video */
+
+.video-view,
+.video-view video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.video-view video {
+  object-fit: contain;
+}
+
+.video-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 160px;
+  color: #fff;
+  background: #1d1d1b;
+}
+
+/* ---------------------------------------------------------------- tables */
+
+.table-view {
+  --t-head: #2f6f4f;
+  --t-stripe: #edf5f0;
+  --t-border: #c9dccf;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  color: #1d1d1b;
+  background: #fff;
+  border: 1px solid var(--t-border);
+  border-radius: 0.25em;
+  font-variant-numeric: tabular-nums;
+  overscroll-behavior: contain;
+}
+
+.table-view.theme-blue {
+  --t-head: #1f5fa8;
+  --t-stripe: #eaf1fb;
+  --t-border: #c5d6ee;
+}
+
+.table-view.theme-gray {
+  --t-head: #44494d;
+  --t-stripe: #f1f2f3;
+  --t-border: #d3d6d9;
+}
+
+.table-view.theme-orange {
+  --t-head: #c25b12;
+  --t-stripe: #fdf1e7;
+  --t-border: #f0d2bb;
+}
+
+.table-view.theme-purple {
+  --t-head: #6b3fa0;
+  --t-stripe: #f3eefa;
+  --t-border: #dccdee;
+}
+
+.table-view table {
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  line-height: 1.3;
+}
+
+.table-view th,
+.table-view td {
+  padding: 0.35em 0.7em;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.table-view td + td,
+.table-view th + th {
+  border-left: 1px solid var(--t-border);
+}
+
+.table-view th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  font-weight: 700;
+  color: #fff;
+  background: var(--t-head);
+  border-left-color: color-mix(in srgb, #fff 25%, var(--t-head));
+}
+
+.table-view.striped tbody tr:nth-child(even) td {
+  background: var(--t-stripe);
+}
+
+.table-view .num {
+  text-align: right;
+}
+
+.table-view.editing input {
+  width: 100%;
+  min-width: 4em;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  border: none;
+  outline: none;
+  background: transparent;
+  user-select: text;
+}
+
+.table-view.editing td:focus-within,
+.table-view.editing th:focus-within {
+  outline: 0.12em solid var(--select);
+  outline-offset: -0.12em;
+}
+
+.swatch {
+  width: 26px;
+  height: 22px;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.swatch.active {
+  border-color: var(--fg);
+}
+
+.swatch.theme-green {
+  background: #2f6f4f;
+}
+
+.swatch.theme-blue {
+  background: #1f5fa8;
+}
+
+.swatch.theme-gray {
+  background: #44494d;
+}
+
+.swatch.theme-orange {
+  background: #c25b12;
+}
+
+.swatch.theme-purple {
+  background: #6b3fa0;
+}
+
+/* ---------------------------------------------------------------- build badges (editor) */
+
+.build-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #000;
+  background: #f0c674;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px #0005;
+}

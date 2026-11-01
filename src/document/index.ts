@@ -1,5 +1,7 @@
 // Types generated from Rust (src-tauri/src/document). Run `cargo test` in src-tauri to regenerate.
 export type { Aspect } from "../bindings/Aspect";
+export type { Build } from "../bindings/Build";
+export type { BuildEffect } from "../bindings/BuildEffect";
 export type { Element } from "../bindings/Element";
 export type { ElementContent } from "../bindings/ElementContent";
 export type { ImageElement } from "../bindings/ImageElement";
@@ -17,9 +19,12 @@ export type { SimElement } from "../bindings/SimElement";
 export type { SimFit } from "../bindings/SimFit";
 export type { Slide } from "../bindings/Slide";
 export type { Stroke } from "../bindings/Stroke";
+export type { TableElement } from "../bindings/TableElement";
+export type { TableTheme } from "../bindings/TableTheme";
 export type { TextAlign } from "../bindings/TextAlign";
 export type { TextElement } from "../bindings/TextElement";
 export type { Transition } from "../bindings/Transition";
 export type { TransitionKind } from "../bindings/TransitionKind";
+export type { VideoElement } from "../bindings/VideoElement";
 
 export const SCHEMA_VERSION = 1;

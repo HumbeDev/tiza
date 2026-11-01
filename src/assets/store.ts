@@ -6,6 +6,8 @@ import type { ImportedAsset } from "../bindings/ImportedAsset";
 import { isDesktop } from "../files/platform";
 
 export const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "avif"];
+/** WebM/VP9 plays everywhere; MP4 (H.264) needs the system's codecs on Linux. */
+export const VIDEO_EXTENSIONS = ["mp4", "m4v", "webm", "ogv", "mov"];
 
 const MIME: Record<string, string> = {
   png: "image/png",
@@ -17,10 +19,14 @@ const MIME: Record<string, string> = {
   bmp: "image/bmp",
   avif: "image/avif",
   mp4: "video/mp4",
+  m4v: "video/mp4",
   webm: "video/webm",
+  ogv: "video/ogg",
+  mov: "video/quicktime",
 };
 
-export const ASSET_NAME = /^sha256-[0-9a-f]{64}\.(png|jpg|jpeg|gif|webp|svg|bmp|avif|mp4|webm)$/;
+export const ASSET_NAME =
+  /^sha256-[0-9a-f]{64}\.(png|jpg|jpeg|gif|webp|svg|bmp|avif|mp4|m4v|webm|ogv|mov)$/;
 
 export const extensionOf = (name: string): string => name.split(".").pop()?.toLowerCase() ?? "";
 
@@ -85,26 +91,35 @@ async function naturalSize(blob: Blob): Promise<{ width?: number; height?: numbe
 }
 
 /** Asks the user for a picture and stores it. Null when cancelled. */
-export async function pickImage(): Promise<ImportedAsset | null> {
+export function pickImage(): Promise<ImportedAsset | null> {
+  return pickMedia(IMAGE_EXTENSIONS, "Images");
+}
+
+/** Asks the user for a video and stores it. Null when cancelled. */
+export function pickVideo(): Promise<ImportedAsset | null> {
+  return pickMedia(VIDEO_EXTENSIONS, "Video");
+}
+
+async function pickMedia(extensions: string[], label: string): Promise<ImportedAsset | null> {
   if (isDesktop) {
     const path = await dialog.open({
       multiple: false,
       directory: false,
-      filters: [{ name: "Images", extensions: IMAGE_EXTENSIONS }],
+      filters: [{ name: label, extensions }],
     });
     return typeof path === "string" ? invoke<ImportedAsset>("import_image", { path }) : null;
   }
   const file = await new Promise<File | null>((resolve) => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = IMAGE_EXTENSIONS.map((e) => `.${e}`).join(",");
+    input.accept = extensions.map((e) => `.${e}`).join(",");
     input.addEventListener("change", () => resolve(input.files?.[0] ?? null));
     input.addEventListener("cancel", () => resolve(null));
     input.click();
   });
   if (!file) return null;
   const name = await putAsset(new Uint8Array(await file.arrayBuffer()), extensionOf(file.name));
-  return { name, ...(await naturalSize(file)) };
+  return { name, ...(extensions === IMAGE_EXTENSIONS ? await naturalSize(file) : {}) };
 }
 
 /** Pixel size of an asset's image (used by the importers when the file doesn't say). */
@@ -113,4 +128,24 @@ export async function imageSize(
   ext: string,
 ): Promise<{ width?: number; height?: number }> {
   return naturalSize(new Blob([bytes as BlobPart], { type: MIME[ext] ?? "" }));
+}
+
+const mediaUrls = new Map<string, Promise<string>>();
+
+/**
+ * URL for <video>. WebKitGTK's media player can't read custom protocols (tizaasset://
+ * fails with MEDIA_ERR_SRC_NOT_SUPPORTED), so on the desktop the bytes are fetched from
+ * Rust once and played from a blob: URL. Very large videos therefore use that much memory.
+ */
+export function mediaUrl(name: string): Promise<string> {
+  if (!isDesktop) return Promise.resolve(assetUrl(name));
+  let url = mediaUrls.get(name);
+  if (!url) {
+    url = invoke<ArrayBuffer>("read_asset", { name }).then((bytes) =>
+      URL.createObjectURL(new Blob([bytes], { type: MIME[extensionOf(name)] ?? "video/mp4" })),
+    );
+    mediaUrls.set(name, url);
+    url.catch(() => mediaUrls.delete(name));
+  }
+  return url;
 }

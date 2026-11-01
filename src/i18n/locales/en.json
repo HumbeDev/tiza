@@ -20,7 +20,9 @@
     "insert": "Insert",
     "shapes": "Shapes",
     "image": "Image",
-    "import": "Import PowerPoint…"
+    "import": "Import PowerPoint or PDF…",
+    "video": "Video",
+    "table": "Table"
   },
   "shapes": {
     "rect": "Rectangle",
@@ -41,9 +43,10 @@
     "moveDown": "Move down",
     "hiddenHint": "Hidden: skipped when presenting",
     "newBlank": "New blank slide",
-    "useAsTemplate": "Use as template for new slides",
+    "useAsTemplate": "Save as template for new slides",
     "template": "Template",
-    "templateHint": "New slides start as a copy of this one"
+    "templateHint": "New slides start as a copy of this slide as it was when you saved it as template",
+    "removeTemplate": "Remove the template"
   },
   "props": {
     "panel": "Properties",
@@ -81,7 +84,9 @@
     "hShort": "H",
     "rotShort": "Rot. °",
     "opacityShort": "Opac. %",
-    "image": "Image"
+    "image": "Image",
+    "video": "Video",
+    "table": "Table"
   },
   "align": {
     "left": "Align left",
@@ -131,7 +136,9 @@
     "discard": "Discard",
     "cancel": "Cancel",
     "recoverQuestion": "Tiza closed without saving changes to “{{name}}”. Recover them?",
-    "recover": "Recover"
+    "recover": "Recover",
+    "later": "Later",
+    "discardRecoverySure": "Delete the recovered changes permanently? (Cancel keeps them for next time.)"
   },
   "errors": {
     "file": {
@@ -241,7 +248,8 @@
       "none": "None",
       "fade": "Fade",
       "slide": "Slide in"
-    }
+    },
+    "stepOf": "step {{current}}/{{total}}"
   },
   "image": {
     "fit": "Fit",
@@ -265,5 +273,44 @@
       "imageFormat": "pictures in unsupported formats (EMF/WMF/TIFF)",
       "shapeApprox": "shapes drawn as rectangles"
     }
+  },
+  "video": {
+    "autoplay": "Play automatically when the slide appears",
+    "loop": "Loop",
+    "muted": "Muted",
+    "start": "Start (s)",
+    "end": "End (s, 0 = until the end)",
+    "play": "Play here",
+    "hint": "Double-click the video to play it in the editor. When presenting it has controls and clicking it doesn't change slide. WebM plays everywhere; MP4 needs the system's codecs on Linux."
+  },
+  "table": {
+    "empty": "Empty table",
+    "fromCsv": "From CSV…",
+    "column": "Column {{n}}",
+    "editCells": "Edit cells",
+    "row": "row",
+    "col": "column",
+    "theme": "Colors",
+    "themes": {
+      "green": "Green",
+      "blue": "Blue",
+      "gray": "Gray",
+      "orange": "Orange",
+      "purple": "Purple"
+    },
+    "header": "First row is the header",
+    "striped": "Alternate row colors",
+    "hint": "{{rows}} rows × {{cols}} columns. Large tables scroll inside the box (also while presenting). Double-click to edit; Enter moves down, Tab moves right."
+  },
+  "build": {
+    "title": "Animation",
+    "effect": "Appears",
+    "none": "Always visible",
+    "appear": "On click",
+    "fade": "On click, fading in",
+    "step": "Click number",
+    "onNextClick": "Appear on the next click",
+    "remove": "Remove animation",
+    "hint": "Like \\pause in Beamer: each click reveals the next step before moving to the next slide."
   }
 }

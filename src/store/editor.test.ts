@@ -3,6 +3,9 @@ import { createPresentation, createShape, createText } from "../document/factory
 import {
   addBlankSlide,
   addElement,
+  buildOnNextClick,
+  maxBuildStep,
+  setBuild,
   addSlide,
   change,
   currentSlide,
@@ -189,14 +192,25 @@ describe("template slide", () => {
     expect(slide().elements).toHaveLength(0);
   });
 
-  it("forgets the template when its slide is deleted", () => {
+  it("is a snapshot: editing the original slide doesn't change it", () => {
+    addElement(createShape("rect", 100, 100));
+    setTemplateSlide(state().currentSlideId);
+    addElement(createShape("ellipse", 300, 300));
     addSlide();
-    const id = state().currentSlideId;
-    setTemplateSlide(id);
-    deleteSlide(id);
-    expect(state().doc.templateSlideId).toBeUndefined();
-    undo();
-    expect(state().doc.templateSlideId).toBe(id);
+    expect(slide().elements.map((e) => (e.kind === "shape" ? e.shape : e.kind))).toEqual(["rect"]);
+  });
+
+  it("survives deleting the original slide, and can be removed", () => {
+    addElement(createShape("rect", 100, 100));
+    const original = state().currentSlideId;
+    setTemplateSlide(original);
+    addBlankSlide();
+    deleteSlide(original);
+    addSlide();
+    expect(slide().elements).toHaveLength(1);
+    setTemplateSlide(null);
+    addSlide();
+    expect(slide().elements).toHaveLength(0);
   });
 });
 
@@ -216,5 +230,23 @@ describe("notes and transitions", () => {
     expect(slide().transition?.kind).toBe("fade");
     setSlideTransition(id, { kind: "none", durationMs: 300 });
     expect(slide().transition).toBeUndefined();
+  });
+});
+
+describe("builds", () => {
+  it("adds each selection on the next click", () => {
+    const a = createShape("rect", 1, 1);
+    const b = createShape("rect", 2, 2);
+    const c = createShape("rect", 3, 3);
+    [a, b, c].forEach(addElement);
+    select([b.id]);
+    buildOnNextClick();
+    select([a.id, c.id]);
+    buildOnNextClick();
+    const steps = Object.fromEntries(slide().elements.map((e) => [e.id, e.build?.step]));
+    expect(steps).toEqual({ [a.id]: 2, [b.id]: 1, [c.id]: 2 });
+    expect(maxBuildStep(slide())).toBe(2);
+    setBuild([a.id, b.id, c.id], null);
+    expect(maxBuildStep(slide())).toBe(0);
   });
 });

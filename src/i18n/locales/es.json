@@ -20,7 +20,9 @@
     "insert": "Insertar",
     "shapes": "Formas",
     "image": "Imagen",
-    "import": "Importar PowerPoint…"
+    "import": "Importar PowerPoint o PDF…",
+    "video": "Video",
+    "table": "Tabla"
   },
   "shapes": {
     "rect": "Rectángulo",
@@ -41,9 +43,10 @@
     "moveDown": "Bajar",
     "hiddenHint": "Oculta: se salta al presentar",
     "newBlank": "Nueva diapositiva en blanco",
-    "useAsTemplate": "Usar como plantilla de nuevas diapositivas",
+    "useAsTemplate": "Guardar como plantilla de nuevas diapositivas",
     "template": "Plantilla",
-    "templateHint": "Las nuevas diapositivas empiezan como una copia de esta"
+    "templateHint": "Las nuevas diapositivas empiezan como copia de esta, tal como estaba cuando la guardaste como plantilla",
+    "removeTemplate": "Quitar la plantilla"
   },
   "props": {
     "panel": "Propiedades",
@@ -81,7 +84,9 @@
     "hShort": "Al",
     "rotShort": "Giro °",
     "opacityShort": "Opac. %",
-    "image": "Imagen"
+    "image": "Imagen",
+    "video": "Video",
+    "table": "Tabla"
   },
   "align": {
     "left": "Alinear a la izquierda",
@@ -131,7 +136,9 @@
     "discard": "Descartar",
     "cancel": "Cancelar",
     "recoverQuestion": "Tiza se cerró sin guardar los cambios de «{{name}}». ¿Recuperarlos?",
-    "recover": "Recuperar"
+    "recover": "Recuperar",
+    "later": "Más tarde",
+    "discardRecoverySure": "¿Borrar definitivamente los cambios recuperados? (Cancelar los conserva para la próxima vez.)"
   },
   "errors": {
     "file": {
@@ -241,7 +248,8 @@
       "none": "Ninguna",
       "fade": "Fundido",
       "slide": "Deslizar"
-    }
+    },
+    "stepOf": "paso {{current}}/{{total}}"
   },
   "image": {
     "fit": "Encuadre",
@@ -265,5 +273,44 @@
       "imageFormat": "imágenes en formatos no compatibles (EMF/WMF/TIFF)",
       "shapeApprox": "formas dibujadas como rectángulos"
     }
+  },
+  "video": {
+    "autoplay": "Reproducir al aparecer la diapositiva",
+    "loop": "Repetir",
+    "muted": "Sin sonido",
+    "start": "Inicio (s)",
+    "end": "Fin (s, 0 = hasta el final)",
+    "play": "Reproducir aquí",
+    "hint": "Doble clic en el video para reproducirlo en el editor. Al presentar tiene controles y hacer clic en él no cambia de diapositiva. WebM funciona en todas partes; MP4 necesita los códecs del sistema en Linux."
+  },
+  "table": {
+    "empty": "Tabla vacía",
+    "fromCsv": "Desde CSV…",
+    "column": "Columna {{n}}",
+    "editCells": "Editar celdas",
+    "row": "fila",
+    "col": "columna",
+    "theme": "Colores",
+    "themes": {
+      "green": "Verde",
+      "blue": "Azul",
+      "gray": "Gris",
+      "orange": "Naranja",
+      "purple": "Morado"
+    },
+    "header": "La primera fila es el encabezado",
+    "striped": "Filas de colores alternos",
+    "hint": "{{rows}} filas × {{cols}} columnas. Las tablas grandes se desplazan dentro de su caja (también al presentar). Doble clic para editar; Enter baja, Tab avanza."
+  },
+  "build": {
+    "title": "Animación",
+    "effect": "Aparece",
+    "none": "Siempre visible",
+    "appear": "Al hacer clic",
+    "fade": "Al hacer clic, con fundido",
+    "step": "Número de clic",
+    "onNextClick": "Aparecer en el siguiente clic",
+    "remove": "Quitar animación",
+    "hint": "Como \\pause en Beamer: cada clic muestra el siguiente paso antes de pasar a la siguiente diapositiva."
   }
 }
