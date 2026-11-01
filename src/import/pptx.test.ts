@@ -75,7 +75,13 @@ const SLIDE1 = `<p:sld ${NS}><p:cSld><p:spTree>
       <a:ln w="25400"><a:solidFill><a:srgbClr val="FF0000"/></a:solidFill><a:tailEnd type="triangle"/></a:ln></p:spPr></p:cxnSp>
   <p:graphicFrame><p:nvGraphicFramePr><p:cNvPr id="7" name="Table"/><p:cNvGraphicFramePr/><p:nvPr/></p:nvGraphicFramePr>
     <p:xfrm><a:off x="0" y="0"/><a:ext cx="1" cy="1"/></p:xfrm>
-    <a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/table"><a:tbl/></a:graphicData></a:graphic></p:graphicFrame>
+    <a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/table"><a:tbl>
+      <a:tblPr firstRow="1" bandRow="1"/>
+      <a:tr><a:tc><a:txBody><a:p><a:r><a:rPr sz="1400"/><a:t>Calibre</a:t></a:r></a:p></a:txBody></a:tc>
+            <a:tc><a:txBody><a:p><a:r><a:t>dB</a:t></a:r></a:p></a:txBody></a:tc></a:tr>
+      <a:tr><a:tc><a:txBody><a:p><a:r><a:t>.22 LR</a:t></a:r></a:p></a:txBody></a:tc>
+            <a:tc><a:txBody><a:p><a:r><a:t>94,5</a:t></a:r></a:p></a:txBody></a:tc></a:tr>
+    </a:tbl></a:graphicData></a:graphic></p:graphicFrame>
 </p:spTree></p:cSld></p:sld>`;
 
 const SLIDE2 = `<p:sld ${NS} show="0"><p:cSld><p:spTree>
@@ -203,7 +209,16 @@ describe("importPptx", async () => {
 
   it("reads notes and counts what it could not convert", () => {
     expect(s1.notes).toBe("Saludar\nMostrar la gráfica");
-    expect(skipped).toEqual({ table: 1 });
+    expect(skipped).toEqual({});
+  });
+
+  it("imports tables with their header and banding", () => {
+    const [table] = byKind(s1.elements, "table");
+    expect(table.rows).toEqual([
+      ["Calibre", "dB"],
+      [".22 LR", "94,5"],
+    ]);
+    expect(table).toMatchObject({ headerRow: true, striped: true, fontSize: 28 });
   });
 
   it("keeps explicit run formatting, alignment and line breaks", () => {

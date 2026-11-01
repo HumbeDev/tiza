@@ -489,12 +489,20 @@ async function walk(
       case "pic": {
         if (decor && placeholderOf(shape)) break;
         const box = readXfrm(path(shape, "spPr", "xfrm"));
+        if (!box) break;
+        if (desc(shape, "videoFile")) {
+          const video = await videoElement(ctx, part, shape, transform(box));
+          if (video) {
+            out.push(video);
+            break;
+          }
+        }
+        if (desc(shape, "audioFile")) skip(ctx, "media");
         const blip = desc(kid(shape, "blipFill"), "blip");
-        if (box && blip) {
+        if (blip) {
           const el = await pictureElement(ctx, part, blip, transform(box), false);
           if (el) out.push(el);
         }
-        if (desc(shape, "videoFile") || desc(shape, "audioFile")) skip(ctx, "media");
         break;
       }
       case "grpSp":
@@ -502,16 +510,14 @@ async function walk(
         break;
       case "graphicFrame": {
         const uri = desc(shape, "graphicData")?.getAttribute("uri") ?? "";
-        skip(
-          ctx,
-          uri.includes("table")
-            ? "table"
-            : uri.includes("chart")
-              ? "chart"
-              : uri.includes("diagram")
-                ? "diagram"
-                : "object",
-        );
+        const box = readXfrm(kid(shape, "xfrm"));
+        const tbl = desc(shape, "tbl");
+        if (tbl && box) out.push(tableElement(ctx, tbl, transform(box)));
+        else
+          skip(
+            ctx,
+            uri.includes("chart") ? "chart" : uri.includes("diagram") ? "diagram" : "object",
+          );
         break;
       }
       case "AlternateContent": {
@@ -832,5 +838,70 @@ async function pictureElement(
     kind: "image",
     asset,
     fit: "fill",
+  } as Element;
+}
+
+const SUPPORTED_VIDEO = new Set(["mp4", "m4v", "webm", "ogv", "mov"]);
+
+/** Embedded video (p14:media r:embed, or an internal videoFile link). */
+async function videoElement(
+  ctx: Context,
+  part: string,
+  shape: El,
+  box: Box,
+): Promise<Element | null> {
+  const id =
+    desc(shape, "media")?.getAttribute("r:embed") ??
+    desc(shape, "videoFile")?.getAttribute("r:link");
+  const target = id ? ctx.pkg.rels(part).get(id)?.target : undefined;
+  const bytes = target ? ctx.pkg.bytes(target) : undefined;
+  const ext = target?.split(".").pop()?.toLowerCase() ?? "";
+  if (!bytes || !SUPPORTED_VIDEO.has(ext)) {
+    skip(ctx, "media");
+    return null;
+  }
+  const asset = await ctx.putAsset(bytes, ext);
+  return {
+    id: newId(),
+    ...toElementBox(ctx, box),
+    opacity: 1,
+    locked: false,
+    kind: "video",
+    asset,
+    autoplay: false,
+    loop: false,
+    muted: false,
+  } as Element;
+}
+
+/** PowerPoint table → Tiza table (text of each cell; merged cells become empty cells). */
+function tableElement(ctx: Context, tbl: El, box: Box): Element {
+  const tblPr = kid(tbl, "tblPr");
+  let size: number | undefined;
+  const rows = kids(tbl, "tr").map((tr) =>
+    kids(tr, "tc").map((tc) => {
+      if (tc.getAttribute("hMerge") === "1" || tc.getAttribute("vMerge") === "1") return "";
+      const paragraphs = kids(kid(tc, "txBody"), "p").map((p) => {
+        size ??= num(desc(p, "rPr"), "sz") ?? num(desc(p, "endParaRPr"), "sz");
+        return [...p.getElementsByTagName("*")]
+          .filter((e) => local(e) === "t")
+          .map((t) => t.textContent ?? "")
+          .join("");
+      });
+      return paragraphs.join(" ").trim();
+    }),
+  );
+  const pt = (size ?? 1800) / 100;
+  return {
+    id: newId(),
+    ...toElementBox(ctx, box),
+    opacity: 1,
+    locked: false,
+    kind: "table",
+    rows,
+    headerRow: tblPr?.getAttribute("firstRow") === "1",
+    striped: tblPr?.getAttribute("bandRow") === "1",
+    theme: "blue",
+    fontSize: Math.max(6, Math.round(pt * EMU_PER_PT * ctx.scale * 10) / 10),
   } as Element;
 }
