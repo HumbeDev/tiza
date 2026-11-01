@@ -31,6 +31,8 @@ pub struct PresentStatus {
     /// Index among the visible (not hidden) slides.
     pub index: usize,
     pub count: usize,
+    /// Build step shown on the current slide (0 = before the first click).
+    pub step: u32,
     pub blank: Blank,
 }
 
@@ -48,8 +50,12 @@ pub enum NavAction {
 }
 
 impl PresentStatus {
-    pub fn apply(&mut self, action: NavAction) {
+    /// `steps[i]`: number of build steps of visible slide `i`. Moving forward reveals the
+    /// next step before changing slide; moving back from a slide shows the previous one
+    /// fully built (like Beamer).
+    pub fn apply(&mut self, action: NavAction, steps: &[u32]) {
         let last = self.count.saturating_sub(1);
+        let steps_of = |i: usize| steps.get(i).copied().unwrap_or(0);
         // Any move clears a blank screen; pressing B/W again toggles it.
         match action {
             NavAction::Black | NavAction::White => {
@@ -65,11 +71,25 @@ impl PresentStatus {
                 };
                 return;
             }
-            NavAction::Next => self.index = (self.index + 1).min(last),
-            NavAction::Prev => self.index = self.index.saturating_sub(1),
-            NavAction::First => self.index = 0,
-            NavAction::Last => self.index = last,
-            NavAction::Goto { index } => self.index = index.min(last),
+            NavAction::Next => {
+                if self.step < steps_of(self.index) {
+                    self.step += 1;
+                } else if self.index < last {
+                    self.index += 1;
+                    self.step = 0;
+                }
+            }
+            NavAction::Prev => {
+                if self.step > 0 {
+                    self.step -= 1;
+                } else if self.index > 0 {
+                    self.index -= 1;
+                    self.step = steps_of(self.index);
+                }
+            }
+            NavAction::First => (self.index, self.step) = (0, 0),
+            NavAction::Last => (self.index, self.step) = (last, 0),
+            NavAction::Goto { index } => (self.index, self.step) = (index.min(last), 0),
         }
         self.blank = Blank::None;
     }
@@ -81,6 +101,23 @@ impl PresentStatus {
 pub struct PresentSnapshot {
     pub doc: Presentation,
     pub status: PresentStatus,
+    /// Build steps of each visible slide.
+    pub steps: Vec<u32>,
+}
+
+/// Build steps of each visible slide (the highest `build.step` on it).
+pub fn build_steps(doc: &Presentation) -> Vec<u32> {
+    doc.slides
+        .iter()
+        .filter(|s| !s.hidden)
+        .map(|s| {
+            s.elements
+                .iter()
+                .filter_map(|e| e.build.as_ref().map(|b| b.step))
+                .max()
+                .unwrap_or(0)
+        })
+        .collect()
 }
 
 #[derive(Default)]
@@ -258,13 +295,16 @@ pub fn start_presentation(
     }
     *state.lock() = None;
     close_windows(&app);
+    let steps = build_steps(&doc);
     *state.lock() = Some(PresentSnapshot {
         doc,
         status: PresentStatus {
             index: start.min(count - 1),
             count,
+            step: 0,
             blank: Blank::None,
         },
+        steps,
     });
 
     let hypr = hyprland() && !rehearse;
@@ -320,7 +360,7 @@ pub fn present_nav(
     let status = {
         let mut guard = state.lock();
         let snapshot = guard.as_mut()?;
-        snapshot.status.apply(action);
+        snapshot.status.apply(action, &snapshot.steps);
         snapshot.status.clone()
     };
     let _ = app.emit("present:status", &status);
@@ -399,25 +439,50 @@ mod tests {
 
     #[test]
     fn navigation_stays_in_range_and_toggles_blank() {
+        let no_steps = [0, 0, 0];
         let mut s = PresentStatus {
             index: 0,
             count: 3,
+            step: 0,
             blank: Blank::None,
         };
-        s.apply(NavAction::Prev);
+        s.apply(NavAction::Prev, &no_steps);
         assert_eq!(s.index, 0);
-        s.apply(NavAction::Last);
-        s.apply(NavAction::Next);
+        s.apply(NavAction::Last, &no_steps);
+        s.apply(NavAction::Next, &no_steps);
         assert_eq!(s.index, 2);
-        s.apply(NavAction::Goto { index: 99 });
+        s.apply(NavAction::Goto { index: 99 }, &no_steps);
         assert_eq!(s.index, 2);
-        s.apply(NavAction::Black);
+        s.apply(NavAction::Black, &no_steps);
         assert_eq!(s.blank, Blank::Black);
-        s.apply(NavAction::Black);
+        s.apply(NavAction::Black, &no_steps);
         assert_eq!(s.blank, Blank::None);
-        s.apply(NavAction::White);
-        s.apply(NavAction::First);
+        s.apply(NavAction::White, &no_steps);
+        s.apply(NavAction::First, &no_steps);
         assert_eq!((s.index, s.blank), (0, Blank::None));
+    }
+
+    #[test]
+    fn builds_reveal_step_by_step_like_beamer() {
+        // Slide 0 has 2 steps, slide 1 none.
+        let steps = [2, 0];
+        let mut s = PresentStatus {
+            index: 0,
+            count: 2,
+            step: 0,
+            blank: Blank::None,
+        };
+        let mut seen = Vec::new();
+        for _ in 0..4 {
+            s.apply(NavAction::Next, &steps);
+            seen.push((s.index, s.step));
+        }
+        assert_eq!(seen, [(0, 1), (0, 2), (1, 0), (1, 0)]);
+        // Going back shows the previous slide fully built, then un-builds it.
+        s.apply(NavAction::Prev, &steps);
+        assert_eq!((s.index, s.step), (0, 2));
+        s.apply(NavAction::Prev, &steps);
+        assert_eq!((s.index, s.step), (0, 1));
     }
 
     #[test]

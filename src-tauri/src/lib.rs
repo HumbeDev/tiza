@@ -51,6 +51,7 @@ pub fn run() {
             commands::put_asset,
             commands::read_asset,
             commands::read_import_file,
+            commands::read_text_file,
             commands::get_gpu_preference,
             commands::set_gpu_preference,
             commands::confirm_gpu_launch,

@@ -5,4 +5,8 @@ export type PresentStatus = {
 /**
  * Index among the visible (not hidden) slides.
  */
-index: number, count: number, blank: Blank, };
+index: number, count: number, 
+/**
+ * Build step shown on the current slide (0 = before the first click).
+ */
+step: number, blank: Blank, };

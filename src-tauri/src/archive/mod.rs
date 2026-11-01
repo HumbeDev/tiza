@@ -65,7 +65,7 @@ pub fn write<W: Write + Seek>(
                 format!("{ASSETS_DIR}{name}"),
                 SimpleFileOptions::default().compression_method(method),
             )?;
-            zip.write_all(&store.read(name)?)?;
+            std::io::copy(&mut store.open(name)?, &mut zip)?;
         }
     }
     Ok(zip.finish()?)
@@ -95,7 +95,7 @@ pub fn read<R: Read + Seek>(reader: R, store: Option<&AssetStore>) -> AppResult<
     let doc = migrate(read_json(&mut zip, PRESENTATION)?)?;
     if let Some(store) = store {
         for i in 0..zip.len() {
-            let mut entry = zip.by_index(i)?;
+            let entry = zip.by_index(i)?;
             let name = String::from_utf8_lossy(entry.name_raw()).into_owned();
             let Some(asset) = name.strip_prefix(ASSETS_DIR) else {
                 continue;
@@ -109,11 +109,9 @@ pub fn read<R: Read + Seek>(reader: R, store: Option<&AssetStore>) -> AppResult<
             if entry.size() > assets::MAX_ASSET_BYTES {
                 return Err(AppError::TooLarge);
             }
-            let mut bytes = Vec::with_capacity(entry.size() as usize);
-            entry.read_to_end(&mut bytes)?;
             let ext = asset.rsplit('.').next().unwrap_or_default();
             // Re-hashing on import guarantees the name really matches the content.
-            if store.put(&bytes, ext)? != asset {
+            if store.put_reader(entry, ext)? != asset {
                 return Err(AppError::InvalidDocument(format!(
                     "asset {asset} is corrupt"
                 )));
@@ -191,7 +189,7 @@ mod tests {
                 height: 1080.0,
             },
             latex: LatexSettings::default(),
-            template_slide_id: None,
+            template: None,
             slides: vec![Slide {
                 id: "s1".into(),
                 background: None,
@@ -254,6 +252,8 @@ mod tests {
                 crate::document::ElementContent::Math(_) => "math",
                 crate::document::ElementContent::Sim(_) => "sim",
                 crate::document::ElementContent::Image(_) => "image",
+                crate::document::ElementContent::Video(_) => "video",
+                crate::document::ElementContent::Table(_) => "table",
             })
             .collect();
         assert_eq!(kinds, ["shape", "math"]);
@@ -316,6 +316,7 @@ mod tests {
             opacity: 1.0,
             locked: false,
             group_id: None,
+            build: None,
             content: crate::document::ElementContent::Image(crate::document::ImageElement {
                 asset: name.clone(),
                 fit: crate::document::ImageFit::Contain,

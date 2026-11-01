@@ -26,7 +26,10 @@ const EXTENSIONS: &[(&str, &str)] = &[
     ("bmp", "image/bmp"),
     ("avif", "image/avif"),
     ("mp4", "video/mp4"),
+    ("m4v", "video/mp4"),
     ("webm", "video/webm"),
+    ("ogv", "video/ogg"),
+    ("mov", "video/quicktime"),
 ];
 
 pub fn mime(ext: &str) -> Option<&'static str> {
@@ -57,6 +60,10 @@ pub fn name_for(bytes: &[u8], ext: &str) -> String {
 }
 
 /// Compressed formats are stored as-is in the zip; deflating them again is wasted time.
+pub fn is_video(name: &str) -> bool {
+    mime(name.rsplit('.').next().unwrap_or_default()).is_some_and(|m| m.starts_with("video/"))
+}
+
 pub fn is_compressed(name: &str) -> bool {
     !(name.ends_with(".svg") || name.ends_with(".bmp"))
 }
@@ -116,6 +123,55 @@ impl AssetStore {
         Ok(name)
     }
 
+    /// Stores a stream (e.g. a big video) without holding it in memory: it is hashed while
+    /// being copied to a temporary file, then renamed to its content name.
+    pub fn put_reader(&self, mut reader: impl Read, ext: &str) -> AppResult<String> {
+        let ext = ext.to_ascii_lowercase();
+        if mime(&ext).is_none() {
+            return Err(AppError::BadExtension);
+        }
+        fs::create_dir_all(&self.dir)?;
+        let tmp = self
+            .dir
+            .join(format!(".incoming-{}-{}", std::process::id(), unique()));
+        let result = (|| {
+            let mut file = fs::File::create(&tmp)?;
+            let mut hasher = Sha256::new();
+            let mut buffer = vec![0; 1 << 20];
+            let mut total = 0u64;
+            loop {
+                let n = reader.read(&mut buffer)?;
+                if n == 0 {
+                    break;
+                }
+                total += n as u64;
+                if total > MAX_ASSET_BYTES {
+                    return Err(AppError::TooLarge);
+                }
+                hasher.update(&buffer[..n]);
+                std::io::Write::write_all(&mut file, &buffer[..n])?;
+            }
+            file.sync_all()?;
+            let hex: String = hasher
+                .finalize()
+                .iter()
+                .map(|b| format!("{b:02x}"))
+                .collect();
+            let name = format!("sha256-{hex}.{ext}");
+            let path = self.dir.join(&name);
+            if path.exists() {
+                fs::remove_file(&tmp)?;
+            } else {
+                fs::rename(&tmp, &path)?;
+            }
+            Ok(name)
+        })();
+        if result.is_err() {
+            let _ = fs::remove_file(&tmp);
+        }
+        result
+    }
+
     /// Copies a file chosen by the user into the store.
     pub fn import_file(&self, source: &Path) -> AppResult<ImportedAsset> {
         let ext = source
@@ -130,14 +186,23 @@ impl AssetStore {
         if fs::metadata(source)?.len() > MAX_ASSET_BYTES {
             return Err(AppError::TooLarge);
         }
-        let bytes = fs::read(source)?;
-        let name = self.put(&bytes, &ext)?;
-        let size = imagesize::blob_size(&bytes).ok();
+        let name = self.put_reader(fs::File::open(source)?, &ext)?;
+        let size = if is_video(&name) {
+            None
+        } else {
+            imagesize::size(self.dir.join(&name)).ok()
+        };
         Ok(ImportedAsset {
             name,
             width: size.map(|s| s.width as u32),
             height: size.map(|s| s.height as u32),
         })
+    }
+
+    /// Opens an asset for streaming it into a .tiza file.
+    pub fn open(&self, name: &str) -> AppResult<fs::File> {
+        let path = self.path(name).ok_or(AppError::UnsafePath(name.into()))?;
+        Ok(fs::File::open(path)?)
     }
 
     pub fn read(&self, name: &str) -> AppResult<Vec<u8>> {
@@ -203,6 +268,12 @@ impl AssetStore {
     }
 }
 
+fn unique() -> u64 {
+    use std::sync::atomic::{AtomicU64, Ordering};
+    static NEXT: AtomicU64 = AtomicU64::new(0);
+    NEXT.fetch_add(1, Ordering::Relaxed)
+}
+
 /// `bytes=start-end` (end optional, or `-suffix`), clamped to the file. Chunks are capped
 /// so a video request doesn't load the whole file into memory.
 pub fn parse_range(value: &str, len: u64) -> Option<(u64, u64)> {
@@ -264,6 +335,26 @@ mod tests {
         let imported = store.import_file(&src).unwrap();
         assert_eq!((imported.width, imported.height), (Some(1), Some(1)));
         assert!(imported.name.ends_with(".png"));
+    }
+
+    #[test]
+    fn streams_are_hashed_like_bytes() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = AssetStore::new(dir.path().to_path_buf());
+        let data = vec![7u8; 3 * 1024 * 1024 + 5];
+        let streamed = store
+            .put_reader(std::io::Cursor::new(&data), "mp4")
+            .unwrap();
+        assert_eq!(streamed, name_for(&data, "mp4"));
+        assert_eq!(
+            store
+                .put_reader(std::io::Cursor::new(&data), "mp4")
+                .unwrap(),
+            streamed
+        );
+        let leftovers = fs::read_dir(dir.path()).unwrap().count();
+        assert_eq!(leftovers, 1, "temporary files must be cleaned up");
+        assert!(is_video(&streamed));
     }
 
     #[test]

@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: data: blob: tizaasset: http://tizaasset.localhost; media-src 'self' blob: tizaasset: http://tizaasset.localhost; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-src tizasim: http://tizasim.localhost",
+      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: data: blob: tizaasset: http://tizaasset.localhost; media-src 'self' blob: tizaasset: http://tizaasset.localhost; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-src tizasim: http://tizasim.localhost; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:",
       "devCsp": null
     }
   },

@@ -259,3 +259,42 @@ pub fn restart_app(app: AppHandle) -> bool {
     }
     app.restart();
 }
+
+/// Reads a CSV/TSV/TXT file chosen by the user (tables). Files that aren't valid UTF-8
+/// (e.g. saved by Excel on Windows) are read as Latin-1 so accents survive.
+#[tauri::command]
+pub async fn read_text_file(path: PathBuf) -> AppResult<String> {
+    let ok = path.extension().is_some_and(|e| {
+        ["csv", "tsv", "txt"]
+            .iter()
+            .any(|x| e.eq_ignore_ascii_case(x))
+    });
+    if !ok {
+        return Err(AppError::BadExtension);
+    }
+    blocking(move || {
+        if fs::metadata(&path)?.len() > MAX_HTML_BYTES {
+            return Err(AppError::TooLarge);
+        }
+        Ok(decode_text(fs::read(&path)?))
+    })
+    .await
+}
+
+fn decode_text(bytes: Vec<u8>) -> String {
+    String::from_utf8(bytes).unwrap_or_else(|e| e.into_bytes().iter().map(|&b| b as char).collect())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn decodes_utf8_and_latin1() {
+        assert_eq!(
+            decode_text("Física;Ação".as_bytes().to_vec()),
+            "Física;Ação"
+        );
+        assert_eq!(decode_text(vec![b'F', 0xed, b's']), "Fís");
+    }
+}

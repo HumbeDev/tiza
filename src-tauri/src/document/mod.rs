@@ -19,10 +19,11 @@ pub struct Presentation {
     pub page: Page,
     #[serde(default)]
     pub latex: LatexSettings,
-    /// Slide whose content is copied into every new slide (a per-file template).
+    /// Copy of a slide taken when the user chose it as template: every new slide starts
+    /// as a copy of it. Later edits to the original slide don't change the template.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
-    pub template_slide_id: Option<Id>,
+    pub template: Option<Slide>,
     pub slides: Vec<Slide>,
 }
 
@@ -124,8 +125,29 @@ pub struct Element {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub group_id: Option<Id>,
+    /// Appears on a later click when presenting (like Beamer's `\pause`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub build: Option<Build>,
     #[serde(flatten)]
     pub content: ElementContent,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum BuildEffect {
+    Appear,
+    Fade,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct Build {
+    /// Click on which the element appears: 1 = first click on the slide.
+    pub step: u32,
+    pub effect: BuildEffect,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -137,6 +159,8 @@ pub enum ElementContent {
     Math(MathElement),
     Sim(SimElement),
     Image(ImageElement),
+    Video(VideoElement),
+    Table(TableElement),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -289,15 +313,65 @@ pub struct ImageElement {
     pub fit: ImageFit,
 }
 
+/// Video stored in the file's `assets/` folder.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct VideoElement {
+    pub asset: String,
+    /// Starts playing when its slide is shown in the presentation.
+    #[serde(default)]
+    pub autoplay: bool,
+    #[serde(default, rename = "loop")]
+    pub looping: bool,
+    #[serde(default)]
+    pub muted: bool,
+    /// Play only this part (seconds).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub start: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub end: Option<f64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum TableTheme {
+    Green,
+    Blue,
+    Gray,
+    Orange,
+    Purple,
+}
+
+/// Spreadsheet-like table; it scrolls inside its box when it doesn't fit.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct TableElement {
+    /// Cell text, row by row. Rows may have different lengths; missing cells are empty.
+    pub rows: Vec<Vec<String>>,
+    /// The first row is a header (stays visible while scrolling).
+    pub header_row: bool,
+    /// Alternate row shading.
+    pub striped: bool,
+    pub theme: TableTheme,
+    pub font_size: f64,
+}
+
 impl Presentation {
     /// Assets referenced by any element (what must travel inside the file).
     pub fn asset_names(&self) -> Vec<&str> {
         let mut names: Vec<&str> = self
             .slides
             .iter()
+            .chain(self.template.iter())
             .flat_map(|s| &s.elements)
             .filter_map(|e| match &e.content {
                 ElementContent::Image(img) => Some(img.asset.as_str()),
+                ElementContent::Video(video) => Some(video.asset.as_str()),
                 _ => None,
             })
             .collect();
@@ -357,7 +431,7 @@ mod tests {
             latex: LatexSettings {
                 preamble: r"\newcommand{\R}{\mathbb{R}}".into(),
             },
-            template_slide_id: Some("s1".into()),
+            template: None,
             slides: vec![Slide {
                 id: "s1".into(),
                 background: Some("#ffffff".into()),
@@ -372,6 +446,10 @@ mod tests {
                         opacity: 1.0,
                         locked: false,
                         group_id: None,
+                        build: Some(Build {
+                            step: 2,
+                            effect: BuildEffect::Fade,
+                        }),
                         content: ElementContent::Shape(ShapeElement {
                             shape: ShapeKind::Rect,
                             fill: Some("#2f6f4f".into()),
@@ -392,6 +470,7 @@ mod tests {
                         opacity: 0.5,
                         locked: true,
                         group_id: None,
+                        build: None,
                         content: ElementContent::Text(TextElement {
                             doc: RichNode::plain("Hola\n\nmundo"),
                             font_size: 48.0,
@@ -409,6 +488,7 @@ mod tests {
                         opacity: 1.0,
                         locked: false,
                         group_id: None,
+                        build: None,
                         content: ElementContent::Math(MathElement {
                             latex: r"\int_0^1 x^2\,dx".into(),
                             font_size: 72.0,
@@ -444,6 +524,8 @@ mod tests {
         assert_eq!(shape["kind"], "shape");
         assert_eq!(shape["shape"], "rect");
         assert_eq!(shape["x"], 100.0);
+        assert_eq!(shape["build"]["step"], 2);
+        assert_eq!(shape["build"]["effect"], "fade");
         assert!(shape.get("groupId").is_none());
         let text = &value["slides"][0]["elements"][1];
         assert_eq!(text["kind"], "text");
@@ -456,7 +538,6 @@ mod tests {
         assert_eq!(math["kind"], "math");
         assert_eq!(math["latex"], r"\int_0^1 x^2\,dx");
         assert_eq!(value["latex"]["preamble"], r"\newcommand{\R}{\mathbb{R}}");
-        assert_eq!(value["templateSlideId"], "s1");
         assert_eq!(value["slides"][0]["transition"]["kind"], "fade");
         assert_eq!(value["slides"][0]["transition"]["durationMs"], 400);
     }
@@ -524,6 +605,32 @@ mod tests {
         let back = serde_json::to_value(&el).unwrap();
         assert_eq!(back["kind"], "sim");
         assert_eq!(back["viewWidth"], 800.0);
+    }
+
+    #[test]
+    fn video_and_table_elements_round_trip() {
+        let video = json!({
+            "id": "v1", "x": 0, "y": 0, "w": 640, "h": 360, "rotation": 0, "opacity": 1,
+            "kind": "video", "asset": "sha256-x.mp4", "autoplay": true, "loop": true, "start": 2.5
+        });
+        let el: Element = serde_json::from_value(video.clone()).unwrap();
+        let ElementContent::Video(v) = &el.content else {
+            panic!("expected video")
+        };
+        assert!(v.looping && v.autoplay && !v.muted);
+        assert_eq!(serde_json::to_value(&el).unwrap()["loop"], true);
+
+        let table = json!({
+            "id": "t1", "x": 0, "y": 0, "w": 800, "h": 400, "rotation": 0, "opacity": 1,
+            "kind": "table", "rows": [["a", "b"], ["1"]], "headerRow": true, "striped": true,
+            "theme": "blue", "fontSize": 28
+        });
+        let el: Element = serde_json::from_value(table).unwrap();
+        let ElementContent::Table(t) = &el.content else {
+            panic!("expected table")
+        };
+        assert_eq!(t.rows[1], vec!["1"]);
+        assert_eq!(t.theme, TableTheme::Blue);
     }
 
     #[test]

@@ -2,4 +2,8 @@
 import type { PresentStatus } from "./PresentStatus";
 import type { Presentation } from "./Presentation";
 
-export type PresentSnapshot = { doc: Presentation, status: PresentStatus, };
+export type PresentSnapshot = { doc: Presentation, status: PresentStatus, 
+/**
+ * Build steps of each visible slide.
+ */
+steps: Array<number>, };

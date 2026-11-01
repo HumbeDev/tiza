@@ -3,6 +3,8 @@ import type { ImageElement } from "./ImageElement";
 import type { MathElement } from "./MathElement";
 import type { ShapeElement } from "./ShapeElement";
 import type { SimElement } from "./SimElement";
+import type { TableElement } from "./TableElement";
 import type { TextElement } from "./TextElement";
+import type { VideoElement } from "./VideoElement";
 
-export type ElementContent = { "kind": "shape" } & ShapeElement | { "kind": "text" } & TextElement | { "kind": "math" } & MathElement | { "kind": "sim" } & SimElement | { "kind": "image" } & ImageElement;
+export type ElementContent = { "kind": "shape" } & ShapeElement | { "kind": "text" } & TextElement | { "kind": "math" } & MathElement | { "kind": "sim" } & SimElement | { "kind": "image" } & ImageElement | { "kind": "video" } & VideoElement | { "kind": "table" } & TableElement;

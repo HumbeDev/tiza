@@ -6,6 +6,7 @@ import type { Slide } from "./Slide";
 
 export type Presentation = { schemaVersion: number, meta: Meta, page: Page, latex: LatexSettings, 
 /**
- * Slide whose content is copied into every new slide (a per-file template).
+ * Copy of a slide taken when the user chose it as template: every new slide starts
+ * as a copy of it. Later edits to the original slide don't change the template.
  */
-templateSlideId?: string, slides: Array<Slide>, };
+template?: Slide, slides: Array<Slide>, };
