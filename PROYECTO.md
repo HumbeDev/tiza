@@ -604,3 +604,14 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
   - Regla general: **ninguna importación requiere software externo**; todo va dentro de Tiza.
   - **PDF**: cada página → texto editable con su posición/fuente (pdf.js `getTextContent`) + imágenes extraídas; los gráficos vectoriales que no se puedan reconstruir quedan como imagen de fondo de la página.
 - Luego: MCP (8), LaTeX completo (9), exportación (10), pulido (11).
+
+### Simulaciones en escritorio (Linux) — 2026-11-01
+- Las páginas HTML salían en blanco en la app de escritorio (las pruebas anteriores eran en Chrome). Dos causas en WebKitGTK: el renderizador DMA-BUF no pintaba iframes (Intel + Hyprland) y, aun sin él, el iframe no se pintaba hasta que otra capa lo solapara. Arreglo: `WEBKIT_DISABLE_DMABUF_RENDERER=1` al arrancar (`settings::apply_webkit_workarounds`) y una capa transparente sobre el iframe (`.sim-paint-layer`). Verificado con capturas reales de la app.
+- Lección: **probar en la app de escritorio real** (`tauri dev` + captura con `grim`), no solo en Chrome.
+
+### Fase 6 (imágenes) + 7 (importar PPTX) — 2026-11-01 🧪
+- Assets `sha256-<hex>.<ext>`: Rust (`src-tauri/src/assets.rs`) los guarda en una carpeta de sesión y los sirve como `tizaasset://` (con `Range` para el video futuro); `archive` los copia dentro/fuera del `.tiza` (`assets/`), verificando que el nombre coincide con el hash. Web: Blobs en memoria, mismo layout del zip con fflate. Las imágenes ya comprimidas se guardan sin recomprimir.
+- Elemento `image` (`asset`, `fit`). CSP: `img-src`/`media-src` incluyen `tizaasset:`.
+- Importador PPTX en **TypeScript** (`src/import/pptx.ts`) para que funcione igual en escritorio y web, sin software externo: DOMParser sobre el XML; herencia patrón → diseño → diapositiva (posición de placeholders, estilos de título/cuerpo, viñetas, colores del tema con lumMod/lumOff), grupos con sus transformaciones, autoajuste de fuente, márgenes internos, fondos (color/imagen), notas, ocultas, decoraciones del patrón. Probado con 4 presentaciones reales del autor (hasta 15 diapositivas en < 1 s).
+- Omitidos (se informa al usuario): tablas, gráficos, SmartArt, ecuaciones OMML, video/audio, imágenes EMF/WMF.
+- Pendiente: tablas (como elemento propio), ODP, PDF, PPT binario; video.

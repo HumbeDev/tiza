@@ -96,6 +96,10 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 
 **Plantilla de diapositiva del archivo**: clic derecho en una miniatura → «Usar como plantilla de nuevas diapositivas». Cada diapositiva nueva empieza como copia de esa (logos, barras de un evento…). «Nueva diapositiva en blanco» la ignora.
 
+**Imágenes**: botón **Imagen** (PNG, JPG, GIF, WebP, SVG, BMP, AVIF). Se guardan **dentro del `.tiza`** (una sola copia aunque la repitas). Encuadre: imagen completa, rellenar y recortar, o estirar.
+
+**Importar PowerPoint (.pptx)**: _Archivo → Importar PowerPoint…_ crea una presentación nueva con todo **editable**: textos (negrita, cursiva, subrayado, tachado, tamaños, colores, alineación, viñetas), imágenes, formas y líneas con sus colores, fondos, diapositivas ocultas, **notas del orador** y los elementos de los patrones/diseños (logos, barras). Sin programas externos: funciona igual en la app y en la web. Aún no convierte tablas, gráficos, SmartArt ni ecuaciones de Office (avisa cuántos omitió).
+
 **Interfaz**
 
 - Menú **Archivo** (Nueva, Abrir, Guardar, Guardar como, Ajustes) y grupo **Insertar** (Texto, Ecuación, HTML, Formas ▾).
