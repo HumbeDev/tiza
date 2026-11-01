@@ -1,4 +1,5 @@
 pub mod archive;
+pub mod assets;
 pub mod commands;
 pub mod document;
 pub mod error;
@@ -16,6 +17,12 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .manage(sim::SimPages::default())
+        .manage(assets::AssetStore::for_session())
+        .register_uri_scheme_protocol("tizaasset", |ctx, request| {
+            ctx.app_handle()
+                .state::<assets::AssetStore>()
+                .respond(&request)
+        })
         .manage(present::PresentState::default())
         .on_window_event(|window, event| {
             // Closing either presentation window (or the editor) ends the presentation.
@@ -40,6 +47,10 @@ pub fn run() {
             commands::register_sim,
             commands::read_html_file,
             commands::system_gpus,
+            commands::import_image,
+            commands::put_asset,
+            commands::read_asset,
+            commands::read_import_file,
             commands::get_gpu_preference,
             commands::set_gpu_preference,
             commands::confirm_gpu_launch,

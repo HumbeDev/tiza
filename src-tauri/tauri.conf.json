@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-src tizasim: http://tizasim.localhost",
+      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: data: blob: tizaasset: http://tizaasset.localhost; media-src 'self' blob: tizaasset: http://tizaasset.localhost; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-src tizasim: http://tizasim.localhost",
       "devCsp": null
     }
   },
@@ -47,8 +47,8 @@
     ],
     "shortDescription": "Offline presentations with LaTeX, media and HTML simulations",
     "category": "Education",
-    "publisher": "Humberto Daniel Lage Rodríguez",
-    "copyright": "© 2026 Humberto Daniel Lage Rodríguez — MIT OR Apache-2.0",
+    "publisher": "Humberto Daniel Lage Rodr\u00edguez",
+    "copyright": "\u00a9 2026 Humberto Daniel Lage Rodr\u00edguez \u2014 MIT OR Apache-2.0",
     "homepage": "https://github.com/HumbeDev/tiza"
   }
 }

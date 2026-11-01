@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager, State};
 
 use crate::archive;
+use crate::assets::{AssetStore, ImportedAsset};
 use crate::document::Presentation;
 use crate::error::{AppError, AppResult};
 use crate::sim::SimPages;
@@ -25,17 +26,71 @@ async fn blocking<T: Send + 'static>(
         .map_err(|e| AppError::Io(std::io::Error::other(e.to_string())))?
 }
 
-#[tauri::command]
-pub async fn open_presentation(path: PathBuf) -> AppResult<Presentation> {
-    blocking(move || archive::load(&path)).await
+fn store(app: &AppHandle) -> tauri::State<'_, AssetStore> {
+    app.state::<AssetStore>()
 }
 
 #[tauri::command]
-pub async fn save_presentation(path: PathBuf, doc: Presentation) -> AppResult<()> {
+pub async fn open_presentation(app: AppHandle, path: PathBuf) -> AppResult<Presentation> {
+    blocking(move || archive::load(&path, Some(&store(&app)))).await
+}
+
+#[tauri::command]
+pub async fn save_presentation(app: AppHandle, path: PathBuf, doc: Presentation) -> AppResult<()> {
     if !archive::has_tiza_extension(&path) {
         return Err(AppError::BadExtension);
     }
-    blocking(move || archive::save(&path, &doc)).await
+    blocking(move || archive::save(&path, &doc, Some(&store(&app)))).await
+}
+
+// ---------------------------------------------------------------- assets and import
+
+/// Copies an image chosen in the open dialog into the asset store.
+#[tauri::command]
+pub async fn import_image(app: AppHandle, path: PathBuf) -> AppResult<ImportedAsset> {
+    blocking(move || store(&app).import_file(&path)).await
+}
+
+/// Stores bytes produced by the UI (e.g. pictures extracted from an imported .pptx).
+/// The body is the raw file; the `x-ext` header gives its extension.
+#[tauri::command]
+pub fn put_asset(app: AppHandle, request: tauri::ipc::Request<'_>) -> AppResult<String> {
+    let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
+        return Err(AppError::InvalidDocument("expected raw bytes".into()));
+    };
+    let ext = request
+        .headers()
+        .get("x-ext")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or_default();
+    store(&app).put(bytes, ext)
+}
+
+/// Raw bytes of an asset, for the web-style packers and the importers.
+#[tauri::command]
+pub fn read_asset(app: AppHandle, name: String) -> AppResult<tauri::ipc::Response> {
+    Ok(tauri::ipc::Response::new(store(&app).read(&name)?))
+}
+
+const IMPORT_EXTENSIONS: &[&str] = &["pptx", "odp", "pdf", "ppt"];
+const MAX_IMPORT_BYTES: u64 = 1024 * 1024 * 1024;
+
+/// Reads a presentation to import (chosen by the user in the open dialog).
+#[tauri::command]
+pub async fn read_import_file(path: PathBuf) -> AppResult<tauri::ipc::Response> {
+    let ok = path
+        .extension()
+        .is_some_and(|e| IMPORT_EXTENSIONS.iter().any(|x| e.eq_ignore_ascii_case(x)));
+    if !ok {
+        return Err(AppError::BadExtension);
+    }
+    blocking(move || {
+        if fs::metadata(&path)?.len() > MAX_IMPORT_BYTES {
+            return Err(AppError::TooLarge);
+        }
+        Ok(tauri::ipc::Response::new(fs::read(&path)?))
+    })
+    .await
 }
 
 /// A `.tiza` path passed on the command line (e.g. double-clicking a file).
@@ -88,7 +143,7 @@ pub async fn write_recovery(
         if let Some(dir) = doc_path.parent() {
             fs::create_dir_all(dir)?;
         }
-        archive::save(&doc_path, &doc)?;
+        archive::save(&doc_path, &doc, Some(&store(&app)))?;
         let json = serde_json::to_vec(&info).map_err(std::io::Error::from)?;
         fs::write(info_path, json)?;
         Ok(())
@@ -99,6 +154,7 @@ pub async fn write_recovery(
 #[tauri::command]
 pub async fn read_recovery(app: AppHandle) -> AppResult<Option<Recovery>> {
     let (doc_path, info_path) = recovery_paths(&app)?;
+    let app = app.clone();
     blocking(move || {
         if !doc_path.is_file() {
             return Ok(None);
@@ -111,7 +167,7 @@ pub async fn read_recovery(app: AppHandle) -> AppResult<Option<Recovery>> {
                 auto_restore: false,
                 saved_at: String::new(),
             });
-        match archive::load(&doc_path) {
+        match archive::load(&doc_path, Some(&store(&app))) {
             Ok(doc) => Ok(Some(Recovery { doc, info })),
             // A broken recovery file is useless; drop it instead of failing every startup.
             Err(_) => {

@@ -136,6 +136,7 @@ pub enum ElementContent {
     Text(TextElement),
     Math(MathElement),
     Sim(SimElement),
+    Image(ImageElement),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -264,6 +265,46 @@ pub struct MathElement {
     pub font_size: f64,
     pub color: String,
     pub align: TextAlign,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum ImageFit {
+    /// Whole image visible, letterboxed.
+    Contain,
+    /// Fills the box, cropping the overflow.
+    Cover,
+    /// Stretched to the box.
+    Fill,
+}
+
+/// Picture stored in the file's `assets/` folder.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct ImageElement {
+    /// Asset name: `sha256-<hex>.<ext>`.
+    pub asset: String,
+    pub fit: ImageFit,
+}
+
+impl Presentation {
+    /// Assets referenced by any element (what must travel inside the file).
+    pub fn asset_names(&self) -> Vec<&str> {
+        let mut names: Vec<&str> = self
+            .slides
+            .iter()
+            .flat_map(|s| &s.elements)
+            .filter_map(|e| match &e.content {
+                ElementContent::Image(img) => Some(img.asset.as_str()),
+                _ => None,
+            })
+            .collect();
+        names.sort_unstable();
+        names.dedup();
+        names
+    }
 }
 
 /// How an embedded page is scaled into its box.

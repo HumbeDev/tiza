@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipArchive, ZipWriter};
 
+use crate::assets::{self, AssetStore};
 use crate::document::migrate::migrate;
 use crate::document::{Presentation, SCHEMA_VERSION};
 use crate::error::{AppError, AppResult};
@@ -31,7 +32,14 @@ pub struct Manifest {
     pub app_version: String,
 }
 
-pub fn write<W: Write + Seek>(writer: W, doc: &Presentation) -> AppResult<W> {
+pub const ASSETS_DIR: &str = "assets/";
+
+/// Writes the document and, when a store is given, every asset it references.
+pub fn write<W: Write + Seek>(
+    writer: W,
+    doc: &Presentation,
+    store: Option<&AssetStore>,
+) -> AppResult<W> {
     let mut zip = ZipWriter::new(writer);
     let options = SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
     let manifest = Manifest {
@@ -43,10 +51,28 @@ pub fn write<W: Write + Seek>(writer: W, doc: &Presentation) -> AppResult<W> {
     serde_json::to_writer_pretty(&mut zip, &manifest).map_err(std::io::Error::from)?;
     zip.start_file(PRESENTATION, options)?;
     serde_json::to_writer_pretty(&mut zip, doc).map_err(std::io::Error::from)?;
+    if let Some(store) = store {
+        for name in doc.asset_names() {
+            if !store.contains(name) {
+                continue;
+            }
+            let method = if assets::is_compressed(name) {
+                CompressionMethod::Stored
+            } else {
+                CompressionMethod::Deflated
+            };
+            zip.start_file(
+                format!("{ASSETS_DIR}{name}"),
+                SimpleFileOptions::default().compression_method(method),
+            )?;
+            zip.write_all(&store.read(name)?)?;
+        }
+    }
     Ok(zip.finish()?)
 }
 
-pub fn read<R: Read + Seek>(reader: R) -> AppResult<Presentation> {
+/// Reads the document; its assets are copied into `store` when one is given.
+pub fn read<R: Read + Seek>(reader: R, store: Option<&AssetStore>) -> AppResult<Presentation> {
     let mut zip = ZipArchive::new(reader)?;
     if zip.len() > MAX_ENTRIES {
         return Err(AppError::TooLarge);
@@ -66,7 +92,35 @@ pub fn read<R: Read + Seek>(reader: R) -> AppResult<Presentation> {
     if manifest.schema_version > SCHEMA_VERSION {
         return Err(AppError::TooNew(manifest.schema_version));
     }
-    migrate(read_json(&mut zip, PRESENTATION)?)
+    let doc = migrate(read_json(&mut zip, PRESENTATION)?)?;
+    if let Some(store) = store {
+        for i in 0..zip.len() {
+            let mut entry = zip.by_index(i)?;
+            let name = String::from_utf8_lossy(entry.name_raw()).into_owned();
+            let Some(asset) = name.strip_prefix(ASSETS_DIR) else {
+                continue;
+            };
+            if !assets::is_valid_name(asset) {
+                return Err(AppError::UnsafePath(name));
+            }
+            if store.contains(asset) {
+                continue;
+            }
+            if entry.size() > assets::MAX_ASSET_BYTES {
+                return Err(AppError::TooLarge);
+            }
+            let mut bytes = Vec::with_capacity(entry.size() as usize);
+            entry.read_to_end(&mut bytes)?;
+            let ext = asset.rsplit('.').next().unwrap_or_default();
+            // Re-hashing on import guarantees the name really matches the content.
+            if store.put(&bytes, ext)? != asset {
+                return Err(AppError::InvalidDocument(format!(
+                    "asset {asset} is corrupt"
+                )));
+            }
+        }
+    }
+    Ok(doc)
 }
 
 fn read_json<R: Read + Seek, T: for<'de> Deserialize<'de>>(
@@ -88,10 +142,10 @@ pub fn has_tiza_extension(path: &Path) -> bool {
 
 /// Saves without ever leaving a half-written file: write a temporary file next to the
 /// target, flush it to disk, then rename it over the target.
-pub fn save(path: &Path, doc: &Presentation) -> AppResult<()> {
+pub fn save(path: &Path, doc: &Presentation, store: Option<&AssetStore>) -> AppResult<()> {
     let tmp = temp_path(path);
     let result = (|| {
-        let file = write(BufWriter::new(File::create(&tmp)?), doc)?;
+        let file = write(BufWriter::new(File::create(&tmp)?), doc, store)?;
         let file = file.into_inner().map_err(|e| e.into_error())?;
         file.sync_all()?;
         fs::rename(&tmp, path)?;
@@ -103,8 +157,8 @@ pub fn save(path: &Path, doc: &Presentation) -> AppResult<()> {
     result
 }
 
-pub fn load(path: &Path) -> AppResult<Presentation> {
-    read(BufReader::new(File::open(path)?))
+pub fn load(path: &Path, store: Option<&AssetStore>) -> AppResult<Presentation> {
+    read(BufReader::new(File::open(path)?), store)
 }
 
 fn temp_path(path: &Path) -> PathBuf {
@@ -160,19 +214,21 @@ mod tests {
 
     #[test]
     fn round_trip_in_memory() {
-        let bytes = write(Cursor::new(Vec::new()), &doc()).unwrap().into_inner();
-        assert_eq!(read(Cursor::new(bytes)).unwrap(), doc());
+        let bytes = write(Cursor::new(Vec::new()), &doc(), None)
+            .unwrap()
+            .into_inner();
+        assert_eq!(read(Cursor::new(bytes), None).unwrap(), doc());
     }
 
     #[test]
     fn save_and_load_from_disk_atomically() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("charla.tiza");
-        save(&path, &doc()).unwrap();
+        save(&path, &doc(), None).unwrap();
         let mut second = doc();
         second.meta.title = "Otra".into();
-        save(&path, &second).unwrap();
-        assert_eq!(load(&path).unwrap().meta.title, "Otra");
+        save(&path, &second, None).unwrap();
+        assert_eq!(load(&path, None).unwrap().meta.title, "Otra");
         let leftovers: Vec<_> = fs::read_dir(dir.path()).unwrap().collect();
         assert_eq!(leftovers.len(), 1, "temporary file was not cleaned up");
     }
@@ -180,7 +236,7 @@ mod tests {
     #[test]
     fn reads_the_shared_fixture() {
         let fixture = Path::new(env!("CARGO_MANIFEST_DIR")).join("../tests/fixtures/hello.tiza");
-        let doc = load(&fixture).unwrap();
+        let doc = load(&fixture, None).unwrap();
         assert_eq!(doc.meta.title, "Hola Tiza");
         assert_eq!(doc.slides.len(), 2);
     }
@@ -188,7 +244,7 @@ mod tests {
     #[test]
     fn reads_a_file_saved_by_the_web_version() {
         let fixture = Path::new(env!("CARGO_MANIFEST_DIR")).join("../tests/fixtures/from-web.tiza");
-        let doc = load(&fixture).unwrap();
+        let doc = load(&fixture, None).unwrap();
         let kinds: Vec<_> = doc.slides[0]
             .elements
             .iter()
@@ -197,6 +253,7 @@ mod tests {
                 crate::document::ElementContent::Text(_) => "text",
                 crate::document::ElementContent::Math(_) => "math",
                 crate::document::ElementContent::Sim(_) => "sim",
+                crate::document::ElementContent::Image(_) => "image",
             })
             .collect();
         assert_eq!(kinds, ["shape", "math"]);
@@ -205,19 +262,25 @@ mod tests {
     #[test]
     fn rejects_files_that_are_not_tiza() {
         assert!(matches!(
-            read(Cursor::new(b"not a zip".to_vec())),
+            read(Cursor::new(b"not a zip".to_vec()), None),
             Err(AppError::NotTiza)
         ));
         let other = zip_with(&[(
             MANIFEST,
             r#"{"format":"x","schemaVersion":1,"appVersion":"1"}"#,
         )]);
-        assert!(matches!(read(Cursor::new(other)), Err(AppError::NotTiza)));
+        assert!(matches!(
+            read(Cursor::new(other), None),
+            Err(AppError::NotTiza)
+        ));
         let no_doc = zip_with(&[(
             MANIFEST,
             r#"{"format":"tiza","schemaVersion":1,"appVersion":"1"}"#,
         )]);
-        assert!(matches!(read(Cursor::new(no_doc)), Err(AppError::NotTiza)));
+        assert!(matches!(
+            read(Cursor::new(no_doc), None),
+            Err(AppError::NotTiza)
+        ));
     }
 
     #[test]
@@ -227,14 +290,67 @@ mod tests {
             r#"{"format":"tiza","schemaVersion":99,"appVersion":"9"}"#,
         )]);
         assert!(matches!(
-            read(Cursor::new(newer)),
+            read(Cursor::new(newer), None),
             Err(AppError::TooNew(99))
         ));
         let slip = zip_with(&[("../evil.txt", "x")]);
         assert!(matches!(
-            read(Cursor::new(slip)),
+            read(Cursor::new(slip), None),
             Err(AppError::UnsafePath(_))
         ));
+    }
+
+    #[test]
+    fn assets_travel_inside_the_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let editing = AssetStore::new(dir.path().join("editing"));
+        let name = editing.put(b"fake png bytes", "png").unwrap();
+        let mut d = doc();
+        d.slides[0].elements.push(crate::document::Element {
+            id: "i1".into(),
+            x: 0.0,
+            y: 0.0,
+            w: 10.0,
+            h: 10.0,
+            rotation: 0.0,
+            opacity: 1.0,
+            locked: false,
+            group_id: None,
+            content: crate::document::ElementContent::Image(crate::document::ImageElement {
+                asset: name.clone(),
+                fit: crate::document::ImageFit::Contain,
+            }),
+        });
+        let path = dir.path().join("with-image.tiza");
+        save(&path, &d, Some(&editing)).unwrap();
+
+        let reopened = AssetStore::new(dir.path().join("reopened"));
+        assert_eq!(load(&path, Some(&reopened)).unwrap(), d);
+        assert_eq!(reopened.read(&name).unwrap(), b"fake png bytes");
+    }
+
+    #[test]
+    fn rejects_assets_whose_name_does_not_match_the_content() {
+        let dir = tempfile::tempdir().unwrap();
+        let fake = assets::name_for(b"original", "png");
+        let manifest = r#"{"format":"tiza","schemaVersion":1,"appVersion":"1"}"#;
+        let json = serde_json::to_string(&doc()).unwrap();
+        let bytes = zip_with(&[
+            (MANIFEST, manifest),
+            (PRESENTATION, &json),
+            (&format!("{ASSETS_DIR}{fake}"), "tampered"),
+        ]);
+        let store = AssetStore::new(dir.path().join("s"));
+        assert!(matches!(
+            read(Cursor::new(bytes), Some(&store)),
+            Err(AppError::InvalidDocument(_))
+        ));
+        let bad_name = zip_with(&[
+            (MANIFEST, manifest),
+            (PRESENTATION, &json),
+            ("assets/../../x.png", "x"),
+        ]);
+        assert!(read(Cursor::new(bad_name), Some(&store)).is_err());
     }
 
     #[test]
@@ -280,6 +396,6 @@ mod tests {
         let doc = migrate(value).unwrap();
         let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../tests/fixtures/hello.tiza");
         fs::create_dir_all(path.parent().unwrap()).unwrap();
-        save(&path, &doc).unwrap();
+        save(&path, &doc, None).unwrap();
     }
 }
