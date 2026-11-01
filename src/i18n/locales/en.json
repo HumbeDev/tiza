@@ -18,7 +18,9 @@
     "html": "HTML",
     "file": "File",
     "insert": "Insert",
-    "shapes": "Shapes"
+    "shapes": "Shapes",
+    "image": "Image",
+    "import": "Import PowerPoint…"
   },
   "shapes": {
     "rect": "Rectangle",
@@ -78,7 +80,8 @@
     "wShort": "W",
     "hShort": "H",
     "rotShort": "Rot. °",
-    "opacityShort": "Opac. %"
+    "opacityShort": "Opac. %",
+    "image": "Image"
   },
   "align": {
     "left": "Align left",
@@ -238,6 +241,29 @@
       "none": "None",
       "fade": "Fade",
       "slide": "Slide in"
+    }
+  },
+  "image": {
+    "fit": "Fit",
+    "fits": {
+      "contain": "Whole image",
+      "cover": "Fill and crop",
+      "fill": "Stretch"
+    }
+  },
+  "import": {
+    "done": "Imported {{count}} slides. Save the presentation to keep it as a .tiza file.",
+    "skipped": "Not converted yet: {{list}}.",
+    "error": "The file could not be imported: {{message}}",
+    "kinds": {
+      "table": "tables",
+      "chart": "charts",
+      "diagram": "SmartArt diagrams",
+      "object": "embedded objects",
+      "equation": "equations",
+      "media": "video/audio",
+      "imageFormat": "pictures in unsupported formats (EMF/WMF/TIFF)",
+      "shapeApprox": "shapes drawn as rectangles"
     }
   }
 }

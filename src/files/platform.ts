@@ -5,7 +5,8 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import * as dialog from "@tauri-apps/plugin-dialog";
 import type { Presentation } from "../document";
 import type { FileInfo } from "../store/editor";
-import { FileError, packTiza, toFileError, unpackTiza } from "./format";
+import { addWebAssets, webAssetBytes } from "../assets/store";
+import { FileError, assetNames, packTiza, toFileError, unpackTiza } from "./format";
 
 export const isDesktop = isTauri();
 
@@ -28,6 +29,10 @@ export interface Platform {
     suggestedName: string,
     forceDialog: boolean,
   ): Promise<FileInfo | null>;
+  /** Lets the user choose a presentation to import; null when cancelled. */
+  pickImportFile(): Promise<{ name: string; bytes: Uint8Array } | null>;
+  /** An informational message (not an error). */
+  notify(message: string): Promise<void>;
   /** Lets the user choose an .html file and returns its contents; null when cancelled. */
   pickHtmlFile(): Promise<{ name: string; text: string } | null>;
   confirm(message: string, okLabel: string, cancelLabel: string): Promise<boolean>;
@@ -48,6 +53,8 @@ const APP_VERSION = __APP_VERSION__;
 const baseName = (path: string) => path.split(/[\\/]/).pop() ?? path;
 const withExtension = (name: string) => (/\.tiza$/i.test(name) ? name : `${name}.tiza`);
 const FILTERS = [{ name: "Tiza", extensions: ["tiza"] }];
+/** Formats Tiza can import (more will follow: odp, pdf, ppt). */
+const IMPORT_EXTENSIONS = ["pptx"];
 
 // ---------------------------------------------------------------- desktop
 
@@ -82,6 +89,21 @@ const desktop: Platform = {
     }
     await wrap(invoke("save_presentation", { path, doc }));
     return { name: baseName(path), path };
+  },
+
+  async pickImportFile() {
+    const path = await dialog.open({
+      multiple: false,
+      directory: false,
+      filters: [{ name: "PowerPoint", extensions: IMPORT_EXTENSIONS }],
+    });
+    if (typeof path !== "string") return null;
+    const buffer = await wrap(invoke<ArrayBuffer>("read_import_file", { path }));
+    return { name: baseName(path), bytes: new Uint8Array(buffer) };
+  },
+
+  async notify(message) {
+    await dialog.message(message, { title: "Tiza", kind: "info" });
   },
 
   async pickHtmlFile() {
@@ -188,7 +210,8 @@ const web: Platform = {
   async open() {
     const picked = await pickFile();
     if (!picked) return null;
-    const doc = unpackTiza(new Uint8Array(await picked.arrayBuffer()));
+    const { doc, assets } = unpackTiza(new Uint8Array(await picked.arrayBuffer()));
+    addWebAssets(assets);
     webHandle = null;
     return { doc, file: { name: picked.name, path: null } };
   },
@@ -198,7 +221,7 @@ const web: Platform = {
   },
 
   async save(doc, file, suggestedName, forceDialog) {
-    const bytes = packTiza(doc, APP_VERSION);
+    const bytes = packTiza(doc, APP_VERSION, await webAssetBytes(assetNames(doc)));
     const picker = (window as SaveFilePickerWindow).showSaveFilePicker;
     if (picker) {
       try {
@@ -222,6 +245,13 @@ const web: Platform = {
     download(bytes, name);
     return { name, path: null };
   },
+
+  async pickImportFile() {
+    const picked = await pickFile(IMPORT_EXTENSIONS.map((e) => `.${e}`).join(","));
+    return picked ? { name: picked.name, bytes: new Uint8Array(await picked.arrayBuffer()) } : null;
+  },
+
+  notify: (message) => Promise.resolve(window.alert(message)),
 
   async pickHtmlFile() {
     const picked = await pickFile(".html,.htm,text/html");

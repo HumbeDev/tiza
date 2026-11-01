@@ -1,6 +1,7 @@
 import { memo } from "react";
 import type { Element, Page, Slide } from "../document";
 import MathView from "../elements/math/MathView";
+import ImageView from "../elements/ImageView";
 import ShapeView from "../elements/ShapeView";
 import SimView from "../elements/sim/SimView";
 import TextView from "../elements/TextView";
@@ -52,6 +53,8 @@ function ElementView({ el, mode, editing }: { el: Element; mode: RenderMode; edi
         <TextView el={el} editing={editing} />
       ) : el.kind === "math" ? (
         <MathView el={el} />
+      ) : el.kind === "image" ? (
+        <ImageView el={el} />
       ) : (
         <SimView el={el} mode={mode} interactive={editing || mode === "present"} />
       )}

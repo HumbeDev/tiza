@@ -178,3 +178,42 @@ export async function restartApp(): Promise<void> {
   const restarted = await invoke<boolean>("restart_app");
   if (!restarted) await platform.alert(t("settings.restartManually"));
 }
+
+/** Imports a PowerPoint file as a new, unsaved presentation with editable elements. */
+export async function importPresentation(): Promise<void> {
+  if (!(await confirmDiscard())) return;
+  let picked: { name: string; bytes: Uint8Array } | null;
+  try {
+    picked = await platform.pickImportFile();
+  } catch (e) {
+    await showFileError(e);
+    return;
+  }
+  if (!picked) return;
+  const base = picked.name.replace(/\.[^.]+$/, "");
+  try {
+    const [{ importPptx }, { putAsset }] = await Promise.all([
+      import("../import/pptx"),
+      import("../assets/store"),
+    ]);
+    const { doc, skipped } = await importPptx(picked.bytes, {
+      lang: i18n.language,
+      title: base,
+      putAsset,
+    });
+    loadDocument(doc, { name: `${base}.tiza`, path: null });
+    markUnsaved();
+    await platform.clearRecovery();
+    const missing = Object.entries(skipped)
+      .map(([kind, n]) => `${t(`import.kinds.${kind}`, { defaultValue: kind })}: ${n}`)
+      .join(", ");
+    await platform.notify(
+      t("import.done", { count: doc.slides.length }) +
+        (missing ? `\n\n${t("import.skipped", { list: missing })}` : ""),
+    );
+  } catch (e) {
+    await platform.alert(
+      t("import.error", { message: e instanceof Error ? e.message : String(e) }),
+    );
+  }
+}

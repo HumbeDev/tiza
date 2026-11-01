@@ -105,3 +105,33 @@ export function createSim(html: string, title: string, cx: number, cy: number): 
     allowNetwork: false,
   };
 }
+
+/**
+ * A picture centered at (cx, cy), at its natural size but at most `maxW × maxH`
+ * (logical units), keeping its proportions.
+ */
+export function createImage(
+  asset: string,
+  natural: { width?: number; height?: number },
+  cx: number,
+  cy: number,
+  maxW = 1280,
+  maxH = 720,
+): Element {
+  const nw = natural.width || 800;
+  const nh = natural.height || 600;
+  const s = Math.min(1, maxW / nw, maxH / nh);
+  const w = nw * s;
+  const h = nh * s;
+  return {
+    ...base,
+    id: newId(),
+    x: cx - w / 2,
+    y: cy - h / 2,
+    w,
+    h,
+    kind: "image",
+    asset,
+    fit: "contain",
+  };
+}

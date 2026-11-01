@@ -15,7 +15,7 @@ import { slideMenu } from "./menu/contextMenus";
 import { openContextMenu } from "./menu/Menu";
 import { ToolButton } from "./Toolbar";
 
-const THUMB_WIDTH = 168;
+const THUMB_WIDTH = 160;
 const DRAG_PX = 4;
 
 export default function SlidePanel() {

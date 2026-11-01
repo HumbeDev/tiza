@@ -3,7 +3,7 @@ import { type ReactNode, useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
-import type { Element, ShapeKind, SimFit, TextAlign, TransitionKind } from "../document";
+import type { Element, ImageFit, ShapeKind, SimFit, TextAlign, TransitionKind } from "../document";
 import { reloadSim } from "../elements/sim/reload";
 import {
   type Alignment,
@@ -567,6 +567,24 @@ function ElementProperties({ el }: { el: Element }) {
 
       {el.kind === "math" && <MathProperties el={el} />}
       {el.kind === "sim" && <SimProperties el={el} />}
+      {el.kind === "image" && (
+        <Section id="props.style" title={t("props.style")}>
+          <Field label={t("image.fit")}>
+            <select
+              value={el.fit}
+              onChange={(e) =>
+                update({ fit: e.target.value as ImageFit } as Partial<Element>, "fit")
+              }
+            >
+              {(["contain", "cover", "fill"] as const).map((f) => (
+                <option key={f} value={f}>
+                  {t(`image.fits.${f}`)}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </Section>
+      )}
     </>
   );
 }

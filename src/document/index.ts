@@ -2,6 +2,8 @@
 export type { Aspect } from "../bindings/Aspect";
 export type { Element } from "../bindings/Element";
 export type { ElementContent } from "../bindings/ElementContent";
+export type { ImageElement } from "../bindings/ImageElement";
+export type { ImageFit } from "../bindings/ImageFit";
 export type { LatexSettings } from "../bindings/LatexSettings";
 export type { MathElement } from "../bindings/MathElement";
 export type { Meta } from "../bindings/Meta";

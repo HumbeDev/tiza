@@ -28,6 +28,8 @@ const PATHS = {
   text: "M5 6V4h14v2M12 4v16M9 20h6",
   math: "M18 5H6l6 7-6 7h12",
   html: "M8 7 3 12l5 5M16 7l5 5-5 5M14 4l-4 16",
+  image: "M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6M15.5 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z",
+  import: "M12 3v12M7 10l5 5 5-5M4 17v3h16v-3",
   play: "M7 4v16l13-8z",
   reload: "M20 12a8 8 0 1 1-3-6.2M20 4v5h-5",
   inlineMath: "M4 18 9 6M15 6l5 12M9 13h6",

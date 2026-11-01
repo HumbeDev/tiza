@@ -1,8 +1,16 @@
 import { useTranslation } from "react-i18next";
 import type { ShapeKind } from "../document";
-import { createShape, createSim, createText } from "../document/factory";
+import { pickImage } from "../assets/store";
+import { createImage, createShape, createSim, createText } from "../document/factory";
+import { showFileError } from "../files/session";
 import pendulum from "../../examples/pendulo.html?raw";
-import { newPresentation, openPresentation, save, saveAs } from "../files/session";
+import {
+  importPresentation,
+  newPresentation,
+  openPresentation,
+  save,
+  saveAs,
+} from "../files/session";
 import {
   addElement,
   addSlide,
@@ -41,6 +49,15 @@ export default function Toolbar() {
     startEditing(await insertMath(String.raw`E = mc^2`, cx, cy));
   }
 
+  async function insertImage() {
+    try {
+      const picked = await pickImage();
+      if (picked) addElement(createImage(picked.name, picked, cx, cy));
+    } catch (e) {
+      await showFileError(e);
+    }
+  }
+
   function insertHtml() {
     const el = createSim(pendulum, t("sim.exampleTitle"), cx, cy);
     addElement(el);
@@ -58,6 +75,7 @@ export default function Toolbar() {
       shortcut: "Ctrl+O",
       onSelect: openPresentation,
     },
+    { label: t("toolbar.import"), icon: "import", onSelect: importPresentation },
     separator,
     { label: t("toolbar.save"), icon: "save", shortcut: "Ctrl+S", onSelect: save },
     { label: t("toolbar.saveAs"), shortcut: "Ctrl+Shift+S", onSelect: saveAs },
@@ -125,6 +143,7 @@ export default function Toolbar() {
         <span className="group-label">{t("toolbar.insert")}</span>
         <ToolButton icon="text" label={t("toolbar.text")} onClick={insertText} showLabel />
         <ToolButton icon="math" label={t("toolbar.equation")} onClick={insertEquation} showLabel />
+        <ToolButton icon="image" label={t("toolbar.image")} onClick={insertImage} showLabel />
         <ToolButton icon="html" label={t("toolbar.html")} onClick={insertHtml} showLabel />
         <MenuButton label={t("toolbar.shapes")} icon="shapes" items={shapeMenu} />
       </div>

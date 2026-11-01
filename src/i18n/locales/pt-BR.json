@@ -18,7 +18,9 @@
     "html": "HTML",
     "file": "Arquivo",
     "insert": "Inserir",
-    "shapes": "Formas"
+    "shapes": "Formas",
+    "image": "Imagem",
+    "import": "Importar PowerPoint…"
   },
   "shapes": {
     "rect": "Retângulo",
@@ -78,7 +80,8 @@
     "wShort": "L",
     "hShort": "A",
     "rotShort": "Rot. °",
-    "opacityShort": "Opac. %"
+    "opacityShort": "Opac. %",
+    "image": "Imagem"
   },
   "align": {
     "left": "Alinhar à esquerda",
@@ -238,6 +241,29 @@
       "none": "Nenhuma",
       "fade": "Esmaecer",
       "slide": "Deslizar"
+    }
+  },
+  "image": {
+    "fit": "Enquadramento",
+    "fits": {
+      "contain": "Imagem inteira",
+      "cover": "Preencher e cortar",
+      "fill": "Esticar"
+    }
+  },
+  "import": {
+    "done": "{{count}} slides importados. Salve a apresentação para mantê-la como arquivo .tiza.",
+    "skipped": "Ainda não convertidos: {{list}}.",
+    "error": "Não foi possível importar o arquivo: {{message}}",
+    "kinds": {
+      "table": "tabelas",
+      "chart": "gráficos",
+      "diagram": "diagramas SmartArt",
+      "object": "objetos incorporados",
+      "equation": "equações",
+      "media": "vídeo/áudio",
+      "imageFormat": "imagens em formatos não suportados (EMF/WMF/TIFF)",
+      "shapeApprox": "formas desenhadas como retângulos"
     }
   }
 }
