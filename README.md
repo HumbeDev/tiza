@@ -154,6 +154,7 @@ cd src-tauri && cargo test
 scripts/release.sh 0.2.0   # sube versión, crea la etiqueta v0.2.0 y la sube a GitHub
                            # → GitHub Actions compila los instaladores y crea el release
 scripts/deploy-web.sh      # compila la versión web y la sube a tiza.ingenieriafisica.online
+scripts/publish.sh 0.2.0   # todo junto: tests, instaladores (release.sh) y web (deploy-web.sh)
 ```
 
 ### Traducciones
