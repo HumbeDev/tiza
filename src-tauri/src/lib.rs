@@ -4,6 +4,7 @@ pub mod commands;
 pub mod document;
 pub mod error;
 pub mod gpu;
+pub mod mcp;
 pub mod present;
 pub mod settings;
 pub mod sim;
@@ -24,6 +25,11 @@ pub fn run() {
                 .respond(&request)
         })
         .manage(present::PresentState::default())
+        .manage(mcp::McpServer::default())
+        .setup(|app| {
+            mcp::start_if_enabled(app.handle());
+            Ok(())
+        })
         .on_window_event(|window, event| {
             // Closing either presentation window (or the editor) ends the presentation.
             if let tauri::WindowEvent::Destroyed = event {
@@ -60,6 +66,10 @@ pub fn run() {
             present::presentation_snapshot,
             present::present_nav,
             present::end_presentation,
+            mcp::mcp_status,
+            mcp::mcp_set_enabled,
+            mcp::mcp_configure,
+            mcp::mcp_respond,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

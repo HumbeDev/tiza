@@ -26,6 +26,37 @@ pub enum GpuPreference {
 #[serde(rename_all = "camelCase", default)]
 pub struct Settings {
     pub gpu: GpuPreference,
+    pub mcp: McpSettings,
+}
+
+pub const DEFAULT_MCP_PORT: u16 = 7457;
+
+/// The MCP server for AI agents (off by default).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct McpSettings {
+    pub enabled: bool,
+    pub port: u16,
+    /// Secret clients must send as `Authorization: Bearer <token>`.
+    pub token: String,
+}
+
+impl Default for McpSettings {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            port: DEFAULT_MCP_PORT,
+            token: String::new(),
+        }
+    }
+}
+
+pub fn new_token() -> String {
+    format!(
+        "{}{}",
+        uuid::Uuid::new_v4().simple(),
+        uuid::Uuid::new_v4().simple()
+    )
 }
 
 /// Same folder Tauri uses for `app_config_dir()`.
