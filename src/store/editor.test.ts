@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, it } from "vitest";
 import type { ShapeKind } from "../document";
 import { createPresentation, createShape, createText } from "../document/factory";
 import {
+  selectSlide,
+  setHideMaster,
+  removeMaster,
+  editMaster,
   toggleSelected,
   ungroupElements,
   groupElements,
@@ -274,5 +278,24 @@ describe("groups", () => {
     select([a.id]);
     expect(useEditor.getState().selectedIds).toEqual([a.id]);
     expect(groupElements([c.id])).toBeNull();
+  });
+});
+
+describe("master slide", () => {
+  it("is edited like a slide and removed with its elements", () => {
+    loadDocument(createPresentation("m", "es"));
+    const first = useEditor.getState().doc.slides[0].id;
+    const id = editMaster();
+    expect(useEditor.getState().currentSlideId).toBe(id);
+    addElement(createShape("rect", 100, 100));
+    expect(useEditor.getState().doc.master?.elements).toHaveLength(1);
+    addSlide(); // from the master: new slide at the end, master untouched
+    expect(useEditor.getState().doc.slides).toHaveLength(2);
+    selectSlide(id);
+    removeMaster();
+    expect(useEditor.getState().doc.master).toBeUndefined();
+    expect(useEditor.getState().currentSlideId).toBe(first);
+    setHideMaster([first], true);
+    expect(useEditor.getState().doc.slides[0].hideMaster).toBe(true);
   });
 });

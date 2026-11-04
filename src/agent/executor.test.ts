@@ -205,4 +205,23 @@ describe("agent tools", () => {
     await call("update_element", { element_id: id, changes: { loop: true, start: 3 } });
     expect(doc().slides[0].elements[0]).toMatchObject({ loop: true, start: 3 });
   });
+
+  it("adds elements to the master slide, shown behind every slide", async () => {
+    const logo = await call("add_shape", {
+      slide: "master",
+      shape: "rect",
+      x: 10,
+      y: 10,
+      w: 100,
+      h: 50,
+    });
+    expect(logo.ok).toBe(true);
+    expect(doc().master?.elements).toHaveLength(1);
+    expect(doc().slides[0].elements).toHaveLength(0);
+    const info = await call("get_presentation");
+    expect(info.result).toMatchObject({ master: [{ kind: "shape" }] });
+    await call("set_slide", { slide: 1, hide_master: true });
+    expect(doc().slides[0].hideMaster).toBe(true);
+    expect((await call("set_slide", { slide: "master", notes: "x" })).ok).toBe(false);
+  });
 });

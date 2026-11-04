@@ -46,7 +46,9 @@ export default function StatusBar() {
           {agentWorking ? t("mcp.working") : t("mcp.listening")}
         </span>
       )}
-      <span>{t("status.slideOf", { current: index + 1, total })}</span>
+      <span>
+        {index < 0 ? t("master.title") : t("status.slideOf", { current: index + 1, total })}
+      </span>
       {!isDesktop && (
         <a className="status-link" href={RELEASES_URL} target="_blank" rel="noreferrer">
           {t("status.download")}

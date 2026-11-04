@@ -467,5 +467,14 @@
     "progress": "Exportation… {{done}}/{{total}}",
     "htmlHint": "→ / clic : suivant · ← : retour · F : plein écran",
     "done": "Exporté."
+  },
+  "master": {
+    "title": "Masque",
+    "edit": "Masque des diapositives",
+    "hint": "Masque : ce que vous placez ici apparaît derrière toutes les diapositives",
+    "editing": "Modification du masque : ce que vous placez ici (logo, pied de page…) apparaît derrière toutes les diapositives.",
+    "close": "Revenir aux diapositives",
+    "remove": "Supprimer le masque",
+    "showHere": "Afficher le masque sur cette diapositive"
   }
 }

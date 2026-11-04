@@ -169,6 +169,7 @@ export default function PresenterView({ client }: { client: PresentClient }) {
           <SlideStage
             slide={current}
             page={snapshot.doc.page}
+            master={snapshot.doc.master}
             mode="preview"
             step={status.step}
             laser={laserOn ? laser : null}
@@ -181,7 +182,12 @@ export default function PresenterView({ client }: { client: PresentClient }) {
           <h2>{t("present.nextSlide")}</h2>
           <div className="presenter-next">
             {next ? (
-              <SlideStage slide={next} page={snapshot.doc.page} mode="thumb" />
+              <SlideStage
+                slide={next}
+                page={snapshot.doc.page}
+                master={snapshot.doc.master}
+                mode="thumb"
+              />
             ) : (
               <p className="end-of-show">{t("present.endOfShow")}</p>
             )}

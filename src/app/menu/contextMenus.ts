@@ -24,6 +24,8 @@ import {
   groupElements,
   ungroupElements,
   setSlideHidden,
+  setHideMaster,
+  editMaster,
   setTemplateSlide,
   startEditing,
   useEditor,
@@ -192,6 +194,16 @@ export function slideMenu(slideId: string): MenuItem[] {
       icon: slide.hidden ? "eye" : "eyeOff",
       onSelect: () => setSlideHidden(slideId, !slide.hidden),
     },
+    ...(doc.master
+      ? [
+          {
+            label: t("master.showHere"),
+            checked: !slide.hideMaster,
+            onSelect: () => setHideMaster([slideId], !slide.hideMaster),
+          },
+        ]
+      : []),
+    { label: t("master.edit"), icon: "master" as const, onSelect: editMaster },
     separator,
     {
       label: t("slides.moveUp"),

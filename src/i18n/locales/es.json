@@ -467,5 +467,14 @@
     "progress": "Exportando… {{done}}/{{total}}",
     "htmlHint": "→ / clic: siguiente · ← : atrás · F: pantalla completa",
     "done": "Exportado."
+  },
+  "master": {
+    "title": "Patrón",
+    "edit": "Diapositiva patrón",
+    "hint": "Diapositiva patrón: lo que pongas aquí aparece detrás de todas las diapositivas",
+    "editing": "Editando el patrón: lo que pongas aquí (logo, pie de página…) aparece detrás de todas las diapositivas.",
+    "close": "Volver a las diapositivas",
+    "remove": "Quitar el patrón",
+    "showHere": "Mostrar el patrón en esta diapositiva"
   }
 }

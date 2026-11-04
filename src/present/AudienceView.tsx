@@ -48,6 +48,7 @@ export default function AudienceView({ client }: { client: PresentClient }) {
       <SlideStage
         slide={current}
         page={snapshot.doc.page}
+        master={snapshot.doc.master}
         mode="present"
         animate
         step={status.step}

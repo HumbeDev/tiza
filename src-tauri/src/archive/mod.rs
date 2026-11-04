@@ -191,6 +191,7 @@ mod tests {
             latex: LatexSettings::default(),
             transition: None,
             template: None,
+            master: None,
             slides: vec![Slide {
                 id: "s1".into(),
                 background: None,
@@ -198,6 +199,7 @@ mod tests {
                 notes: String::new(),
                 hidden: false,
                 transition: None,
+                hide_master: None,
             }],
         }
     }

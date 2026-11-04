@@ -15,6 +15,7 @@ interface Props {
   fallbackTransition?: Transition;
   /** Laser pointer dot, as fractions of the slide. */
   laser?: LaserPos | null;
+  master?: Slide;
 }
 
 /** A slide scaled to fit its container, centered, letterboxed on black. */
@@ -26,6 +27,7 @@ export default function SlideStage({
   step,
   fallbackTransition,
   laser,
+  master,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -56,7 +58,7 @@ export default function SlideStage({
           style={{ width: page.width * scale, height: page.height * scale, ...style }}
         >
           <div style={{ transform: `scale(${scale})`, transformOrigin: "0 0" }}>
-            <SlideRenderer slide={slide} page={page} mode={mode} step={step} />
+            <SlideRenderer slide={slide} page={page} mode={mode} step={step} master={master} />
           </div>
           {laser && (
             <div

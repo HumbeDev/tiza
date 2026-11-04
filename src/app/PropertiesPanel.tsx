@@ -26,6 +26,7 @@ import {
   currentSlide,
   deleteSelected,
   fitSimBoxToView,
+  isEditingMaster,
   openHtmlEditor,
   reorderSelected,
   seal,
@@ -66,10 +67,12 @@ const Z_ORDERS: ZOrder[] = ["front", "forward", "backward", "back"];
 export default function PropertiesPanel() {
   const { t } = useTranslation();
   const selected = useEditor(useShallow(selectedElements));
+  const editingMaster = useEditor(isEditingMaster);
 
   return (
     <aside className="properties" aria-label={t("props.panel")}>
-      {selected.length === 0 && <SlideProperties />}
+      {selected.length === 0 &&
+        (editingMaster ? <p className="hint">{t("master.editing")}</p> : <SlideProperties />)}
       {selected.length === 1 && <ElementProperties el={selected[0]} />}
       {selected.length > 1 && (
         <p className="hint">{t("props.multiple", { count: selected.length })}</p>

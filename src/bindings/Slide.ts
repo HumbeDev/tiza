@@ -22,4 +22,8 @@ hidden: boolean,
 /**
  * How this slide appears when presenting.
  */
-transition?: Transition, };
+transition?: Transition, 
+/**
+ * Don't draw the master slide's elements behind this one (e.g. a title slide).
+ */
+hideMaster?: boolean, };

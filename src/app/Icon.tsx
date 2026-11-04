@@ -71,6 +71,7 @@ const PATHS = {
   textRight: "M4 6h16M10 10h10M4 14h16M10 18h10",
   textJustify: "M4 6h16M4 10h16M4 14h16M4 18h16",
   eraser: "M7 21h13M5.5 15.5 14 7l5 5-8.5 8.5H7.5l-2-2a1.4 1.4 0 0 1 0-2zM10 11l5 5",
+  master: "M3 4h18v13H3zM3 14h18M6 17v3h12v-3M6 7h4",
   front: "M8 8h12v12H8zM4 4h12v12",
   back: "M4 4h12v12H4zM8 16v4h12V8h-4",
 } as const;

@@ -28,6 +28,11 @@ pub struct Presentation {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub template: Option<Slide>,
+    /// Master slide: its elements (logo, footer, decorations) are drawn behind every
+    /// slide that doesn't hide it. Editing it changes all slides at once.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub master: Option<Slide>,
     pub slides: Vec<Slide>,
 }
 
@@ -92,6 +97,10 @@ pub struct Slide {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub transition: Option<Transition>,
+    /// Don't draw the master slide's elements behind this one (e.g. a title slide).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub hide_master: Option<bool>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -386,6 +395,7 @@ impl Presentation {
             .slides
             .iter()
             .chain(self.template.iter())
+            .chain(self.master.iter())
             .flat_map(|s| &s.elements)
             .filter_map(|e| match &e.content {
                 ElementContent::Image(img) => Some(img.asset.as_str()),
@@ -478,9 +488,11 @@ mod tests {
             },
             transition: None,
             template: None,
+            master: None,
             slides: vec![Slide {
                 id: "s1".into(),
                 background: Some("#ffffff".into()),
+                hide_master: None,
                 elements: vec![
                     Element {
                         id: "e1".into(),

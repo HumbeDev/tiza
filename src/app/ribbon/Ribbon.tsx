@@ -23,6 +23,7 @@ import { isDesktop } from "../../files/platform";
 import {
   type Alignment,
   addSlide,
+  editMaster,
   alignSelected,
   buildOnNextClick,
   copySelected,
@@ -346,6 +347,7 @@ function HomeTab() {
             disabled={slides <= 1}
           />
         </div>
+        <Big icon="master" label={t("master.edit")} onClick={editMaster} />
       </Group>
       <Group label={t("props.arrange")}>
         <div className="rb-column">

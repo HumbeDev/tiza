@@ -19,15 +19,30 @@ interface Props {
   editingId?: string | null;
   /** Presenting: build step shown; elements of later steps are hidden. */
   step?: number;
+  /** The presentation's master slide, drawn behind (unless the slide hides it). */
+  master?: Slide;
 }
 
 /** Draws a slide at its logical size; callers scale it with a CSS transform. */
-function SlideRenderer({ slide, page, mode, editingId, step }: Props) {
+function SlideRenderer({ slide, page, mode, editingId, step, master }: Props) {
+  const behind = master && master.id !== slide.id && !slide.hideMaster ? master.elements : [];
   return (
     <div
       className="slide"
       style={{ width: page.width, height: page.height, background: slide.background ?? "#fff" }}
     >
+      {behind.map((el) => (
+        // Master elements: not selectable from a slide, no build steps.
+        <ElementView
+          key={`m-${el.id}`}
+          el={el}
+          mode={mode}
+          editing={false}
+          pending={false}
+          gone={false}
+          fromMaster
+        />
+      ))}
       {slide.elements.map((el) => {
         const pending = step !== undefined && (el.build?.step ?? 0) > step;
         const gone = step !== undefined && el.exit !== undefined && el.exit.step <= step;
@@ -55,12 +70,13 @@ interface ElementViewProps {
   pending: boolean;
   /** Already left (its exit click has passed). */
   gone: boolean;
+  fromMaster?: boolean;
 }
 
-function ElementView({ el, mode, editing, pending, gone }: ElementViewProps) {
-  const classes = ["element"];
+function ElementView({ el, mode, editing, pending, gone, fromMaster }: ElementViewProps) {
+  const classes = fromMaster ? ["element", "from-master"] : ["element"];
   if (editing && (el.kind === "sim" || el.kind === "embed")) classes.push("interacting");
-  if (mode === "present" || mode === "preview") {
+  if (!fromMaster && (mode === "present" || mode === "preview")) {
     if (el.build) classes.push(`in-${el.build.effect}`);
     if (el.exit) classes.push(`out-${el.exit.effect}`);
     if (pending) classes.push("in-pending");
@@ -69,7 +85,7 @@ function ElementView({ el, mode, editing, pending, gone }: ElementViewProps) {
   return (
     <div
       className={classes.join(" ")}
-      data-element-id={mode === "edit" ? el.id : undefined}
+      data-element-id={mode === "edit" && !fromMaster ? el.id : undefined}
       data-in={el.build?.step}
       data-out={el.exit?.step}
       style={{

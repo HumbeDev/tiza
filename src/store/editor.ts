@@ -166,9 +166,13 @@ export function redo(): void {
   );
 }
 
+/** The slides plus the master slide (which can be edited like one). */
+const editableSlides = <T extends { slides: Slide[]; master?: Slide }>(doc: T): T["slides"] =>
+  doc.master ? [...doc.slides, doc.master] : doc.slides;
+
 /** Keeps the current slide and selection pointing at things that still exist. */
 function fixSelection(s: EditorState): EditorState {
-  const slide = s.doc.slides.find((sl) => sl.id === s.currentSlideId) ?? s.doc.slides[0];
+  const slide = editableSlides(s.doc).find((sl) => sl.id === s.currentSlideId) ?? s.doc.slides[0];
   const ids = new Set(slide.elements.map((e) => e.id));
   return {
     ...s,
@@ -182,7 +186,11 @@ function fixSelection(s: EditorState): EditorState {
 // ---------------------------------------------------------------- selectors
 
 export const currentSlide = (s: EditorState): Slide =>
-  s.doc.slides.find((sl) => sl.id === s.currentSlideId) ?? s.doc.slides[0];
+  editableSlides(s.doc).find((sl) => sl.id === s.currentSlideId) ?? s.doc.slides[0];
+
+/** True while the master slide is open in the editor. */
+export const isEditingMaster = (s: EditorState): boolean =>
+  !!s.doc.master && s.doc.master.id === s.currentSlideId;
 
 export function selectedElements(s: EditorState): Element[] {
   const ids = new Set(s.selectedIds);
@@ -191,12 +199,12 @@ export function selectedElements(s: EditorState): Element[] {
 
 function draftSlide(doc: Draft<Presentation>): Draft<Slide> {
   const id = get().currentSlideId;
-  return doc.slides.find((sl) => sl.id === id) ?? doc.slides[0];
+  return editableSlides(doc).find((sl) => sl.id === id) ?? doc.slides[0];
 }
 
 /** Elements with these ids on any slide (ids are unique across the presentation). */
 function* draftElements(doc: Draft<Presentation>, ids: Set<string>): Generator<Draft<Element>> {
-  for (const slide of doc.slides) {
+  for (const slide of editableSlides(doc)) {
     for (const el of slide.elements) if (ids.has(el.id)) yield el;
   }
 }
@@ -296,7 +304,9 @@ export function addBlankSlide(): void {
 }
 
 function insertSlideAfterCurrent(slide: Slide): void {
-  const index = get().doc.slides.findIndex((s) => s.id === get().currentSlideId);
+  const found = get().doc.slides.findIndex((s) => s.id === get().currentSlideId);
+  // From the master slide, new slides go at the end.
+  const index = found < 0 ? get().doc.slides.length - 1 : found;
   change((doc) => {
     doc.slides.splice(index + 1, 0, slide);
   });
@@ -326,6 +336,42 @@ export function deleteSlide(id: string): void {
     const slides = get().doc.slides;
     selectSlide(slides[Math.min(index, slides.length - 1)].id);
   }
+}
+
+/** Opens the master slide in the editor, creating an empty one the first time. */
+export function editMaster(): string {
+  let master = get().doc.master;
+  if (!master) {
+    master = { ...createSlide(), background: undefined };
+    const created = master;
+    change((doc) => {
+      doc.master = created;
+    });
+  }
+  selectSlide(master.id);
+  return master.id;
+}
+
+/** Deletes the master slide (its elements disappear from every slide). */
+export function removeMaster(): void {
+  const master = get().doc.master;
+  if (!master) return;
+  if (get().currentSlideId === master.id) selectSlide(get().doc.slides[0].id);
+  change((doc) => {
+    delete doc.master;
+  });
+}
+
+/** Per slide: don't draw the master's elements behind it (e.g. a title slide). */
+export function setHideMaster(slideIds: string[], hide: boolean): void {
+  const ids = new Set(slideIds);
+  change((doc) => {
+    for (const slide of doc.slides)
+      if (ids.has(slide.id)) {
+        if (hide) slide.hideMaster = true;
+        else delete slide.hideMaster;
+      }
+  });
 }
 
 export function moveSlide(from: number, to: number): void {

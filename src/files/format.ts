@@ -39,8 +39,14 @@ export function toFileError(e: unknown): FileError {
 /** Asset names referenced by the document (what must travel inside the file). */
 export function assetNames(doc: Presentation): string[] {
   const names = new Set<string>();
-  for (const slide of doc.slides)
-    for (const el of slide.elements) if (el.kind === "image") names.add(el.asset);
+  const slides = [
+    ...doc.slides,
+    ...(doc.template ? [doc.template] : []),
+    ...(doc.master ? [doc.master] : []),
+  ];
+  for (const slide of slides)
+    for (const el of slide.elements)
+      if (el.kind === "image" || el.kind === "video") names.add(el.asset);
   return [...names].sort();
 }
 
@@ -121,7 +127,13 @@ export function validate(doc: any): Presentation {
     throw new FileError("file.tooNew", String(doc.schemaVersion));
   if (typeof doc.page?.width !== "number" || typeof doc.page?.height !== "number") fail("page");
   if (!Array.isArray(doc.slides) || doc.slides.length === 0) fail("no slides");
-  for (const slide of doc.slides) {
+  // The template and master slide are checked like the others.
+  const all = [
+    ...doc.slides,
+    ...(doc.template ? [doc.template] : []),
+    ...(doc.master ? [doc.master] : []),
+  ];
+  for (const slide of all) {
     if (typeof slide?.id !== "string" || !Array.isArray(slide.elements)) fail("slide");
     for (const el of slide.elements) {
       if (
@@ -133,7 +145,7 @@ export function validate(doc: any): Presentation {
     }
   }
   doc.latex ??= { preamble: "" };
-  for (const slide of doc.slides) {
+  for (const slide of all) {
     slide.notes ??= "";
     slide.hidden ??= false;
     for (const el of slide.elements) {

@@ -2658,3 +2658,58 @@ input[type="color"] {
 .fragment-color input[type="color"] {
   width: 34px;
 }
+
+/* ---------------------------------------------------------------- master slide */
+
+.master-entry {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin: 12px 8px 0;
+  padding: 6px 4px 8px;
+  color: inherit;
+  border: none;
+  border-bottom: 1px dashed var(--border);
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.master-entry.current .thumbnail {
+  outline: 3px solid var(--accent);
+}
+
+.master-thumb {
+  position: relative;
+  display: block;
+}
+
+.master-label {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  color: #fff;
+  border-radius: 4px;
+  background: var(--accent-strong);
+}
+
+.master-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--fg);
+  border-bottom: 1px solid var(--border);
+  background: var(--accent-soft);
+}
+
+.master-banner span {
+  flex: 1;
+}
+
+.element.from-master {
+  pointer-events: none;
+}

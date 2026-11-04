@@ -17,12 +17,14 @@ that is open in the app, live, while the user watches. Start with get_presentati
 Coordinates and sizes are logical units of the slide: (0,0) is the top-left corner and a \
 16:9 slide is 1920×1080 (get_presentation gives the exact page size). Font sizes use the \
 same units: ~64 for body text, ~96 for titles. Slides are referenced by number (1 = first) \
-or by id. Text accepts $...$ for inline LaTeX, lines starting with '- ' become bullets and \
+or by id; \"master\" is the master slide, whose elements (logo, footer) appear behind every \
+slide. Use render_slide to check your result visually. Text accepts $...$ for inline LaTeX, lines starting with '- ' become bullets and \
 '1. ' numbered items. Every tool call is one undo step for the user; call undo to revert \
 your last change. Equations use LaTeX (MathJax: amsmath, physics, mhchem...). HTML \
 simulations must be a single self-contained HTML file.";
 
-/// A slide: its number (1 = first slide) or its id.
+/// A slide: its number (1 = first slide), its id, or "master" for the master slide (its
+/// elements appear behind every slide; created on first use).
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(untagged)]
 pub enum SlideRef {
@@ -65,6 +67,8 @@ pub struct SetSlideArgs {
     pub transition: Option<String>,
     /// Transition duration in milliseconds (default 500).
     pub duration_ms: Option<u32>,
+    /// Don't draw the master slide's elements behind this slide.
+    pub hide_master: Option<bool>,
 }
 
 /// Position and size; omitted values get sensible defaults (centered).

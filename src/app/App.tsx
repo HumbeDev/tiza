@@ -13,6 +13,7 @@ import WebPresentation from "../present/WebPresentation";
 import { useEndOfPresentation } from "../present/startFromEditor";
 import SettingsDialog from "./SettingsDialog";
 import EmbedDialog from "./EmbedDialog";
+import MasterBanner from "./MasterBanner";
 import ExportProgress from "./ExportProgress";
 import StatusBar from "./StatusBar";
 import Ribbon from "./ribbon/Ribbon";
@@ -36,6 +37,7 @@ export default function App() {
       <Ribbon />
       <SlidePanel />
       <main className="canvas-area">
+        <MasterBanner />
         <div className="canvas-wrap">
           <Canvas />
           <MathEditorHost />

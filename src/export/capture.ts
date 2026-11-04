@@ -58,7 +58,13 @@ export async function renderFrame(
   const root = createRoot(host);
   try {
     root.render(
-      createElement(SlideRenderer, { slide: frame.slide, page, mode: "export", step: frame.step }),
+      createElement(SlideRenderer, {
+        slide: frame.slide,
+        page,
+        mode: "export",
+        step: frame.step,
+        master: doc.master,
+      }),
     );
     await settle(host);
     await document.fonts?.ready;

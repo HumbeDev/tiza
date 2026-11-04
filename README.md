@@ -96,6 +96,8 @@ crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ct
 
 **Notas del orador**: panel debajo del lienzo en cada diapositiva (se pliega).
 
+**Diapositiva patrón**: _Inicio → Diapositiva patrón_ (o clic derecho en una miniatura). Lo que pongas en ella (logo, pie de página, franjas) aparece **detrás de todas las diapositivas** y, si la cambias, cambia en todas. Clic derecho en una diapositiva → _Mostrar el patrón en esta diapositiva_ para quitarlo de una (por ejemplo la portada). Los agentes usan `slide: "master"`.
+
 **Plantilla de diapositiva del archivo**: clic derecho en una miniatura → «Guardar como plantilla de nuevas diapositivas». Se guarda **una copia en ese momento**: cada diapositiva nueva empieza así (logos, barras de un evento…) aunque después cambies la original. «Nueva diapositiva en blanco» la ignora; «Quitar la plantilla» la borra.
 
 **Imágenes**: botón **Imagen** (PNG, JPG, GIF, WebP, SVG, BMP, AVIF). Se guardan **dentro del `.tiza`** (una sola copia aunque la repitas). Encuadre: imagen completa, rellenar y recortar, o estirar.

@@ -25,6 +25,7 @@ export default function SlidePanel() {
   const currentId = useEditor((s) => s.currentSlideId);
   // The template is a copy; it keeps the id of the slide it was taken from.
   const templateId = useEditor((s) => s.doc.template?.id);
+  const master = useEditor((s) => s.doc.master);
   const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
   const drag = useRef<{ from: number; startY: number; active: boolean } | null>(null);
   const [dropAt, setDropAt] = useState<number | null>(null);
@@ -66,6 +67,23 @@ export default function SlidePanel() {
 
   return (
     <aside className="slide-panel" aria-label={t("slides.panel")}>
+      {master && (
+        <button
+          type="button"
+          className={master.id === currentId ? "master-entry current" : "master-entry"}
+          title={t("master.hint")}
+          onClick={() => selectSlide(master.id)}
+          aria-current={master.id === currentId}
+        >
+          <span className="slide-number">
+            <Icon name="master" small />
+          </span>
+          <span className="master-thumb">
+            <Thumbnail slide={master} page={page} />
+            <span className="master-label">{t("master.title")}</span>
+          </span>
+        </button>
+      )}
       <ol className="slide-list">
         {slides.map((slide, i) => (
           <li
@@ -132,10 +150,11 @@ export default function SlidePanel() {
 
 function Thumbnail({ slide, page }: { slide: Slide; page: Page }) {
   const scale = THUMB_WIDTH / page.width;
+  const master = useEditor((s) => s.doc.master);
   return (
     <div className="thumbnail" style={{ width: THUMB_WIDTH, height: page.height * scale }}>
       <div style={{ transform: `scale(${scale})`, transformOrigin: "0 0" }}>
-        <SlideRenderer slide={slide} page={page} mode="thumb" />
+        <SlideRenderer slide={slide} page={page} mode="thumb" master={master} />
       </div>
     </div>
   );

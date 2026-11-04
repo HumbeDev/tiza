@@ -467,5 +467,14 @@
     "progress": "Exporting… {{done}}/{{total}}",
     "htmlHint": "→ / click: next · ← : back · F: full screen",
     "done": "Exported."
+  },
+  "master": {
+    "title": "Master",
+    "edit": "Master slide",
+    "hint": "Master slide: what you put here appears behind every slide",
+    "editing": "Editing the master slide: what you put here (logo, footer…) appears behind every slide.",
+    "close": "Back to the slides",
+    "remove": "Delete master",
+    "showHere": "Show the master on this slide"
   }
 }

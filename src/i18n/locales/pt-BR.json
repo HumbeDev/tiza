@@ -467,5 +467,14 @@
     "progress": "Exportando… {{done}}/{{total}}",
     "htmlHint": "→ / clique: próximo · ← : voltar · F: tela cheia",
     "done": "Exportado."
+  },
+  "master": {
+    "title": "Mestre",
+    "edit": "Slide mestre",
+    "hint": "Slide mestre: o que você colocar aqui aparece atrás de todos os slides",
+    "editing": "Editando o slide mestre: o que você colocar aqui (logo, rodapé…) aparece atrás de todos os slides.",
+    "close": "Voltar aos slides",
+    "remove": "Remover o mestre",
+    "showHere": "Mostrar o mestre neste slide"
   }
 }

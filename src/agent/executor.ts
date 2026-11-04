@@ -37,6 +37,7 @@ import {
   addBlankSlide,
   groupElements,
   ungroupElements,
+  editMaster,
   addElement,
   addSlide,
   batch,
@@ -75,6 +76,15 @@ function bytesToBase64(bytes: Uint8Array): string {
 }
 
 function slideOf(ref: unknown): { slide: Slide; index: number } {
+  if (ref === "master") {
+    // The master slide is created the first time an agent uses it.
+    if (!state().doc.master) {
+      const current = state().currentSlideId;
+      editMaster();
+      selectSlide(current);
+    }
+    return { slide: state().doc.master!, index: -1 };
+  }
   const slides = state().doc.slides;
   const index =
     typeof ref === "number"
@@ -155,11 +165,25 @@ const tools: Record<string, (args: Args) => unknown> = {
       page: { width: s.doc.page.width, height: s.doc.page.height },
       currentSlide: s.doc.slides.findIndex((sl) => sl.id === s.currentSlideId) + 1,
       hasTemplate: !!s.doc.template,
+      ...(s.doc.master
+        ? {
+            master: s.doc.master.elements.map((el) => ({
+              id: el.id,
+              kind: el.kind,
+              x: round(el.x),
+              y: round(el.y),
+              w: round(el.w),
+              h: round(el.h),
+              content: summary(el),
+            })),
+          }
+        : {}),
       latexPreamble: s.doc.latex.preamble,
       slides: s.doc.slides.map((slide, i) => ({
         number: i + 1,
         id: slide.id,
         hidden: slide.hidden,
+        ...(slide.hideMaster ? { hideMaster: true } : {}),
         background: slide.background,
         notes: slide.notes,
         elements: slide.elements.map((el) => ({
@@ -268,10 +292,16 @@ const tools: Record<string, (args: Args) => unknown> = {
     return { ok: true };
   },
 
-  set_slide({ slide, background, notes, hidden, transition, duration_ms }) {
+  set_slide({ slide, background, notes, hidden, transition, duration_ms, hide_master }) {
     const { slide: target } = slideOf(slide);
+    if (target.id === state().doc.master?.id)
+      throw new ToolError("set_slide doesn't apply to the master slide");
     change((doc) => {
       const s = doc.slides.find((x) => x.id === target.id)!;
+      if (typeof hide_master === "boolean") {
+        if (hide_master) s.hideMaster = true;
+        else delete s.hideMaster;
+      }
       if (typeof background === "string") s.background = background;
       if (typeof notes === "string") s.notes = notes;
       if (typeof hidden === "boolean") s.hidden = hidden;

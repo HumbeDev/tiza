@@ -14,4 +14,9 @@ transition?: Transition,
  * Copy of a slide taken when the user chose it as template: every new slide starts
  * as a copy of it. Later edits to the original slide don't change the template.
  */
-template?: Slide, slides: Array<Slide>, };
+template?: Slide, 
+/**
+ * Master slide: its elements (logo, footer, decorations) are drawn behind every
+ * slide that doesn't hide it. Editing it changes all slides at once.
+ */
+master?: Slide, slides: Array<Slide>, };

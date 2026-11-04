@@ -53,6 +53,7 @@ let gestureCounter = 0;
 
 export default function Canvas() {
   const page = useEditor((s) => s.doc.page);
+  const master = useEditor((s) => s.doc.master);
   const slide = useEditor(currentSlide);
   const editingId = useEditor((s) => s.editingId);
 
@@ -230,7 +231,13 @@ export default function Canvas() {
         style={{ width: page.width * scale, height: page.height * scale }}
       >
         <div style={{ transform: `scale(${scale})`, transformOrigin: "0 0" }}>
-          <SlideRenderer slide={slide} page={page} mode="edit" editingId={editingId} />
+          <SlideRenderer
+            slide={slide}
+            page={page}
+            mode="edit"
+            editingId={editingId}
+            master={master}
+          />
           <SelectionOverlay scale={scale} guides={guides} marquee={marquee} />
         </div>
       </div>

@@ -83,15 +83,23 @@ async function slideHtml(doc: Presentation, slide: Slide): Promise<string> {
   document.body.append(host);
   const root = createRoot(host);
   try {
-    root.render(createElement(SlideRenderer, { slide, page: doc.page, mode: "export" }));
+    root.render(
+      createElement(SlideRenderer, { slide, page: doc.page, mode: "export", master: doc.master }),
+    );
     await new Promise((r) => setTimeout(r, 300));
     const node = host.firstElementChild!.cloneNode(true) as HTMLElement;
     const wrappers = Array.from(node.children) as HTMLElement[];
-    for (const [i, el] of slide.elements.entries()) {
+    // Same order as the renderer: the master's elements first (no build steps).
+    const master = doc.master && !slide.hideMaster ? doc.master.elements : [];
+    const drawn = [
+      ...master.map((el) => ({ el, own: false })),
+      ...slide.elements.map((el) => ({ el, own: true })),
+    ];
+    for (const [i, { el, own }] of drawn.entries()) {
       const wrapper = wrappers[i];
       if (!wrapper) continue;
-      if (el.build) wrapper.classList.add(`in-${el.build.effect}`);
-      if (el.exit) wrapper.classList.add(`out-${el.exit.effect}`);
+      if (own && el.build) wrapper.classList.add(`in-${el.build.effect}`);
+      if (own && el.exit) wrapper.classList.add(`out-${el.exit.effect}`);
       if (el.kind === "image") {
         const img = wrapper.querySelector("img");
         if (img) img.src = await assetDataUrl(el.asset);
