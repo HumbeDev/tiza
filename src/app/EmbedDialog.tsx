@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { create } from "zustand";
 import { createEmbed } from "../document/factory";
-import { embedThumbnail, parseEmbedUrl } from "../elements/embed/parse";
+import { embedSrc, embedThumbnail, parseEmbed } from "../elements/embed/parse";
 import { addElement, useEditor } from "../store/editor";
 
 const useEmbedDialog = create<{ open: boolean }>(() => ({ open: false }));
@@ -17,9 +17,9 @@ export default function EmbedDialog() {
 }
 
 function Dialog() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [url, setUrl] = useState("");
-  const parsed = parseEmbedUrl(url);
+  const parsed = parseEmbed(url);
   const thumb = parsed && embedThumbnail(parsed);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ function Dialog() {
   function insert() {
     if (!parsed) return;
     const { width, height } = useEditor.getState().doc.page;
-    addElement(createEmbed(parsed, url.trim(), width / 2, height / 2));
+    addElement(createEmbed(parsed, parsed.link, width / 2, height / 2));
     close();
   }
 
@@ -52,14 +52,21 @@ function Dialog() {
         </header>
         <div className="modal-section">
           <p className="hint">{t("embed.help")}</p>
-          <input
-            type="url"
+          <textarea
             className="embed-url"
+            rows={3}
             autoFocus
+            spellCheck={false}
             aria-label={t("embed.link")}
-            placeholder="https://www.youtube.com/watch?v=…"
+            placeholder={t("embed.placeholder")}
             value={url}
             onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                insert();
+              }
+            }}
           />
           <p className={parsed || !url.trim() ? "embed-status" : "embed-status error"}>
             {parsed
@@ -69,6 +76,24 @@ function Dialog() {
                 : t("embed.supported")}
           </p>
           {thumb && <img className="embed-preview" src={thumb} alt="" />}
+          {parsed?.provider === "x" && (
+            <iframe
+              className="embed-preview-post"
+              title={parsed.link}
+              src={embedSrc(parsed, i18n.language.slice(0, 2))}
+              sandbox="allow-scripts allow-same-origin"
+            />
+          )}
+          {!parsed && (
+            <ul className="embed-howto">
+              <li>
+                <strong>X:</strong> {t("embed.howX")}
+              </li>
+              <li>
+                <strong>YouTube:</strong> {t("embed.howYoutube")}
+              </li>
+            </ul>
+          )}
           <p className="hint">{t("embed.online")}</p>
         </div>
         <footer className="modal-actions">

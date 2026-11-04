@@ -4,6 +4,8 @@ export interface ParsedEmbed {
   provider: EmbedProvider;
   media: string;
   start?: number;
+  /** Clean link to the video or post, to store and show. */
+  link: string;
 }
 
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
@@ -19,11 +21,27 @@ function parseTime(value: string | null): number | undefined {
   return s || undefined;
 }
 
-/** Recognizes YouTube video links and X/Twitter post links; null for anything else. */
-export function parseEmbedUrl(input: string): ParsedEmbed | null {
+/**
+ * Recognizes a YouTube video or X/Twitter post from its link or from the embed code the
+ * site gives ("Embed post" on X, "Share → Embed" on YouTube); null for anything else.
+ */
+export function parseEmbed(input: string): ParsedEmbed | null {
+  const text = input.trim();
+  const urls = text.match(/https?:\/\/[^\s"'<>]+/g);
+  if (!urls) return parseUrl(text);
+  // In X's embed code the post's own link comes last, after any links in its text.
+  for (const url of urls.reverse()) {
+    const parsed = parseUrl(url.replaceAll("&amp;", "&"));
+    if (parsed) return parsed;
+  }
+  return null;
+}
+
+function parseUrl(input: string): ParsedEmbed | null {
+  if (/\s/.test(input)) return null;
   let url: URL;
   try {
-    url = new URL(/^[a-z]+:\/\//i.test(input.trim()) ? input.trim() : `https://${input.trim()}`);
+    url = new URL(/^[a-z]+:\/\//i.test(input) ? input : `https://${input}`);
   } catch {
     return null;
   }
@@ -41,16 +59,25 @@ export function parseEmbedUrl(input: string): ParsedEmbed | null {
             : null;
     if (!id || !YOUTUBE_ID.test(id)) return null;
     const start = parseTime(url.searchParams.get("t") ?? url.searchParams.get("start"));
-    return { provider: "youtube", media: id, ...(start ? { start } : {}) };
+    const link = `https://www.youtube.com/watch?v=${id}${start ? `&t=${start}` : ""}`;
+    return { provider: "youtube", media: id, ...(start ? { start } : {}), link };
   }
 
   if (host === "x.com" || host === "twitter.com") {
     const i = parts.indexOf("status");
     const id = i >= 0 ? parts[i + 1] : undefined;
     if (!id || !TWEET_ID.test(id)) return null;
-    return { provider: "x", media: id };
+    const user = i === 1 && /^\w{1,15}$/.test(parts[0]) ? parts[0] : "i";
+    return { provider: "x", media: id, link: `https://x.com/${user}/status/${id}` };
   }
   return null;
+}
+
+/** The element fields for a parsed embed (clears `start` when the new one has none). */
+export function embedFields(
+  p: ParsedEmbed,
+): Pick<EmbedElement, "provider" | "media" | "url" | "start"> {
+  return { provider: p.provider, media: p.media, url: p.link, start: p.start };
 }
 
 /** URL of the service's own player for this element. */

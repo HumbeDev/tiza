@@ -21,7 +21,7 @@ import {
   createTable,
   createText,
 } from "../document/factory";
-import { parseEmbedUrl } from "../elements/embed/parse";
+import { embedFields, parseEmbed } from "../elements/embed/parse";
 import { toPlainText } from "../document/richtext";
 import { save as saveFile } from "../files/session";
 import {
@@ -337,16 +337,16 @@ const tools: Record<string, (args: Args) => unknown> = {
   add_embed(args) {
     const { slide } = slideOf(args.slide);
     const url = String(args.url ?? "").trim();
-    const parsed = parseEmbedUrl(url);
+    const parsed = parseEmbed(url);
     if (!parsed)
       throw new ToolError(
-        "url must be a YouTube video link (youtube.com/watch?v=…, youtu.be/…, /shorts/…) or an X/Twitter post link (x.com/<user>/status/<id>)",
+        "url must be a YouTube video link (youtube.com/watch?v=…, youtu.be/…, /shorts/…), an X/Twitter post link (x.com/<user>/status/<id>), or the embed code either site gives",
       );
     const start = num(args.start);
     const el = place(
       createEmbed(
         start && parsed.provider === "youtube" ? { ...parsed, start } : parsed,
-        url,
+        parsed.link,
         0,
         0,
       ),
@@ -546,9 +546,9 @@ function applyChange(el: Draft<Element>, key: string, value: unknown): boolean {
       el[key === "view_width" ? "viewWidth" : "viewHeight"] = n;
       return true;
     case "url": {
-      const parsed = s === undefined ? null : parseEmbedUrl(s);
+      const parsed = s === undefined ? null : parseEmbed(s);
       if (el.kind !== "embed" || !parsed) return false;
-      Object.assign(el, { ...parsed, start: parsed.start, url: s!.trim() });
+      Object.assign(el, embedFields(parsed));
       return true;
     }
     case "start":

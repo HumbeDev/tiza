@@ -15,7 +15,7 @@ import type {
   TransitionKind,
 } from "../document";
 import { parseCsv } from "../elements/table/csv";
-import { parseEmbedUrl } from "../elements/embed/parse";
+import { embedFields, parseEmbed } from "../elements/embed/parse";
 import { platform } from "../files/platform";
 import { reloadSim } from "../elements/sim/reload";
 import {
@@ -309,23 +309,19 @@ function EmbedProperties({ el }: { el: Element & { kind: "embed" } }) {
   const [draft, setDraft] = useState<string | null>(null);
   const update = (fields: Partial<Element>, field: string) =>
     updateElements([el.id], fields, `prop:${el.id}:${field}`);
-  const invalid = draft !== null && parseEmbedUrl(draft) === null;
+  const invalid = draft !== null && parseEmbed(draft) === null;
   return (
     <Section id="embed" title={t("embed.content")}>
       <label className="field">
         <span className="field-label">{t("embed.link")}</span>
         <input
-          type="url"
+          type="text"
           className={invalid ? "text-input invalid" : "text-input"}
           value={draft ?? el.url}
           onChange={(e) => {
             setDraft(e.target.value);
-            const parsed = parseEmbedUrl(e.target.value);
-            if (parsed)
-              update(
-                { ...parsed, start: parsed.start, url: e.target.value.trim() } as Partial<Element>,
-                "url",
-              );
+            const parsed = parseEmbed(e.target.value);
+            if (parsed) update(embedFields(parsed) as Partial<Element>, "url");
           }}
           onBlur={() => {
             setDraft(null);

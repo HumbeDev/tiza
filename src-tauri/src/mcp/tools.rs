@@ -154,7 +154,7 @@ pub struct AddHtmlArgs {
 pub struct AddEmbedArgs {
     pub slide: SlideRef,
     /// Link to a YouTube video (youtube.com/watch?v=…, youtu.be/…, /shorts/…) or an X
-    /// (Twitter) post (x.com/<user>/status/<id>).
+    /// (Twitter) post (x.com/<user>/status/<id>), or the embed code either site gives.
     pub url: String,
     /// YouTube only: start playing at this second (a `t=` in the link also works).
     pub start: Option<f64>,

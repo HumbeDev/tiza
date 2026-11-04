@@ -422,9 +422,9 @@
   },
   "embed": {
     "title": "Insérer depuis le web",
-    "help": "Collez le lien d'une vidéo YouTube ou d'une publication X (Twitter).",
+    "help": "Collez le lien ou le code d'intégration d'une vidéo YouTube ou d'une publication X (Twitter).",
     "link": "Lien",
-    "supported": "Les liens YouTube et X sont acceptés.",
+    "supported": "Reconnus : vidéos YouTube et publications X.",
     "invalid": "Ce n'est pas un lien YouTube ou X.",
     "youtube": "Vidéo YouTube",
     "x": "Publication X",
@@ -433,6 +433,9 @@
     "online": "Lecture dans le lecteur du service : une connexion internet est nécessaire pour présenter.",
     "insert": "Insérer",
     "content": "Contenu web",
-    "start": "Commencer à (s)"
+    "start": "Commencer à (s)",
+    "placeholder": "Lien ou code d'intégration…",
+    "howX": "sur la publication, Partager → « Copier le lien », ou ⋯ → « Intégrer le post » → « Copy Code ».",
+    "howYoutube": "Partager → « Copier », ou Partager → « Intégrer » → « Copier »."
   }
 }

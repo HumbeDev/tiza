@@ -422,9 +422,9 @@
   },
   "embed": {
     "title": "Insertar desde la web",
-    "help": "Pega el enlace de un video de YouTube o de una publicación de X (Twitter).",
+    "help": "Pega el enlace o el código de inserción de un video de YouTube o de una publicación de X (Twitter).",
     "link": "Enlace",
-    "supported": "Se admiten enlaces de YouTube y de X.",
+    "supported": "Se reconocen videos de YouTube y publicaciones de X.",
     "invalid": "No es un enlace de YouTube ni de X.",
     "youtube": "Video de YouTube",
     "x": "Publicación de X",
@@ -433,6 +433,9 @@
     "online": "Se reproduce con el reproductor del propio servicio: necesita internet al presentar.",
     "insert": "Insertar",
     "content": "Contenido web",
-    "start": "Empezar en (s)"
+    "start": "Empezar en (s)",
+    "placeholder": "Enlace o código de inserción…",
+    "howX": "en la publicación, Compartir → «Copiar enlace», o ⋯ → «Insertar post» → «Copy Code».",
+    "howYoutube": "Compartir → «Copiar», o Compartir → «Insertar» → «Copiar»."
   }
 }

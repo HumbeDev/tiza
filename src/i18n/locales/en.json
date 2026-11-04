@@ -422,9 +422,9 @@
   },
   "embed": {
     "title": "Insert from the web",
-    "help": "Paste the link to a YouTube video or an X (Twitter) post.",
+    "help": "Paste the link or the embed code of a YouTube video or an X (Twitter) post.",
     "link": "Link",
-    "supported": "YouTube and X links are supported.",
+    "supported": "Recognized: YouTube videos and X posts.",
     "invalid": "This isn't a YouTube or X link.",
     "youtube": "YouTube video",
     "x": "X post",
@@ -433,6 +433,9 @@
     "online": "It plays in the service's own player, so it needs internet when presenting.",
     "insert": "Insert",
     "content": "Web content",
-    "start": "Start at (s)"
+    "start": "Start at (s)",
+    "placeholder": "Link or embed code…",
+    "howX": "on the post, Share → “Copy link”, or ⋯ → “Embed post” → “Copy Code”.",
+    "howYoutube": "Share → “Copy”, or Share → “Embed” → “Copy”."
   }
 }
