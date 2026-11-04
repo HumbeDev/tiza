@@ -364,7 +364,8 @@
       "insert": "Insertion",
       "animations": "Animations",
       "transitions": "Transitions",
-      "slideshow": "Diaporama"
+      "slideshow": "Diaporama",
+      "design": "Conception"
     },
     "clipboard": "Presse-papiers",
     "text": "Texte",
@@ -476,5 +477,20 @@
     "close": "Revenir aux diapositives",
     "remove": "Supprimer le masque",
     "showHere": "Afficher le masque sur cette diapositive"
+  },
+  "design": {
+    "themes": "Thèmes",
+    "about": "À propos des thèmes",
+    "hint": "Un thème change le fond, les couleurs du texte et d'accent et la police. Les couleurs choisies à la main sont conservées.",
+    "theme": {
+      "tiza": "Tiza",
+      "chalkboard": "Tableau noir",
+      "night": "Nuit",
+      "paper": "Papier",
+      "ocean": "Océan",
+      "gray": "Gris",
+      "academic": "Académique",
+      "contrast": "Contraste élevé"
+    }
   }
 }

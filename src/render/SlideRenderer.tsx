@@ -21,15 +21,22 @@ interface Props {
   step?: number;
   /** The presentation's master slide, drawn behind (unless the slide hides it). */
   master?: Slide;
+  /** The design's font (CSS font-family). */
+  font?: string;
 }
 
 /** Draws a slide at its logical size; callers scale it with a CSS transform. */
-function SlideRenderer({ slide, page, mode, editingId, step, master }: Props) {
+function SlideRenderer({ slide, page, mode, editingId, step, master, font }: Props) {
   const behind = master && master.id !== slide.id && !slide.hideMaster ? master.elements : [];
   return (
     <div
       className="slide"
-      style={{ width: page.width, height: page.height, background: slide.background ?? "#fff" }}
+      style={{
+        width: page.width,
+        height: page.height,
+        background: slide.background ?? "#fff",
+        fontFamily: font,
+      }}
     >
       {behind.map((el) => (
         // Master elements: not selectable from a slide, no build steps.

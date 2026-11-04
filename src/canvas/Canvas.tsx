@@ -54,6 +54,7 @@ let gestureCounter = 0;
 export default function Canvas() {
   const page = useEditor((s) => s.doc.page);
   const master = useEditor((s) => s.doc.master);
+  const font = useEditor((s) => s.doc.theme?.font);
   const slide = useEditor(currentSlide);
   const editingId = useEditor((s) => s.editingId);
 
@@ -237,6 +238,7 @@ export default function Canvas() {
             mode="edit"
             editingId={editingId}
             master={master}
+            font={font}
           />
           <SelectionOverlay scale={scale} guides={guides} marquee={marquee} />
         </div>

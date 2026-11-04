@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useState } from "react";
+import { THEMES as DESIGNS } from "../../document/themes";
 import { openEmbedDialog } from "../EmbedDialog";
 import { runExport } from "../exportActions";
 import { groupSelection } from "../useShortcuts";
@@ -24,6 +25,7 @@ import {
   type Alignment,
   addSlide,
   editMaster,
+  setDesign,
   alignSelected,
   buildOnNextClick,
   copySelected,
@@ -64,8 +66,8 @@ import { type MenuItem, MenuButton, separator } from "../menu/Menu";
 import { THEME_ICONS, openSettings } from "../SettingsDialog";
 import { THEMES, setTheme, useTheme } from "../theme";
 
-type Tab = "home" | "insert" | "animations" | "transitions" | "slideshow";
-const TABS: Tab[] = ["home", "insert", "animations", "transitions", "slideshow"];
+type Tab = "home" | "insert" | "design" | "animations" | "transitions" | "slideshow";
+const TABS: Tab[] = ["home", "insert", "design", "animations", "transitions", "slideshow"];
 const TAB_KEY = "tiza.ribbonTab";
 
 function storedTab(): Tab {
@@ -203,6 +205,7 @@ export default function Ribbon() {
       <div className="ribbon" role="tabpanel">
         {tab === "home" && <HomeTab />}
         {tab === "insert" && <InsertTab />}
+        {tab === "design" && <DesignTab />}
         {tab === "animations" && <AnimationsTab />}
         {tab === "transitions" && <TransitionsTab />}
         {tab === "slideshow" && <SlideshowTab />}
@@ -604,6 +607,48 @@ function GalleryTile({ icon, label, active, disabled, onClick }: ButtonProps) {
       <Icon name={icon} />
       <span>{label}</span>
     </button>
+  );
+}
+
+/** Built-in designs, each previewed as a small slide. */
+function DesignTab() {
+  const { t } = useTranslation();
+  const current = useEditor((s) => s.doc.theme?.id ?? "tiza");
+  return (
+    <>
+      <Group label={t("design.themes")}>
+        <div className="rb-gallery">
+          {DESIGNS.map((theme) => (
+            <button
+              key={theme.id}
+              type="button"
+              className={current === theme.id ? "theme-tile active" : "theme-tile"}
+              aria-pressed={current === theme.id}
+              title={t(`design.theme.${theme.id}` as "design.theme.tiza")}
+              onClick={() => setDesign(theme.id)}
+            >
+              <span
+                className="theme-preview"
+                style={{ background: theme.background, color: theme.text, fontFamily: theme.font }}
+              >
+                Aa
+                <span className="theme-accents">
+                  {theme.accents.map((a) => (
+                    <i key={a} style={{ background: a }} />
+                  ))}
+                </span>
+              </span>
+              <span className="theme-name">
+                {t(`design.theme.${theme.id}` as "design.theme.tiza")}
+              </span>
+            </button>
+          ))}
+        </div>
+      </Group>
+      <Group label={t("design.about")}>
+        <p className="ribbon-note">{t("design.hint")}</p>
+      </Group>
+    </>
   );
 }
 

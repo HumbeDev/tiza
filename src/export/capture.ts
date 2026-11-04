@@ -64,6 +64,7 @@ export async function renderFrame(
         mode: "export",
         step: frame.step,
         master: doc.master,
+        font: doc.theme?.font,
       }),
     );
     await settle(host);

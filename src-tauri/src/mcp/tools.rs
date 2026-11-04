@@ -237,6 +237,13 @@ pub struct UpdateElementArgs {
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct ThemeArgs {
+    /// tiza (white), chalkboard (dark green), night (dark blue), paper (cream, serif),
+    /// ocean (light blue), gray, academic (white, serif), contrast (black).
+    pub theme: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct StyleTextArgs {
     pub element_id: String,
     /// Text to style (every occurrence, case-sensitive). Omit to style the whole box.
@@ -641,6 +648,16 @@ impl TizaMcp {
         Parameters(args): Parameters<StyleTextArgs>,
     ) -> Result<CallToolResult, ErrorData> {
         self.forward("style_text", args).await
+    }
+
+    #[tool(
+        description = "Apply a design to the whole presentation: background, text and accent colors and font. Only colors that came from the previous design change. New elements get the design's colors."
+    )]
+    async fn set_theme(
+        &self,
+        Parameters(args): Parameters<ThemeArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        self.forward("set_theme", args).await
     }
 
     #[tool(description = "Delete elements.")]

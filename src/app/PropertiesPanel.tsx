@@ -688,6 +688,7 @@ function TextFormatting() {
         <label className="fragment-color" title={t("props.fragmentColor")}>
           <input
             type="color"
+            list="design-colors"
             value={active.color ?? "#1d1d1b"}
             onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
           />
@@ -1029,7 +1030,13 @@ function ColorInput({ value, onChange }: { value: string; onChange: (value: stri
   const hex = value.toLowerCase();
   return (
     <span className="color-input">
-      <input type="color" value={value} onChange={(e) => onChange(e.target.value)} onBlur={seal} />
+      <input
+        type="color"
+        list="design-colors"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={seal}
+      />
       <input
         type="text"
         className="color-hex"

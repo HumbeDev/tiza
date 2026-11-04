@@ -49,6 +49,7 @@ export default function AudienceView({ client }: { client: PresentClient }) {
         slide={current}
         page={snapshot.doc.page}
         master={snapshot.doc.master}
+        font={snapshot.doc.theme?.font}
         mode="present"
         animate
         step={status.step}

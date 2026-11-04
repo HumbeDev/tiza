@@ -96,6 +96,8 @@ crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ct
 
 **Notas del orador**: panel debajo del lienzo en cada diapositiva (se pliega).
 
+**Temas** — pestaña _Diseño_: 8 diseños (Tiza, Pizarra, Noche, Papel, Océano, Gris, Académico, Alto contraste) que cambian fondo, colores de texto y de acento y tipografía de toda la presentación en un paso (se deshace con Ctrl+Z). Solo cambia lo que venía del tema anterior: los colores que elegiste a mano se respetan. Los elementos nuevos nacen con los colores del tema, y los selectores de color sugieren los del tema. Tipografías del sistema (funciona sin internet).
+
 **Diapositiva patrón**: _Inicio → Diapositiva patrón_ (o clic derecho en una miniatura). Lo que pongas en ella (logo, pie de página, franjas) aparece **detrás de todas las diapositivas** y, si la cambias, cambia en todas. Clic derecho en una diapositiva → _Mostrar el patrón en esta diapositiva_ para quitarlo de una (por ejemplo la portada). Los agentes usan `slide: "master"`.
 
 **Plantilla de diapositiva del archivo**: clic derecho en una miniatura → «Guardar como plantilla de nuevas diapositivas». Se guarda **una copia en ese momento**: cada diapositiva nueva empieza así (logos, barras de un evento…) aunque después cambies la original. «Nueva diapositiva en blanco» la ignora; «Quitar la plantilla» la borra.
@@ -126,7 +128,7 @@ crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ct
 2. En la tarjeta de **Claude Code**, **Codex** o **Antigravity** pulsa **Conectar automáticamente** (Tiza escribe su configuración y deja una copia `.tiza-backup`), o copia el comando/configuración para hacerlo a mano. Cada tarjeta muestra si el agente está instalado y conectado.
 3. Pídele a Claude, por ejemplo: «arma 3 diapositivas sobre el péndulo simple con la fórmula del período y una tabla de datos».
 
-Herramientas: ver la presentación y cada diapositiva; crear, duplicar, mover, borrar y configurar diapositivas (fondo, notas, ocultar, transición); agregar texto (con `$…$` y viñetas), ecuaciones, formas, tablas, páginas HTML, imágenes, **videos** y contenido web; modificar, borrar, ordenar y **animar** elementos; macros LaTeX; **ver una imagen de la diapositiva** (`render_slide`, para que el agente revise su trabajo); **exportar** a PDF/PNG/HTML; dar color, tamaño y estilo a partes de un texto (`style_text`); agrupar; deshacer y guardar. Seguridad: solo `127.0.0.1`, token obligatorio, desactivado por defecto; cada acción del agente es un paso de deshacer. La barra de estado muestra «🤖 Agente trabajando…» mientras actúa.
+Herramientas: ver la presentación y cada diapositiva; crear, duplicar, mover, borrar y configurar diapositivas (fondo, notas, ocultar, transición); agregar texto (con `$…$` y viñetas), ecuaciones, formas, tablas, páginas HTML, imágenes, **videos** y contenido web; modificar, borrar, ordenar y **animar** elementos; macros LaTeX; **ver una imagen de la diapositiva** (`render_slide`, para que el agente revise su trabajo); **exportar** a PDF/PNG/HTML; dar color, tamaño y estilo a partes de un texto (`style_text`); agrupar; aplicar un tema (`set_theme`); usar la diapositiva patrón; deshacer y guardar. Seguridad: solo `127.0.0.1`, token obligatorio, desactivado por defecto; cada acción del agente es un paso de deshacer. La barra de estado muestra «🤖 Agente trabajando…» mientras actúa.
 
 **Interfaz**
 

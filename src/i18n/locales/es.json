@@ -364,7 +364,8 @@
       "insert": "Insertar",
       "animations": "Animaciones",
       "transitions": "Transiciones",
-      "slideshow": "Presentación"
+      "slideshow": "Presentación",
+      "design": "Diseño"
     },
     "clipboard": "Portapapeles",
     "text": "Texto",
@@ -476,5 +477,20 @@
     "close": "Volver a las diapositivas",
     "remove": "Quitar el patrón",
     "showHere": "Mostrar el patrón en esta diapositiva"
+  },
+  "design": {
+    "themes": "Temas",
+    "about": "Sobre los temas",
+    "hint": "Un tema cambia el fondo, los colores del texto y de acento y la tipografía. Los colores que elegiste a mano se respetan.",
+    "theme": {
+      "tiza": "Tiza",
+      "chalkboard": "Pizarra",
+      "night": "Noche",
+      "paper": "Papel",
+      "ocean": "Océano",
+      "gray": "Gris",
+      "academic": "Académico",
+      "contrast": "Alto contraste"
+    }
   }
 }

@@ -25,6 +25,7 @@ export type { TableElement } from "../bindings/TableElement";
 export type { TableTheme } from "../bindings/TableTheme";
 export type { TextAlign } from "../bindings/TextAlign";
 export type { TextElement } from "../bindings/TextElement";
+export type { Theme } from "../bindings/Theme";
 export type { Transition } from "../bindings/Transition";
 export type { TransitionKind } from "../bindings/TransitionKind";
 export type { VideoElement } from "../bindings/VideoElement";

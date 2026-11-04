@@ -151,10 +151,11 @@ export default function SlidePanel() {
 function Thumbnail({ slide, page }: { slide: Slide; page: Page }) {
   const scale = THUMB_WIDTH / page.width;
   const master = useEditor((s) => s.doc.master);
+  const font = useEditor((s) => s.doc.theme?.font);
   return (
     <div className="thumbnail" style={{ width: THUMB_WIDTH, height: page.height * scale }}>
       <div style={{ transform: `scale(${scale})`, transformOrigin: "0 0" }}>
-        <SlideRenderer slide={slide} page={page} mode="thumb" master={master} />
+        <SlideRenderer slide={slide} page={page} mode="thumb" master={master} font={font} />
       </div>
     </div>
   );

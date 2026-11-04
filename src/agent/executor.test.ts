@@ -224,4 +224,16 @@ describe("agent tools", () => {
     expect(doc().slides[0].hideMaster).toBe(true);
     expect((await call("set_slide", { slide: "master", notes: "x" })).ok).toBe(false);
   });
+
+  it("applies a design", async () => {
+    await call("add_text", { slide: 1, text: "hola" });
+    expect((await call("set_theme", { theme: "chalkboard" })).ok).toBe(true);
+    expect(doc().slides[0].background).toBe("#24352d");
+    const el = doc().slides[0].elements[0];
+    expect(el.kind === "text" && el.color).toBe("#f4f1e8");
+    await call("add_text", { slide: 1, text: "nuevo" });
+    const added = doc().slides[0].elements[1];
+    expect(added.kind === "text" && added.color).toBe("#f4f1e8");
+    expect((await call("set_theme", { theme: "nope" })).ok).toBe(false);
+  });
 });

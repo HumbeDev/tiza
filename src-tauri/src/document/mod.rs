@@ -33,7 +33,26 @@ pub struct Presentation {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub master: Option<Slide>,
+    /// Design applied from the Design tab: default colors and font of the presentation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub theme: Option<Theme>,
     pub slides: Vec<Slide>,
+}
+
+/// Colors and font of a presentation's design. New elements and slides use them; the
+/// slides' own colors are what is drawn.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct Theme {
+    /// Built-in theme id (e.g. "chalkboard").
+    pub id: String,
+    /// CSS font-family stack for the slides' text.
+    pub font: String,
+    pub background: String,
+    pub text: String,
+    /// Accent colors, most used first (shape fills…).
+    pub accents: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, TS)]
@@ -489,6 +508,7 @@ mod tests {
             transition: None,
             template: None,
             master: None,
+            theme: None,
             slides: vec![Slide {
                 id: "s1".into(),
                 background: Some("#ffffff".into()),

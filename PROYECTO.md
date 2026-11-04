@@ -653,3 +653,11 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - MCP: `render_slide` (devuelve imagen PNG al agente) y `export_presentation` (pdf, pdf_steps, png, html; tiempo de espera 10 min).
 - Verificado: Chrome (descarga) y WebKitGTK (MCP): PDF válido según poppler, capturas fieles con LaTeX, imágenes y formas.
 
+### Mejoras medianas — 2026-11-04 🧪
+- Páginas web por URL (`EmbedProvider::Web`), archivos recientes (escritorio, localStorage), puntero láser (L, sincronizado por eventos/BroadcastChannel).
+- Agrupar con `Element.groupId` (ya existía en el formato) y portapapeles del sistema (eventos copy/cut/paste; HTML con los datos de Tiza; imágenes, enlaces y texto de otras apps).
+- Texto: `textStyle` (color, tamaño) y `textAlign` por párrafo (TipTap 3.32.2); el importador PPTX los conserva; MCP `style_text`.
+- Videos grandes: servidor HTTP local en Rust (127.0.0.1, puerto y token aleatorios, rangos de 8 MB, streaming) en lugar de `blob:`; MCP `add_video`.
+- Diapositiva patrón (`Presentation.master`, `Slide.hideMaster`) y temas (`Presentation.theme`, 8 diseños, `src/document/themes.ts`); MCP `slide: "master"` y `set_theme`.
+- Corregido: la versión web no guardaba videos ni recursos de la plantilla en el `.tiza`.
+

@@ -170,6 +170,7 @@ export default function PresenterView({ client }: { client: PresentClient }) {
             slide={current}
             page={snapshot.doc.page}
             master={snapshot.doc.master}
+            font={snapshot.doc.theme?.font}
             mode="preview"
             step={status.step}
             laser={laserOn ? laser : null}
@@ -186,6 +187,7 @@ export default function PresenterView({ client }: { client: PresentClient }) {
                 slide={next}
                 page={snapshot.doc.page}
                 master={snapshot.doc.master}
+                font={snapshot.doc.theme?.font}
                 mode="thumb"
               />
             ) : (

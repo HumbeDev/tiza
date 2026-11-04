@@ -14,6 +14,7 @@ import { useEndOfPresentation } from "../present/startFromEditor";
 import SettingsDialog from "./SettingsDialog";
 import EmbedDialog from "./EmbedDialog";
 import MasterBanner from "./MasterBanner";
+import DesignColors from "./DesignColors";
 import ExportProgress from "./ExportProgress";
 import StatusBar from "./StatusBar";
 import Ribbon from "./ribbon/Ribbon";
@@ -51,6 +52,7 @@ export default function App() {
       <WebPresentation />
       <SettingsDialog />
       <EmbedDialog />
+      <DesignColors />
       <ExportProgress />
     </div>
   );

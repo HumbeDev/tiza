@@ -364,7 +364,8 @@
       "insert": "Insert",
       "animations": "Animations",
       "transitions": "Transitions",
-      "slideshow": "Slide show"
+      "slideshow": "Slide show",
+      "design": "Design"
     },
     "clipboard": "Clipboard",
     "text": "Text",
@@ -476,5 +477,20 @@
     "close": "Back to the slides",
     "remove": "Delete master",
     "showHere": "Show the master on this slide"
+  },
+  "design": {
+    "themes": "Themes",
+    "about": "About themes",
+    "hint": "A theme sets the background, text and accent colors and the font. Colors you chose by hand stay.",
+    "theme": {
+      "tiza": "Tiza",
+      "chalkboard": "Chalkboard",
+      "night": "Night",
+      "paper": "Paper",
+      "ocean": "Ocean",
+      "gray": "Gray",
+      "academic": "Academic",
+      "contrast": "High contrast"
+    }
   }
 }

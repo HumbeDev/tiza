@@ -3,6 +3,7 @@ import type { LatexSettings } from "./LatexSettings";
 import type { Meta } from "./Meta";
 import type { Page } from "./Page";
 import type { Slide } from "./Slide";
+import type { Theme } from "./Theme";
 import type { Transition } from "./Transition";
 
 export type Presentation = { schemaVersion: number, meta: Meta, page: Page, latex: LatexSettings, 
@@ -19,4 +20,8 @@ template?: Slide,
  * Master slide: its elements (logo, footer, decorations) are drawn behind every
  * slide that doesn't hide it. Editing it changes all slides at once.
  */
-master?: Slide, slides: Array<Slide>, };
+master?: Slide, 
+/**
+ * Design applied from the Design tab: default colors and font of the presentation.
+ */
+theme?: Theme, slides: Array<Slide>, };

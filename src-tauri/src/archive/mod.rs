@@ -192,6 +192,7 @@ mod tests {
             transition: None,
             template: None,
             master: None,
+            theme: None,
             slides: vec![Slide {
                 id: "s1".into(),
                 background: None,

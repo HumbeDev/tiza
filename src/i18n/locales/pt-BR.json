@@ -364,7 +364,8 @@
       "insert": "Inserir",
       "animations": "Animações",
       "transitions": "Transições",
-      "slideshow": "Apresentação"
+      "slideshow": "Apresentação",
+      "design": "Design"
     },
     "clipboard": "Área de transferência",
     "text": "Texto",
@@ -476,5 +477,20 @@
     "close": "Voltar aos slides",
     "remove": "Remover o mestre",
     "showHere": "Mostrar o mestre neste slide"
+  },
+  "design": {
+    "themes": "Temas",
+    "about": "Sobre os temas",
+    "hint": "Um tema muda o fundo, as cores do texto e de destaque e a fonte. As cores que você escolheu à mão são mantidas.",
+    "theme": {
+      "tiza": "Tiza",
+      "chalkboard": "Lousa",
+      "night": "Noite",
+      "paper": "Papel",
+      "ocean": "Oceano",
+      "gray": "Cinza",
+      "academic": "Acadêmico",
+      "contrast": "Alto contraste"
+    }
   }
 }

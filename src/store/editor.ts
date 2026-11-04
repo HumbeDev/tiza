@@ -9,6 +9,7 @@ import {
   renderMathSync,
   setPreamble as setMathPreamble,
 } from "../math/mathjax";
+import { THEMES, applyTheme, themedElement, themedSlide } from "../document/themes";
 import { createPresentation, createSlide, newId } from "../document/factory";
 
 enablePatches();
@@ -303,7 +304,8 @@ export function addBlankSlide(): void {
   insertSlideAfterCurrent(createSlide());
 }
 
-function insertSlideAfterCurrent(slide: Slide): void {
+function insertSlideAfterCurrent(plain: Slide): void {
+  const slide = themedSlide(plain, get().doc);
   const found = get().doc.slides.findIndex((s) => s.id === get().currentSlideId);
   // From the master slide, new slides go at the end.
   const index = found < 0 ? get().doc.slides.length - 1 : found;
@@ -432,10 +434,19 @@ export function setSlideBackground(color: string): void {
 // ---------------------------------------------------------------- elements
 
 export function addElement(element: Element): void {
+  const themed = themedElement(element, get().doc);
   change((doc) => {
-    draftSlide(doc).elements.push(element);
+    draftSlide(doc).elements.push(themed);
   });
-  select([element.id]);
+  select([themed.id]);
+}
+
+/** Applies a built-in design (Design tab): one undo step. */
+export function setDesign(id: string): boolean {
+  const theme = THEMES.find((t) => t.id === id);
+  if (!theme) return false;
+  change((doc) => applyTheme(doc as Presentation, theme));
+  return true;
 }
 
 /** Merges `fields` into each element. Pass a `mergeKey` for continuous edits. */

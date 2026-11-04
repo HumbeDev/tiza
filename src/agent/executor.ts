@@ -22,6 +22,7 @@ import {
   createTable,
   createText,
 } from "../document/factory";
+import { THEMES as DESIGNS, themeOf } from "../document/themes";
 import { embedFields, parseEmbed } from "../elements/embed/parse";
 import { canvasToBytes, renderFrame } from "../export/capture";
 import { exportHtml, exportPdf, exportPng } from "../export/export";
@@ -38,6 +39,7 @@ import {
   groupElements,
   ungroupElements,
   editMaster,
+  setDesign,
   addElement,
   addSlide,
   batch,
@@ -165,6 +167,7 @@ const tools: Record<string, (args: Args) => unknown> = {
       page: { width: s.doc.page.width, height: s.doc.page.height },
       currentSlide: s.doc.slides.findIndex((sl) => sl.id === s.currentSlideId) + 1,
       hasTemplate: !!s.doc.template,
+      theme: themeOf(s.doc),
       ...(s.doc.master
         ? {
             master: s.doc.master.elements.map((el) => ({
@@ -509,6 +512,12 @@ const tools: Record<string, (args: Args) => unknown> = {
     }
     updateElements([el.id], { doc } as Partial<Element>);
     return { styled: count };
+  },
+
+  set_theme({ theme }) {
+    if (!setDesign(String(theme)))
+      throw new ToolError(`Unknown theme. Available: ${DESIGNS.map((t) => t.id).join(", ")}`);
+    return { theme, ...themeOf(state().doc) };
   },
 
   group_elements({ element_ids }) {

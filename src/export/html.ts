@@ -84,7 +84,13 @@ async function slideHtml(doc: Presentation, slide: Slide): Promise<string> {
   const root = createRoot(host);
   try {
     root.render(
-      createElement(SlideRenderer, { slide, page: doc.page, mode: "export", master: doc.master }),
+      createElement(SlideRenderer, {
+        slide,
+        page: doc.page,
+        mode: "export",
+        master: doc.master,
+        font: doc.theme?.font,
+      }),
     );
     await new Promise((r) => setTimeout(r, 300));
     const node = host.firstElementChild!.cloneNode(true) as HTMLElement;
