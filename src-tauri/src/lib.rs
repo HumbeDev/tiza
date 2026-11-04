@@ -70,6 +70,8 @@ pub fn run() {
             mcp::mcp_set_enabled,
             mcp::mcp_configure,
             mcp::mcp_respond,
+            mcp::mcp_clients,
+            mcp::mcp_install_client,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

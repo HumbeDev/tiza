@@ -20,4 +20,8 @@ opacity: number, locked: boolean, groupId?: string,
 /**
  * Appears on a later click when presenting (like Beamer's `\pause`).
  */
-build?: Build, } & ({ "kind": "shape" } & ShapeElement | { "kind": "text" } & TextElement | { "kind": "math" } & MathElement | { "kind": "sim" } & SimElement | { "kind": "image" } & ImageElement | { "kind": "video" } & VideoElement | { "kind": "table" } & TableElement);
+build?: Build, 
+/**
+ * Disappears on a later click when presenting.
+ */
+exit?: Build, } & ({ "kind": "shape" } & ShapeElement | { "kind": "text" } & TextElement | { "kind": "math" } & MathElement | { "kind": "sim" } & SimElement | { "kind": "image" } & ImageElement | { "kind": "video" } & VideoElement | { "kind": "table" } & TableElement);

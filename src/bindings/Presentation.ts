@@ -3,8 +3,13 @@ import type { LatexSettings } from "./LatexSettings";
 import type { Meta } from "./Meta";
 import type { Page } from "./Page";
 import type { Slide } from "./Slide";
+import type { Transition } from "./Transition";
 
 export type Presentation = { schemaVersion: number, meta: Meta, page: Page, latex: LatexSettings, 
+/**
+ * Transition of every slide that doesn't set its own.
+ */
+transition?: Transition, 
 /**
  * Copy of a slide taken when the user chose it as template: every new slide starts
  * as a copy of it. Later edits to the original slide don't change the template.

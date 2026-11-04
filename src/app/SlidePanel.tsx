@@ -13,7 +13,7 @@ import {
 import Icon from "./Icon";
 import { slideMenu } from "./menu/contextMenus";
 import { openContextMenu } from "./menu/Menu";
-import { ToolButton } from "./Toolbar";
+import { ToolButton } from "./ToolButton";
 
 const THUMB_WIDTH = 160;
 const DRAG_PX = 4;

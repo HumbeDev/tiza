@@ -1,6 +1,6 @@
 import { applyPatches, enablePatches, type Draft, type Patch, produceWithPatches } from "immer";
 import { create } from "zustand";
-import type { Build, Element, Presentation, Slide, Transition } from "../document";
+import type { Build, BuildEffect, Element, Presentation, Slide, Transition } from "../document";
 import { createMath } from "../document/factory";
 import { aabb, union } from "../document/geometry";
 import {
@@ -314,11 +314,15 @@ export function setSlideNotes(id: string, notes: string, mergeKey = `notes:${id}
   }, mergeKey);
 }
 
+/**
+ * A slide's own transition; null makes it use the file's default. `kind: "none"` is kept so
+ * a slide can opt out of the file's default.
+ */
 export function setSlideTransition(id: string, transition: Transition | null): void {
   change((doc) => {
     const slide = doc.slides.find((sl) => sl.id === id);
     if (!slide) return;
-    if (transition && transition.kind !== "none") slide.transition = transition;
+    if (transition) slide.transition = transition;
     else delete slide.transition;
   });
 }
@@ -606,7 +610,7 @@ export function fitSimBoxToView(id: string): void {
 
 /** Highest build step used on a slide (0 when nothing builds). */
 export function maxBuildStep(slide: Slide): number {
-  return Math.max(0, ...slide.elements.map((e) => e.build?.step ?? 0));
+  return Math.max(0, ...slide.elements.flatMap((e) => [e.build?.step ?? 0, e.exit?.step ?? 0]));
 }
 
 /** Sets or removes (null) the build of these elements. */
@@ -621,14 +625,45 @@ export function setBuild(ids: string[], build: Build | null, mergeKey?: string):
   );
 }
 
-/** The selected elements appear together on the next click after the current last step. */
-export function buildOnNextClick(): void {
+/** Sets or removes (null) how these elements leave the slide. */
+export function setExit(ids: string[], exit: Build | null, mergeKey?: string): void {
+  updateElements(
+    ids,
+    (el) => {
+      if (exit) el.exit = { ...exit };
+      else delete el.exit;
+    },
+    mergeKey,
+  );
+}
+
+/** Click after the last animation of the current slide, ignoring the selected elements. */
+export function nextClickStep(): number {
   const s = get();
-  const slide = currentSlide(s);
   const ids = new Set(s.selectedIds);
-  const others = slide.elements.filter((e) => !ids.has(e.id));
-  const step = Math.max(0, ...others.map((e) => e.build?.step ?? 0)) + 1;
-  setBuild(s.selectedIds, { step, effect: "appear" });
+  const others = currentSlide(s).elements.filter((e) => !ids.has(e.id));
+  return Math.max(0, ...others.flatMap((e) => [e.build?.step ?? 0, e.exit?.step ?? 0])) + 1;
+}
+
+/** The selected elements appear together on the next click (keeping their effect). */
+export function buildOnNextClick(effect?: BuildEffect): void {
+  const s = get();
+  const current = selectedElements(s)[0]?.build?.effect;
+  setBuild(s.selectedIds, { step: nextClickStep(), effect: effect ?? current ?? "appear" });
+}
+
+/** The selected elements leave together on the next click. */
+export function exitOnNextClick(effect: BuildEffect = "fade"): void {
+  setExit(get().selectedIds, { step: nextClickStep(), effect });
+}
+
+/** File-wide transition (null: none). `applyToAll` also clears each slide's own one. */
+export function setDocTransition(transition: Transition | null, applyToAll = false): void {
+  change((doc) => {
+    if (transition && transition.kind !== "none") doc.transition = transition;
+    else delete doc.transition;
+    if (applyToAll) for (const slide of doc.slides) delete slide.transition;
+  });
 }
 
 // ---------------------------------------------------------------- tables

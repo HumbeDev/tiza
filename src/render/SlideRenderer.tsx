@@ -37,6 +37,7 @@ function SlideRenderer({ slide, page, mode, editingId, step }: Props) {
           mode={mode}
           editing={el.id === editingId}
           pending={step !== undefined && (el.build?.step ?? 0) > step}
+          gone={step !== undefined && el.exit !== undefined && el.exit.step <= step}
         />
       ))}
     </div>
@@ -49,13 +50,19 @@ interface ElementViewProps {
   editing: boolean;
   /** Not revealed yet (appears on a later click). */
   pending: boolean;
+  /** Already left (its exit click has passed). */
+  gone: boolean;
 }
 
-function ElementView({ el, mode, editing, pending }: ElementViewProps) {
+function ElementView({ el, mode, editing, pending, gone }: ElementViewProps) {
   const classes = ["element"];
   if (editing && el.kind === "sim") classes.push("interacting");
-  if (el.build) classes.push(`build-${el.build.effect}`);
-  if (pending) classes.push("build-pending");
+  if (mode === "present" || mode === "preview") {
+    if (el.build) classes.push(`in-${el.build.effect}`);
+    if (el.exit) classes.push(`out-${el.exit.effect}`);
+    if (pending) classes.push("in-pending");
+    else if (gone) classes.push("out-done");
+  }
   return (
     <div
       className={classes.join(" ")}

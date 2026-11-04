@@ -1,5 +1,5 @@
 import { type CSSProperties, useLayoutEffect, useRef, useState } from "react";
-import type { Page, Slide } from "../document";
+import type { Page, Slide, Transition } from "../document";
 import SlideRenderer, { type RenderMode } from "../render/SlideRenderer";
 
 interface Props {
@@ -10,10 +10,19 @@ interface Props {
   animate?: boolean;
   /** Build step: elements that appear on a later click are hidden. Omit to show all. */
   step?: number;
+  /** The file's transition, used when the slide has none of its own. */
+  fallbackTransition?: Transition;
 }
 
 /** A slide scaled to fit its container, centered, letterboxed on black. */
-export default function SlideStage({ slide, page, mode, animate, step }: Props) {
+export default function SlideStage({
+  slide,
+  page,
+  mode,
+  animate,
+  step,
+  fallbackTransition,
+}: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
@@ -28,7 +37,8 @@ export default function SlideStage({ slide, page, mode, animate, step }: Props) 
   }, []);
 
   const scale = Math.min(size.w / page.width, size.h / page.height) || 0;
-  const transition = animate ? slide?.transition : undefined;
+  const own = slide?.transition ?? fallbackTransition;
+  const transition = animate && own && own.kind !== "none" ? own : undefined;
   const style = transition
     ? ({ animationDuration: `${transition.durationMs}ms` } as CSSProperties)
     : undefined;

@@ -631,3 +631,10 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - El editor ejecuta cada llamada en `batch()` = **un paso de deshacer** (`src/agent/executor.ts`), enfoca la diapositiva afectada para que el usuario vea el cambio, y responde errores claros en inglés. Texto de agentes: `$…$`, `- `/`1. `, `**negrita**` (`src/agent/text.ts`).
 - Probado con un cliente MCP real (curl JSON-RPC): 401 sin token, initialize, 21 herramientas, creación de título/ecuación/viñetas/tabla en la app real.
 - Pendiente: `render_slide` (imagen de la diapositiva para que el agente vea el resultado), puente stdio, herramientas para video y PDF/PPTX import.
+
+### Cinta, efectos y agentes — 2026-11-04 🧪
+- Barra superior reemplazada por una **cinta estilo Office** (`src/app/ribbon/Ribbon.tsx`): título con Archivo + acceso rápido + pestañas; grupos con botones grandes/pequeños y galerías. Acciones de inserción en `src/app/insert.ts`.
+- **Efectos**: `BuildEffect` = appear, fade, rise, fromLeft, fromRight, zoom, wipe; nuevo `Element.exit` (salida en un clic). CSS con `translate`/`scale`/`clip-path` para no pisar el `transform` de la rotación. `build_steps` cuenta entradas y salidas.
+- **Transición del archivo**: `Presentation.transition` (predeterminada); la diapositiva guarda `{kind:"none"}` para excluirse. Transiciones nuevas: zoom y rise.
+- **Ajustes por secciones** (General, Rendimiento, Agentes, Diagnóstico, Acerca de). Conexión automática de **Claude Code** (CLI `claude mcp add --scope user`), **Codex** (`~/.codex/config.toml`, `toml_edit`) y **Antigravity** (`~/.gemini/config/mcp_config.json`), con respaldo `.tiza-backup` y escritura atómica (`src-tauri/src/mcp/clients.rs`).
+- MCP: `set_animation` con `exit` y efectos, `set_slide` con zoom/rise/default y `duration_ms`, nueva `set_presentation_transition` (22 herramientas).

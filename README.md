@@ -89,7 +89,7 @@ crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ct
 - Con una sola pantalla: solo la vista del público. «Ensayar en ventanas» abre ambas vistas en ventanas normales para practicar.
 - Teclado y **clicker**: →, ↓, Espacio, Av Pág, clic = siguiente · ←, ↑, Re Pág, clic derecho = anterior · Inicio/Fin · número + Enter = ir a esa diapositiva · **B** pantalla negra · **W** pantalla blanca · Esc = terminar.
 - Las diapositivas **ocultas** se saltan. Las páginas HTML son **interactivas** durante la presentación (un clic sobre ellas no avanza).
-- **Transiciones** por diapositiva: fundido o deslizar, con duración.
+- **Transiciones**: fundido, deslizar, zoom o subir, con duración. Pestaña _Transiciones_: la de la diapositiva actual o **«Aplicar a todas»**, que la guarda como **transición predeterminada del archivo** (la usan las diapositivas sin una propia).
 - Versión web: pantalla completa en la pestaña; botón «Vista del presentador» abre una ventana sincronizada (arrástrala a la otra pantalla).
 
 **Notas del orador**: panel debajo del lienzo en cada diapositiva (se pliega).
@@ -102,7 +102,7 @@ crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ct
 
 **Tablas tipo Excel**: botón **Tabla** → tabla vacía o **desde un CSV** (detecta `,` `;` o tabulador; acentos de Excel en Windows incluidos). Encabezado fijo al desplazar, filas de colores alternos, números alineados a la derecha, 5 combinaciones de colores. Las tablas grandes **se desplazan dentro de su caja**, también al presentar. Doble clic para editar celdas (Enter baja, Tab avanza); agregar o quitar filas y columnas desde el panel.
 
-**Animaciones paso a paso (como `\pause` de Beamer)**: clic derecho → _Aparecer en el siguiente clic_, o en el panel _Animación_: aparecer o fundido, y en qué clic. Al presentar, cada clic revela el siguiente paso antes de pasar de diapositiva; al retroceder se ve la diapositiva anterior completa. En el editor cada elemento animado muestra su número de clic.
+**Animaciones paso a paso (como `\pause` de Beamer)**: pestaña _Animaciones_, clic derecho → _Aparecer en el siguiente clic_, o el panel _Animación_. **Entrada** y **salida** con 7 efectos (aparecer, desvanecer, subir/bajar, desde/hacia la izquierda o derecha, zoom, barrido) y en qué clic entra o sale cada elemento. Al presentar, cada clic revela el siguiente paso antes de pasar de diapositiva; al retroceder se ve la diapositiva anterior completa. En el editor cada elemento animado muestra su número de clic.
 
 **Importar PowerPoint (.pptx)**: _Archivo → Importar PowerPoint…_ crea una presentación nueva con todo **editable**: textos (negrita, cursiva, subrayado, tachado, tamaños, colores, alineación, viñetas), imágenes, formas y líneas con sus colores, fondos, diapositivas ocultas, **notas del orador** y los elementos de los patrones/diseños (logos, barras). Sin programas externos: funciona igual en la app y en la web. Las **tablas** de PowerPoint se importan como tablas y los **videos** incrustados como video. Aún no convierte gráficos, SmartArt ni ecuaciones de Office (avisa cuántos omitió).
 
@@ -110,18 +110,18 @@ crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ct
 
 **Agentes de IA (MCP)** — _Ajustes → Agentes de IA (MCP)_ (solo en la app de escritorio):
 
-1. Activa «Permitir que agentes de IA editen la presentación abierta».
-2. Pulsa **Copiar comando para Claude Code** y pégalo en una terminal (`claude mcp add --transport http tiza http://127.0.0.1:7457/mcp --header "Authorization: Bearer …"`).
+1. Activa el servidor en _Ajustes → Agentes de IA_.
+2. En la tarjeta de **Claude Code**, **Codex** o **Antigravity** pulsa **Conectar automáticamente** (Tiza escribe su configuración y deja una copia `.tiza-backup`), o copia el comando/configuración para hacerlo a mano. Cada tarjeta muestra si el agente está instalado y conectado.
 3. Pídele a Claude, por ejemplo: «arma 3 diapositivas sobre el péndulo simple con la fórmula del período y una tabla de datos».
 
 Herramientas: ver la presentación y cada diapositiva; crear, duplicar, mover, borrar y configurar diapositivas (fondo, notas, ocultar, transición); agregar texto (con `$…$` y viñetas), ecuaciones, formas, tablas, páginas HTML e imágenes; modificar, borrar, ordenar y **animar** elementos; macros LaTeX; deshacer y guardar. Seguridad: solo `127.0.0.1`, token obligatorio, desactivado por defecto; cada acción del agente es un paso de deshacer. La barra de estado muestra «🤖 Agente trabajando…» mientras actúa.
 
 **Interfaz**
 
-- Menú **Archivo** (Nueva, Abrir, Guardar, Guardar como, Ajustes) y grupo **Insertar** (Texto, Ecuación, HTML, Formas ▾).
+- **Cinta estilo Office**: menú **Archivo**, acceso rápido (guardar, deshacer, rehacer) y pestañas **Inicio** (portapapeles, diapositivas, organizar, alinear), **Insertar** (texto, ecuación, imagen, video, tabla, formas, HTML, importar), **Animaciones**, **Transiciones** y **Presentación**. Recuerda la última pestaña.
 - **Clic derecho** en elementos (cortar, copiar, pegar, duplicar, orden, bloquear, eliminar), en el lienzo vacío y en las miniaturas (duplicar, **ocultar en la presentación**, subir/bajar, eliminar).
 - **Tema claro / oscuro / sistema** (botón en la barra o en Ajustes).
-- **Ajustes** (Ctrl+, o menú Archivo): idioma, tema, **tarjeta gráfica** (automática o alto rendimiento; Tiza se reinicia sola y conserva tus cambios) y **diagnóstico** (las GPU reales del sistema, cuál usa Tiza, WebGL).
+- **Ajustes** (Ctrl+, o menú Archivo) por secciones: General (idioma, tema), Rendimiento (**tarjeta gráfica** (automática o alto rendimiento; Tiza se reinicia sola y conserva tus cambios), Agentes de IA, Diagnóstico (las GPU reales del sistema, cuál usa Tiza, WebGL) y Acerca de.
 - Panel de propiedades con **secciones plegables** (recuerda cuáles cerraste) y posición/tamaño compactos.
 
 **General**

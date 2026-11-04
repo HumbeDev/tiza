@@ -189,6 +189,7 @@ mod tests {
                 height: 1080.0,
             },
             latex: LatexSettings::default(),
+            transition: None,
             template: None,
             slides: vec![Slide {
                 id: "s1".into(),
@@ -317,6 +318,7 @@ mod tests {
             locked: false,
             group_id: None,
             build: None,
+            exit: None,
             content: crate::document::ElementContent::Image(crate::document::ImageElement {
                 asset: name.clone(),
                 fit: crate::document::ImageFit::Contain,

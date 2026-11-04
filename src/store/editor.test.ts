@@ -224,11 +224,13 @@ describe("notes and transitions", () => {
     expect(slide().notes).toBe("");
   });
 
-  it("removes the transition when set to none", () => {
+  it("keeps an explicit 'none' (to opt out of the file default) and clears with null", () => {
     const id = state().currentSlideId;
     setSlideTransition(id, { kind: "fade", durationMs: 300 });
     expect(slide().transition?.kind).toBe("fade");
     setSlideTransition(id, { kind: "none", durationMs: 300 });
+    expect(slide().transition?.kind).toBe("none");
+    setSlideTransition(id, null);
     expect(slide().transition).toBeUndefined();
   });
 });

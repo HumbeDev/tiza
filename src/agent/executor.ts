@@ -3,6 +3,7 @@
 import type { Draft } from "immer";
 import { create } from "zustand";
 import type {
+  BuildEffect,
   Element,
   ImageElement,
   RichNode,
@@ -10,6 +11,7 @@ import type {
   Slide,
   TableTheme,
   TextAlign,
+  TransitionKind,
 } from "../document";
 import { createImage, createShape, createSim, createTable, createText } from "../document/factory";
 import { toPlainText } from "../document/richtext";
@@ -29,6 +31,8 @@ import {
   select,
   selectSlide,
   setBuild,
+  setDocTransition,
+  setExit,
   setMathFontSize,
   setMathLatex,
   setPreamble,
@@ -201,16 +205,16 @@ const tools: Record<string, (args: Args) => unknown> = {
     return { ok: true };
   },
 
-  set_slide({ slide, background, notes, hidden, transition }) {
+  set_slide({ slide, background, notes, hidden, transition, duration_ms }) {
     const { slide: target } = slideOf(slide);
     change((doc) => {
       const s = doc.slides.find((x) => x.id === target.id)!;
       if (typeof background === "string") s.background = background;
       if (typeof notes === "string") s.notes = notes;
       if (typeof hidden === "boolean") s.hidden = hidden;
-      if (transition === "none") delete s.transition;
-      else if (transition === "fade" || transition === "slide")
-        s.transition = { kind: transition, durationMs: 400 };
+      if (transition === "default") delete s.transition;
+      else if (isTransition(transition))
+        s.transition = { kind: transition, durationMs: num(duration_ms) ?? 500 };
     });
     focus(target);
     return { ok: true };
@@ -364,13 +368,28 @@ const tools: Record<string, (args: Args) => unknown> = {
     return { removed };
   },
 
-  set_animation({ element_ids, step, effect }) {
+  set_animation({ element_ids, step, effect, exit }) {
     const ids = Array.isArray(element_ids) ? element_ids.map(String) : [];
     ids.forEach((id) => elementOf(id));
+    if (effect !== undefined && effect !== null && !EFFECTS.includes(effect as BuildEffect)) {
+      throw new ToolError(`Unknown effect "${String(effect)}". Use one of: ${EFFECTS.join(", ")}.`);
+    }
     const n = num(step);
-    setBuild(
-      ids,
-      n && n > 0 ? { step: Math.round(n), effect: effect === "fade" ? "fade" : "appear" } : null,
+    const build =
+      n && n > 0
+        ? { step: Math.round(n), effect: (effect as BuildEffect | undefined) ?? "appear" }
+        : null;
+    if (exit === true) setExit(ids, build);
+    else setBuild(ids, build);
+    return { ok: true };
+  },
+
+  set_presentation_transition({ transition, duration_ms, apply_to_all }) {
+    if (!isTransition(transition))
+      throw new ToolError('transition must be "none", "fade", "slide", "zoom" or "rise"');
+    setDocTransition(
+      transition === "none" ? null : { kind: transition, durationMs: num(duration_ms) ?? 500 },
+      apply_to_all === true,
     );
     return { ok: true };
   },
@@ -408,6 +427,9 @@ const tools: Record<string, (args: Args) => unknown> = {
 };
 
 const THEMES: TableTheme[] = ["green", "blue", "gray", "orange", "purple"];
+const EFFECTS: BuildEffect[] = ["appear", "fade", "rise", "fromLeft", "fromRight", "zoom", "wipe"];
+const TRANSITIONS: TransitionKind[] = ["none", "fade", "slide", "zoom", "rise"];
+const isTransition = (v: unknown): v is TransitionKind => TRANSITIONS.includes(v as TransitionKind);
 const isTheme = (v: unknown): v is TableTheme => THEMES.includes(v as TableTheme);
 
 function parseRows(value: unknown): string[][] {

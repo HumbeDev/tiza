@@ -10,6 +10,10 @@ vi.mock("@tauri-apps/api/core", () => ({
   invoke: vi.fn((cmd: string) => Promise.resolve(cmd === "app_version" ? "0.1.0" : null)),
 }));
 
+vi.mock("@tauri-apps/api/event", () => ({
+  listen: () => Promise.resolve(() => {}),
+}));
+
 vi.mock("@tauri-apps/api/window", () => ({
   getCurrentWindow: () => ({
     setTitle: () => Promise.resolve(),
@@ -43,6 +47,7 @@ describe("App", () => {
   it("shows unsaved changes in the title and status bar", async () => {
     render(<App />);
     expect(document.title).toBe("Untitled — Tiza");
+    fireEvent.click(screen.getByRole("tab", { name: "Insert" }));
     fireEvent.click(screen.getByRole("button", { name: "Shapes" }));
     fireEvent.click(screen.getByRole("menuitem", { name: "Ellipse" }));
     expect(document.title).toBe("● Untitled — Tiza");
@@ -66,6 +71,7 @@ describe("App", () => {
 
   it("inserts a shape and undoes it with the keyboard", async () => {
     render(<App />);
+    fireEvent.click(screen.getByRole("tab", { name: "Insert" }));
     fireEvent.click(screen.getByRole("button", { name: "Shapes" }));
     fireEvent.click(screen.getByRole("menuitem", { name: "Rectangle" }));
     expect(currentSlide(useEditor.getState()).elements).toHaveLength(1);
@@ -101,6 +107,33 @@ describe("App", () => {
     expect(container.querySelector(".hidden-slide")).toBeTruthy();
     fireEvent.keyDown(window, { key: "z", ctrlKey: true });
     expect(useEditor.getState().doc.slides[0].hidden).toBe(false);
+  });
+
+  it("animates the selection from the Animations tab", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("tab", { name: "Insert" }));
+    fireEvent.click(screen.getByRole("button", { name: "Shapes" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Rectangle" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Animations" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Zoom" })[0]);
+    expect(currentSlide(useEditor.getState()).elements[0].build).toEqual({
+      step: 1,
+      effect: "zoom",
+    });
+    fireEvent.click(screen.getAllByRole("button", { name: "Fade out" })[0]);
+    expect(currentSlide(useEditor.getState()).elements[0].exit).toEqual({
+      step: 1,
+      effect: "fade",
+    });
+  });
+
+  it("applies a transition to every slide from the Transitions tab", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("tab", { name: "Transitions" }));
+    fireEvent.click(screen.getByRole("button", { name: "Fade" }));
+    fireEvent.click(screen.getByRole("button", { name: "Apply to all" }));
+    expect(useEditor.getState().doc.transition?.kind).toBe("fade");
+    expect(currentSlide(useEditor.getState()).transition).toBeUndefined();
   });
 
   it("adds a slide from the toolbar", () => {

@@ -16,7 +16,9 @@ export const visibleSlides = (doc: Presentation): Slide[] => doc.slides.filter((
 
 /** Build steps of each visible slide. Same as `build_steps` in src-tauri/src/present.rs. */
 export const buildSteps = (doc: Presentation): number[] =>
-  visibleSlides(doc).map((s) => Math.max(0, ...s.elements.map((e) => e.build?.step ?? 0)));
+  visibleSlides(doc).map((s) =>
+    Math.max(0, ...s.elements.flatMap((e) => [e.build?.step ?? 0, e.exit?.step ?? 0])),
+  );
 
 /** Same rules as `PresentStatus::apply` in src-tauri/src/present.rs. */
 export function applyNav(status: PresentStatus, action: NavAction, steps: number[]): PresentStatus {

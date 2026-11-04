@@ -19,6 +19,10 @@ pub struct Presentation {
     pub page: Page,
     #[serde(default)]
     pub latex: LatexSettings,
+    /// Transition of every slide that doesn't set its own.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub transition: Option<Transition>,
     /// Copy of a slide taken when the user chose it as template: every new slide starts
     /// as a copy of it. Later edits to the original slide don't change the template.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -97,6 +101,8 @@ pub enum TransitionKind {
     None,
     Fade,
     Slide,
+    Zoom,
+    Rise,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -129,6 +135,10 @@ pub struct Element {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub build: Option<Build>,
+    /// Disappears on a later click when presenting.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub exit: Option<Build>,
     #[serde(flatten)]
     pub content: ElementContent,
 }
@@ -139,6 +149,13 @@ pub struct Element {
 pub enum BuildEffect {
     Appear,
     Fade,
+    /// Moves up into place (or down, when leaving).
+    Rise,
+    FromLeft,
+    FromRight,
+    Zoom,
+    /// Revealed left to right (hidden right to left when leaving).
+    Wipe,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -431,6 +448,7 @@ mod tests {
             latex: LatexSettings {
                 preamble: r"\newcommand{\R}{\mathbb{R}}".into(),
             },
+            transition: None,
             template: None,
             slides: vec![Slide {
                 id: "s1".into(),
@@ -450,6 +468,7 @@ mod tests {
                             step: 2,
                             effect: BuildEffect::Fade,
                         }),
+                        exit: None,
                         content: ElementContent::Shape(ShapeElement {
                             shape: ShapeKind::Rect,
                             fill: Some("#2f6f4f".into()),
@@ -471,6 +490,7 @@ mod tests {
                         locked: true,
                         group_id: None,
                         build: None,
+                        exit: None,
                         content: ElementContent::Text(TextElement {
                             doc: RichNode::plain("Hola\n\nmundo"),
                             font_size: 48.0,
@@ -489,6 +509,7 @@ mod tests {
                         locked: false,
                         group_id: None,
                         build: None,
+                        exit: None,
                         content: ElementContent::Math(MathElement {
                             latex: r"\int_0^1 x^2\,dx".into(),
                             font_size: 72.0,

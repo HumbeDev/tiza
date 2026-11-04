@@ -13,7 +13,7 @@ import WebPresentation from "../present/WebPresentation";
 import { useEndOfPresentation } from "../present/startFromEditor";
 import SettingsDialog from "./SettingsDialog";
 import StatusBar from "./StatusBar";
-import Toolbar from "./Toolbar";
+import Ribbon from "./ribbon/Ribbon";
 import { useShortcuts } from "./useShortcuts";
 
 const MathEditorPanel = lazy(() => import("../editors/MathEditorPanel"));
@@ -31,7 +31,7 @@ export default function App() {
   useEndOfPresentation();
   return (
     <div className="editor">
-      <Toolbar />
+      <Ribbon />
       <SlidePanel />
       <main className="canvas-area">
         <div className="canvas-wrap">

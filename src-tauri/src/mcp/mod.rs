@@ -2,6 +2,7 @@
 //! (PROYECTO.md §7.11). Off by default; listens on 127.0.0.1 only and requires a token.
 
 mod bridge;
+pub mod clients;
 mod tools;
 
 use std::sync::{Arc, Mutex};
@@ -191,6 +192,41 @@ pub async fn mcp_configure(
         server.start(&all.mcp).await?;
     }
     Ok(server.status())
+}
+
+fn url_and_token() -> (String, String) {
+    let config = settings::load().mcp;
+    (
+        format!("http://127.0.0.1:{}/mcp", config.port),
+        config.token,
+    )
+}
+
+/// Which agents are installed and whether they are already connected to Tiza.
+#[tauri::command]
+pub async fn mcp_clients() -> Vec<clients::AgentClientStatus> {
+    let (url, token) = url_and_token();
+    tauri::async_runtime::spawn_blocking(move || {
+        [
+            clients::AgentClient::ClaudeCode,
+            clients::AgentClient::Codex,
+            clients::AgentClient::Antigravity,
+        ]
+        .into_iter()
+        .map(|c| clients::status(c, &url, &token))
+        .collect()
+    })
+    .await
+    .unwrap_or_default()
+}
+
+/// Connects an agent to Tiza by writing its configuration (see `clients.rs`).
+#[tauri::command]
+pub async fn mcp_install_client(client: clients::AgentClient) -> AppResult<String> {
+    let (url, token) = url_and_token();
+    tauri::async_runtime::spawn_blocking(move || clients::install(client, &url, &token))
+        .await
+        .map_err(|e| AppError::Io(std::io::Error::other(e.to_string())))?
 }
 
 /// The editor's answer to an `mcp:request` event.

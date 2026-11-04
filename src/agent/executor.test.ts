@@ -81,6 +81,11 @@ describe("agent tools", () => {
     expect(doc().slides[0].elements[0]).toMatchObject({ x: 5, fill: undefined });
     await call("set_animation", { element_ids: [id], step: 2, effect: "fade" });
     expect(doc().slides[0].elements[0].build).toEqual({ step: 2, effect: "fade" });
+    await call("set_animation", { element_ids: [id], step: 3, effect: "zoom", exit: true });
+    expect(doc().slides[0].elements[0].exit).toEqual({ step: 3, effect: "zoom" });
+    expect((await call("set_animation", { element_ids: [id], step: 1, effect: "spin" })).ok).toBe(
+      false,
+    );
     expect((await call("delete_elements", { element_ids: [id] })).result).toEqual({ removed: 1 });
   });
 
@@ -93,6 +98,14 @@ describe("agent tools", () => {
     expect((await call("update_element", { element_id: "nope", changes: {} })).ok).toBe(false);
     expect((await call("save")).result).toMatch(/never been saved/);
     expect((await call("explode")).ok).toBe(false);
+  });
+
+  it("sets the presentation's default transition", async () => {
+    await call("add_slide");
+    await call("set_slide", { slide: 1, transition: "rise", duration_ms: 700 });
+    await call("set_presentation_transition", { transition: "zoom", apply_to_all: true });
+    expect(doc().transition).toEqual({ kind: "zoom", durationMs: 500 });
+    expect(doc().slides.every((s) => !s.transition)).toBe(true);
   });
 
   it("moves and edits slides", async () => {

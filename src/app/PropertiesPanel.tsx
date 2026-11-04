@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import type {
+  Build,
   BuildEffect,
   Element,
   ImageFit,
@@ -28,7 +29,9 @@ import {
   reorderSelected,
   seal,
   selectedElements,
+  nextClickStep,
   setBuild,
+  setExit,
   setMathFontSize,
   setPreamble,
   setSlideBackground,
@@ -200,48 +203,63 @@ function MathProperties({ el }: { el: Element & { kind: "math" } }) {
   );
 }
 
-/** Step-by-step reveal when presenting (like Beamer's \pause). */
+const EFFECTS: BuildEffect[] = ["appear", "fade", "rise", "fromLeft", "fromRight", "zoom", "wipe"];
+
+/** Step-by-step reveal when presenting (like Beamer's \pause): entrance and exit. */
 function BuildSection({ elements }: { elements: Element[] }) {
   const { t } = useTranslation();
   const ids = elements.map((e) => e.id);
-  const first = elements[0].build;
-  const same = elements.every(
-    (e) => (e.build?.step ?? 0) === (first?.step ?? 0) && e.build?.effect === first?.effect,
+  const pick = (get: (e: Element) => Build | undefined) => {
+    const first = get(elements[0]);
+    const same = elements.every(
+      (e) => get(e)?.step === first?.step && get(e)?.effect === first?.effect,
+    );
+    return { value: same ? first : undefined, mixed: !same };
+  };
+  const entrance = pick((e) => e.build);
+  const exit = pick((e) => e.exit);
+
+  const row = (
+    kind: "in" | "out",
+    current: ReturnType<typeof pick>,
+    apply: (b: Build | null) => void,
+  ) => (
+    <div className="grid-build">
+      <Field label={t(kind === "in" ? "ribbon.entrance" : "ribbon.exit")}>
+        <select
+          value={current.mixed ? "mixed" : (current.value?.effect ?? "none")}
+          onChange={(e) => {
+            const v = e.target.value as BuildEffect | "none";
+            apply(
+              v === "none" ? null : { step: current.value?.step ?? nextClickStep(), effect: v },
+            );
+          }}
+        >
+          {current.mixed && <option value="mixed">—</option>}
+          <option value="none">{t("build.none")}</option>
+          {EFFECTS.map((fx) => (
+            <option key={fx} value={fx}>
+              {t(`effects.${kind}.${fx}`)}
+            </option>
+          ))}
+        </select>
+      </Field>
+      {current.value && (
+        <NumberField
+          label={t("build.step")}
+          value={current.value.step}
+          min={1}
+          onChange={(step) => apply({ ...current.value!, step: Math.max(1, Math.round(step)) })}
+        />
+      )}
+    </div>
   );
-  const effect = same ? (first?.effect ?? "none") : "mixed";
+
   return (
     <Section id="build" title={t("build.title")}>
-      <div className="grid-2">
-        <Field label={t("build.effect")}>
-          <select
-            value={effect}
-            onChange={(e) => {
-              const v = e.target.value as BuildEffect | "none";
-              setBuild(ids, v === "none" ? null : { step: first?.step ?? 1, effect: v });
-            }}
-          >
-            {effect === "mixed" && <option value="mixed">—</option>}
-            <option value="none">{t("build.none")}</option>
-            <option value="appear">{t("build.appear")}</option>
-            <option value="fade">{t("build.fade")}</option>
-          </select>
-        </Field>
-        {first && same && (
-          <NumberField
-            label={t("build.step")}
-            value={first.step}
-            min={1}
-            onChange={(step) =>
-              setBuild(
-                ids,
-                { ...first, step: Math.max(1, Math.round(step)) },
-                `build:${ids.join()}`,
-              )
-            }
-          />
-        )}
-      </div>
-      <button type="button" className="small-button" onClick={buildOnNextClick}>
+      {row("in", entrance, (b) => setBuild(ids, b, `build:${ids.join()}`))}
+      {row("out", exit, (b) => setExit(ids, b, `exit:${ids.join()}`))}
+      <button type="button" className="small-button" onClick={() => buildOnNextClick()}>
         <Icon name="build" /> {t("build.onNextClick")}
       </button>
       <p className="hint">{t("build.hint")}</p>

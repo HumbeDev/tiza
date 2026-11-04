@@ -113,7 +113,9 @@ pub fn build_steps(doc: &Presentation) -> Vec<u32> {
         .map(|s| {
             s.elements
                 .iter()
-                .filter_map(|e| e.build.as_ref().map(|b| b.step))
+                .flat_map(|e| [e.build.as_ref(), e.exit.as_ref()])
+                .flatten()
+                .map(|b| b.step)
                 .max()
                 .unwrap_or(0)
         })

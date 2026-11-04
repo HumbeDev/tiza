@@ -215,7 +215,15 @@
     "restartQuestion": "Tiza will restart to use the selected graphics card. Your unsaved changes will be kept.",
     "restart": "Restart",
     "gpuHelp": "Tiza draws through the system's web engine, which uses the GPU. The integrated GPU is enough for slides, equations and 2D simulations and saves battery. Choose High performance for heavy 3D simulations. If the dedicated GPU fails to start, Tiza goes back to Automatic by itself.",
-    "restartManually": "Saved. This is a development build, which can't restart itself: close Tiza and run “npm run tauri dev” again to use the selected graphics card."
+    "restartManually": "Saved. This is a development build, which can't restart itself: close Tiza and run “npm run tauri dev” again to use the selected graphics card.",
+    "sections": {
+      "general": "General",
+      "performance": "Performance",
+      "agents": "AI agents",
+      "diagnostics": "Diagnostics",
+      "about": "About"
+    },
+    "singleGpu": "This computer has a single graphics card."
   },
   "notes": {
     "title": "Speaker notes",
@@ -247,7 +255,9 @@
     "transitions": {
       "none": "None",
       "fade": "Fade",
-      "slide": "Slide in"
+      "slide": "Slide in",
+      "zoom": "Zoom",
+      "rise": "Rise"
     },
     "stepOf": "step {{current}}/{{total}}"
   },
@@ -326,6 +336,82 @@
     "commandHint": "Paste the command in a terminal to connect Claude Code. Making a new token disconnects agents that use the old one.",
     "listening": "MCP ●",
     "working": "🤖 Agent working…",
-    "statusHint": "MCP server active on port {{port}}"
+    "statusHint": "MCP server active on port {{port}}",
+    "off": "Off",
+    "tokenHelp": "Secret that agents send to prove they may edit. Making a new one disconnects the agents configured with the old one; configure them again."
+  },
+  "ribbon": {
+    "tabs": "Ribbon tabs",
+    "tab": {
+      "home": "Home",
+      "insert": "Insert",
+      "animations": "Animations",
+      "transitions": "Transitions",
+      "slideshow": "Slide show"
+    },
+    "clipboard": "Clipboard",
+    "text": "Text",
+    "media": "Media",
+    "objects": "Objects",
+    "import": "Import",
+    "importFile": "PowerPoint or PDF",
+    "entrance": "Entrance",
+    "exit": "Exit",
+    "timing": "Timing",
+    "appearsOn": "Appears on click",
+    "leavesOn": "Leaves on click",
+    "removeEntrance": "Remove entrance",
+    "removeExit": "Remove exit",
+    "selectToAnimate": "Select one or more elements on the slide to animate them.",
+    "thisSlide": "This slide",
+    "fromFile": "Using the presentation's transition",
+    "wholeFile": "Whole presentation",
+    "applyToAll": "Apply to all",
+    "fileDefault": "Presentation default",
+    "fileDefaultHint": "Slides without their own transition use it.",
+    "start": "Start",
+    "practice": "Practice"
+  },
+  "effects": {
+    "in": {
+      "appear": "Appear",
+      "fade": "Fade",
+      "rise": "Rise",
+      "fromLeft": "From left",
+      "fromRight": "From right",
+      "zoom": "Zoom",
+      "wipe": "Wipe"
+    },
+    "out": {
+      "appear": "Disappear",
+      "fade": "Fade out",
+      "rise": "Sink",
+      "fromLeft": "To the left",
+      "fromRight": "To the right",
+      "zoom": "Zoom out",
+      "wipe": "Wipe"
+    }
+  },
+  "agents": {
+    "title": "Connect your agents",
+    "how": {
+      "claudeCode": "Anthropic's coding agent in the terminal.",
+      "codex": "OpenAI's coding agent. Its configuration file:",
+      "antigravity": "Google's agentic IDE. Its configuration file:"
+    },
+    "state": {
+      "connected": "Connected",
+      "notConfigured": "Not connected",
+      "notInstalled": "Not found",
+      "unknown": "…"
+    },
+    "configure": "Connect automatically",
+    "reconfigure": "Connect again",
+    "copyCommand": "Copy command",
+    "copyConfig": "Copy configuration"
+  },
+  "about": {
+    "tagline": "Offline presentations for science and teaching: LaTeX, video, simulations and AI agents.",
+    "license": "Free software · MIT or Apache 2.0"
   }
 }

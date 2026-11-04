@@ -215,7 +215,15 @@
     "restartQuestion": "Tiza va redémarrer pour utiliser la carte graphique choisie. Vos modifications non enregistrées sont conservées.",
     "restart": "Redémarrer",
     "gpuHelp": "Tiza dessine avec le moteur web du système, qui utilise le GPU. Le GPU intégré suffit pour les diapositives, les équations et les simulations 2D, et économise la batterie. Choisissez Hautes performances pour des simulations 3D lourdes. Si le GPU dédié ne démarre pas, Tiza revient tout seul à Automatique.",
-    "restartManually": "Enregistré. Ceci est une version de développement, qui ne peut pas redémarrer seule : fermez Tiza et relancez « npm run tauri dev » pour utiliser la carte graphique choisie."
+    "restartManually": "Enregistré. Ceci est une version de développement, qui ne peut pas redémarrer seule : fermez Tiza et relancez « npm run tauri dev » pour utiliser la carte graphique choisie.",
+    "sections": {
+      "general": "Général",
+      "performance": "Performances",
+      "agents": "Agents d’IA",
+      "diagnostics": "Diagnostic",
+      "about": "À propos"
+    },
+    "singleGpu": "Cet ordinateur n’a qu’une carte graphique."
   },
   "notes": {
     "title": "Notes de l’orateur",
@@ -247,7 +255,9 @@
     "transitions": {
       "none": "Aucune",
       "fade": "Fondu",
-      "slide": "Glissement"
+      "slide": "Glissement",
+      "zoom": "Zoom",
+      "rise": "Monter"
     },
     "stepOf": "étape {{current}}/{{total}}"
   },
@@ -326,6 +336,82 @@
     "commandHint": "Collez la commande dans un terminal pour connecter Claude Code. Créer un nouveau jeton déconnecte les agents qui utilisent l’ancien.",
     "listening": "MCP ●",
     "working": "🤖 Agent au travail…",
-    "statusHint": "Serveur MCP actif sur le port {{port}}"
+    "statusHint": "Serveur MCP actif sur le port {{port}}",
+    "off": "Désactivé",
+    "tokenHelp": "Secret envoyé par les agents pour prouver qu’ils peuvent modifier. En créer un nouveau déconnecte les agents configurés avec l’ancien ; reconnectez-les."
+  },
+  "ribbon": {
+    "tabs": "Onglets du ruban",
+    "tab": {
+      "home": "Accueil",
+      "insert": "Insertion",
+      "animations": "Animations",
+      "transitions": "Transitions",
+      "slideshow": "Diaporama"
+    },
+    "clipboard": "Presse-papiers",
+    "text": "Texte",
+    "media": "Médias",
+    "objects": "Objets",
+    "import": "Importer",
+    "importFile": "PowerPoint ou PDF",
+    "entrance": "Entrée",
+    "exit": "Sortie",
+    "timing": "Minutage",
+    "appearsOn": "Apparaît au clic",
+    "leavesOn": "Sort au clic",
+    "removeEntrance": "Retirer l’entrée",
+    "removeExit": "Retirer la sortie",
+    "selectToAnimate": "Sélectionnez un ou plusieurs éléments de la diapositive pour les animer.",
+    "thisSlide": "Cette diapositive",
+    "fromFile": "Utilise la transition de la présentation",
+    "wholeFile": "Toute la présentation",
+    "applyToAll": "Appliquer à toutes",
+    "fileDefault": "Par défaut de la présentation",
+    "fileDefaultHint": "Utilisée par les diapositives sans transition propre.",
+    "start": "Démarrer",
+    "practice": "Répétition"
+  },
+  "effects": {
+    "in": {
+      "appear": "Apparaître",
+      "fade": "Fondu",
+      "rise": "Monter",
+      "fromLeft": "Depuis la gauche",
+      "fromRight": "Depuis la droite",
+      "zoom": "Zoom",
+      "wipe": "Balayage"
+    },
+    "out": {
+      "appear": "Disparaître",
+      "fade": "Fondu",
+      "rise": "Descendre",
+      "fromLeft": "Vers la gauche",
+      "fromRight": "Vers la droite",
+      "zoom": "Dézoom",
+      "wipe": "Balayage"
+    }
+  },
+  "agents": {
+    "title": "Connectez vos agents",
+    "how": {
+      "claudeCode": "L’agent de programmation d’Anthropic dans le terminal.",
+      "codex": "L’agent de programmation d’OpenAI. Son fichier de configuration :",
+      "antigravity": "L’IDE à agents de Google. Son fichier de configuration :"
+    },
+    "state": {
+      "connected": "Connecté",
+      "notConfigured": "Non connecté",
+      "notInstalled": "Introuvable",
+      "unknown": "…"
+    },
+    "configure": "Connecter automatiquement",
+    "reconfigure": "Reconnecter",
+    "copyCommand": "Copier la commande",
+    "copyConfig": "Copier la configuration"
+  },
+  "about": {
+    "tagline": "Présentations hors ligne pour la science et l’enseignement : LaTeX, vidéo, simulations et agents d’IA.",
+    "license": "Logiciel libre · MIT ou Apache 2.0"
   }
 }

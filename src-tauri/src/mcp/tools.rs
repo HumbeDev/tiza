@@ -60,8 +60,11 @@ pub struct SetSlideArgs {
     pub notes: Option<String>,
     /// Skip this slide when presenting.
     pub hidden: Option<bool>,
-    /// "none", "fade" or "slide".
+    /// "none", "fade", "slide", "zoom" or "rise". "none" opts out of the presentation's
+    /// default transition; "default" uses it again.
     pub transition: Option<String>,
+    /// Transition duration in milliseconds (default 500).
+    pub duration_ms: Option<u32>,
 }
 
 /// Position and size; omitted values get sensible defaults (centered).
@@ -177,8 +180,20 @@ pub struct AnimationArgs {
     /// Click on which they appear when presenting (1 = first click). Null or 0 removes
     /// the animation. Use "next" ordering by giving increasing numbers.
     pub step: Option<u32>,
-    /// "appear" (default) or "fade".
+    /// "appear" (default), "fade", "rise", "fromLeft", "fromRight", "zoom" or "wipe".
     pub effect: Option<String>,
+    /// True to set how they leave (exit animation) instead of how they appear.
+    pub exit: Option<bool>,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct PresentationTransitionArgs {
+    /// "none", "fade", "slide", "zoom" or "rise".
+    pub transition: String,
+    /// Duration in milliseconds (default 500).
+    pub duration_ms: Option<u32>,
+    /// Also remove each slide's own transition so all slides use this one.
+    pub apply_to_all: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
@@ -392,13 +407,23 @@ impl TizaMcp {
     }
 
     #[tool(
-        description = "Make elements appear on a given click when presenting (like Beamer's \\pause), or remove the animation."
+        description = "Make elements appear (or, with exit=true, disappear) on a given click when presenting, like Beamer's \\pause. Effects: appear, fade, rise, fromLeft, fromRight, zoom, wipe. step null or 0 removes it."
     )]
     async fn set_animation(
         &self,
         Parameters(args): Parameters<AnimationArgs>,
     ) -> Result<CallToolResult, ErrorData> {
         self.forward("set_animation", args).await
+    }
+
+    #[tool(
+        description = "Set the presentation's default slide transition (used by slides without their own)."
+    )]
+    async fn set_presentation_transition(
+        &self,
+        Parameters(args): Parameters<PresentationTransitionArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        self.forward("set_presentation_transition", args).await
     }
 
     #[tool(description = "Change the stacking order of elements.")]
