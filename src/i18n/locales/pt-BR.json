@@ -138,7 +138,8 @@
     "recoverQuestion": "O Tiza foi fechado sem salvar as alterações de “{{name}}”. Recuperá-las?",
     "recover": "Recuperar",
     "later": "Mais tarde",
-    "discardRecoverySure": "Apagar definitivamente as alterações recuperadas? (Cancelar as mantém para a próxima vez.)"
+    "discardRecoverySure": "Apagar definitivamente as alterações recuperadas? (Cancelar as mantém para a próxima vez.)",
+    "clearRecent": "Limpar a lista de recentes"
   },
   "errors": {
     "file": {

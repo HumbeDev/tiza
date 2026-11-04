@@ -1,10 +1,12 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { openEmbedDialog } from "../EmbedDialog";
 import { runExport } from "../exportActions";
+import { clearRecentFiles, folderOf, useRecentFiles } from "../../files/recent";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import type { BuildEffect, ShapeKind, TransitionKind } from "../../document";
 import {
+  openRecent,
   importPresentation,
   newPresentation,
   openPresentation,
@@ -74,6 +76,16 @@ function storedTab(): Tab {
 }
 
 /** Office-style header: quick access + tabs on top, a ribbon of labelled groups below. */
+/** Home folder, to show recent files as "~/…" (desktop). */
+let home: string | undefined;
+if (isDesktop)
+  void import("@tauri-apps/api/path")
+    .then((p) => p.homeDir())
+    .then(
+      (h) => (home = h.replace(/[\\/]$/, "")),
+      () => {},
+    );
+
 export default function Ribbon() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>(storedTab);
@@ -93,6 +105,20 @@ export default function Ribbon() {
     }
   }
 
+  const recentItems = (): MenuItem[] => {
+    const recent = useRecentFiles.getState().slice(0, 5);
+    if (!isDesktop || recent.length === 0) return [];
+    return [
+      separator,
+      ...recent.map((f) => ({
+        label: f.name,
+        shortcut: folderOf(f.path, home),
+        onSelect: () => openRecent(f.path),
+      })),
+      { label: t("file.clearRecent"), onSelect: clearRecentFiles },
+    ];
+  };
+
   const fileMenu = (): MenuItem[] => [
     { label: t("toolbar.new"), icon: "fileNew", shortcut: "Ctrl+N", onSelect: newPresentation },
     {
@@ -102,6 +128,7 @@ export default function Ribbon() {
       onSelect: openPresentation,
     },
     { label: t("toolbar.import"), icon: "import", onSelect: importPresentation },
+    ...recentItems(),
     separator,
     { label: t("export.pdf"), icon: "exportFile", onSelect: () => runExport("pdf") },
     { label: t("export.pdfSteps"), onSelect: () => runExport("pdfSteps") },

@@ -138,7 +138,8 @@
     "recoverQuestion": "Tiza closed without saving changes to “{{name}}”. Recover them?",
     "recover": "Recover",
     "later": "Later",
-    "discardRecoverySure": "Delete the recovered changes permanently? (Cancel keeps them for next time.)"
+    "discardRecoverySure": "Delete the recovered changes permanently? (Cancel keeps them for next time.)",
+    "clearRecent": "Clear recent files"
   },
   "errors": {
     "file": {

@@ -1,4 +1,5 @@
 // New / open / save / save as, autosave with crash recovery, window title and close guard.
+import { addRecentFile, removeRecentFile } from "./recent";
 import { invoke } from "@tauri-apps/api/core";
 import type { Presentation } from "../document";
 import { createPresentation } from "../document/factory";
@@ -65,19 +66,30 @@ export async function openPresentation(): Promise<void> {
     const opened = await platform.open();
     if (!opened) return;
     loadDocument(opened.doc, opened.file);
+    addRecentFile(opened.file);
     await clearOwnRecovery();
   } catch (e) {
     await showFileError(e);
   }
 }
 
-async function openPath(path: string): Promise<void> {
+async function openPath(path: string): Promise<boolean> {
   try {
     const opened = await platform.openPath(path);
     loadDocument(opened.doc, opened.file);
+    addRecentFile(opened.file);
+    return true;
   } catch (e) {
     await showFileError(e);
+    return false;
   }
+}
+
+/** File → Recent: reopens a file; one that can't be read leaves the list. */
+export async function openRecent(path: string): Promise<void> {
+  if (!(await confirmDiscard())) return;
+  if (await openPath(path)) await clearOwnRecovery();
+  else removeRecentFile(path);
 }
 
 async function saveWith(forceDialog: boolean): Promise<boolean> {
@@ -90,6 +102,7 @@ async function saveWith(forceDialog: boolean): Promise<boolean> {
   try {
     const file = await platform.save(doc, s.file, suggestedName(s), forceDialog);
     if (!file) return false;
+    addRecentFile(file);
     // Only mark clean if nothing changed while the dialog was open.
     if ((state().past.at(-1) ?? null) === savedEntry) markSaved(file);
     else useEditor.setState({ file });

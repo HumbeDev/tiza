@@ -138,7 +138,8 @@
     "recoverQuestion": "Tiza s’est fermé sans enregistrer les modifications de « {{name}} ». Les récupérer ?",
     "recover": "Récupérer",
     "later": "Plus tard",
-    "discardRecoverySure": "Supprimer définitivement les modifications récupérées ? (Annuler les conserve pour la prochaine fois.)"
+    "discardRecoverySure": "Supprimer définitivement les modifications récupérées ? (Annuler les conserve pour la prochaine fois.)",
+    "clearRecent": "Effacer la liste des récents"
   },
   "errors": {
     "file": {

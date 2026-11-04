@@ -138,7 +138,8 @@
     "recoverQuestion": "Tiza se cerró sin guardar los cambios de «{{name}}». ¿Recuperarlos?",
     "recover": "Recuperar",
     "later": "Más tarde",
-    "discardRecoverySure": "¿Borrar definitivamente los cambios recuperados? (Cancelar los conserva para la próxima vez.)"
+    "discardRecoverySure": "¿Borrar definitivamente los cambios recuperados? (Cancelar los conserva para la próxima vez.)",
+    "clearRecent": "Borrar la lista de recientes"
   },
   "errors": {
     "file": {
