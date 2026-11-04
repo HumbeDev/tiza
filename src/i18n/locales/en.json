@@ -259,7 +259,13 @@
       "zoom": "Zoom",
       "rise": "Rise"
     },
-    "stepOf": "step {{current}}/{{total}}"
+    "stepOf": "step {{current}}/{{total}}",
+    "screens": "Monitors",
+    "audienceScreen": "Audience sees it on",
+    "autoScreen": "Automatic (external screen)",
+    "laptopScreen": "Laptop screen",
+    "twoScreensHint": "The other screen shows your presenter view: notes, next slide and timer.",
+    "oneScreenHint": "With one screen there is only the audience view. Connect a projector or use “Rehearse in windows”."
   },
   "image": {
     "fit": "Fit",

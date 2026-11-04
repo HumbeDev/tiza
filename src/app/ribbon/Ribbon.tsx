@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { openEmbedDialog } from "../EmbedDialog";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
@@ -12,6 +12,10 @@ import {
   untitled,
 } from "../../files/session";
 import { presentFromEditor } from "../../present/startFromEditor";
+import { getAudienceScreen, setAudienceScreen } from "../../present/client";
+import type { Screen } from "../../bindings/Screen";
+import { invoke } from "@tauri-apps/api/core";
+import { isDesktop } from "../../files/platform";
 import {
   type Alignment,
   addSlide,
@@ -624,6 +628,47 @@ function TransitionsTab() {
   );
 }
 
+/** Where the audience sees the slides; the presenter view goes to another screen. */
+function ScreensGroup() {
+  const { t } = useTranslation();
+  const [screens, setScreens] = useState<Screen[]>([]);
+  const [chosen, setChosen] = useState(getAudienceScreen);
+  const refresh = () => void invoke<Screen[]>("list_screens").then(setScreens, () => {});
+  useEffect(refresh, []);
+  const label = (s: Screen) =>
+    `${/^(eDP|LVDS|DSI)/.test(s.name) ? t("present.laptopScreen") : s.name} · ${Math.round(s.width)}×${Math.round(s.height)}`;
+  const missing = chosen !== null && !screens.some((s) => s.name === chosen);
+  return (
+    <Group label={t("present.screens")}>
+      <div className="rb-screens">
+        <label className="rb-field wide">
+          <span>{t("present.audienceScreen")}</span>
+          <select
+            value={chosen ?? ""}
+            onPointerDown={refresh}
+            onChange={(e) => {
+              const name = e.target.value || null;
+              setChosen(name);
+              setAudienceScreen(name);
+            }}
+          >
+            <option value="">{t("present.autoScreen")}</option>
+            {screens.map((s) => (
+              <option key={s.name} value={s.name}>
+                {label(s)}
+              </option>
+            ))}
+            {missing && <option value={chosen}>{chosen}</option>}
+          </select>
+        </label>
+        <p className="ribbon-note">
+          {screens.length > 1 ? t("present.twoScreensHint") : t("present.oneScreenHint")}
+        </p>
+      </div>
+    </Group>
+  );
+}
+
 function SlideshowTab() {
   const { t } = useTranslation();
   return (
@@ -642,6 +687,7 @@ function SlideshowTab() {
           onClick={() => presentFromEditor("current")}
         />
       </Group>
+      {isDesktop && <ScreensGroup />}
       <Group label={t("ribbon.practice")}>
         <Big
           icon="monitor"

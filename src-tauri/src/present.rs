@@ -13,6 +13,8 @@ use crate::error::{AppError, AppResult};
 
 pub const AUDIENCE: &str = "audience";
 pub const PRESENTER: &str = "presenter";
+const AUDIENCE_TITLE: &str = "Tiza — Público";
+const PRESENTER_TITLE: &str = "Tiza — Presentador";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -133,7 +135,9 @@ impl PresentState {
 
 // ---------------------------------------------------------------- screen layout
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Screen {
     pub name: String,
     /// Logical position and size.
@@ -157,7 +161,8 @@ pub struct Layout {
 
 /// Audience on an external screen and presenter on the main one. With a single screen the
 /// audience gets it (no presenter view); `rehearse` uses plain windows on the current screen.
-pub fn choose_layout(screens: &[Screen], rehearse: bool) -> Layout {
+/// `preferred` names the screen the user picked for the audience.
+pub fn choose_layout(screens: &[Screen], rehearse: bool, preferred: Option<&str>) -> Layout {
     if rehearse || screens.is_empty() {
         return Layout {
             audience: None,
@@ -168,6 +173,16 @@ pub fn choose_layout(screens: &[Screen], rehearse: bool) -> Layout {
         return Layout {
             audience: Some(0),
             presenter: None,
+        };
+    }
+    if let Some(audience) = preferred.and_then(|p| screens.iter().position(|s| s.name == p)) {
+        let presenter = (0..screens.len())
+            .filter(|&i| i != audience)
+            .find(|&i| is_internal(&screens[i].name))
+            .or_else(|| (0..screens.len()).find(|&i| i != audience));
+        return Layout {
+            audience: Some(audience),
+            presenter,
         };
     }
     let main = screens
@@ -214,10 +229,82 @@ fn hyprland_screens() -> Vec<Screen> {
         .unwrap_or_default()
 }
 
-fn hyprland_focus(name: &str) {
+fn hyprctl_json(what: &str) -> serde_json::Value {
+    std::process::Command::new("hyprctl")
+        .args(["-j", what])
+        .output()
+        .ok()
+        .and_then(|o| serde_json::from_slice(&o.stdout).ok())
+        .unwrap_or_default()
+}
+
+fn hyprctl_dispatch(args: &[&str]) {
     let _ = std::process::Command::new("hyprctl")
-        .args(["dispatch", "focusmonitor", name])
+        .arg("dispatch")
+        .args(args)
         .output();
+}
+
+/// Address of this process's window with the given title, once Hyprland has mapped it.
+fn hyprland_window(title: &str) -> Option<String> {
+    let pid = u64::from(std::process::id());
+    for _ in 0..50 {
+        let clients = hyprctl_json("clients");
+        let found = clients.as_array().and_then(|list| {
+            list.iter().find(|c| {
+                c["pid"].as_u64() == Some(pid)
+                    && (c["title"] == title || c["initialTitle"] == title)
+            })
+        });
+        if let Some(address) = found.and_then(|c| c["address"].as_str()) {
+            return Some(address.to_owned());
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+    None
+}
+
+/// Hyprland maps new windows on whichever monitor is focused *when they appear*, which
+/// is racy, so once mapped each window is moved to the active workspace of its monitor.
+/// The audience goes fullscreen after the move, and focus ends on the presenter view.
+fn hyprland_place(app: &AppHandle, audience: Option<&Screen>, presenter: Option<&Screen>) {
+    let app = app.clone();
+    let audience = audience.map(|s| s.name.clone());
+    let presenter = presenter.map(|s| s.name.clone());
+    std::thread::spawn(move || {
+        let monitors = hyprctl_json("monitors");
+        let workspace = |name: &str| {
+            monitors.as_array().and_then(|list| {
+                list.iter()
+                    .find(|m| m["name"] == name)
+                    .and_then(|m| m["activeWorkspace"]["id"].as_i64())
+            })
+        };
+        let mut presenter_address = None;
+        for (label, title, monitor) in [
+            (PRESENTER, PRESENTER_TITLE, presenter.as_deref()),
+            (AUDIENCE, AUDIENCE_TITLE, audience.as_deref()),
+        ] {
+            let (Some(monitor), Some(address)) = (monitor, hyprland_window(title)) else {
+                continue;
+            };
+            if let Some(id) = workspace(monitor) {
+                hyprctl_dispatch(&["movetoworkspacesilent", &format!("{id},address:{address}")]);
+            }
+            if let Some(w) = app.get_webview_window(label) {
+                if label == AUDIENCE {
+                    let _ = w.set_fullscreen(true);
+                } else {
+                    let _ = w.maximize();
+                    presenter_address = Some(address);
+                }
+            }
+        }
+        // Keyboard focus (and the clicker) on the presenter view when there is one.
+        if let Some(address) = presenter_address {
+            hyprctl_dispatch(&["focuswindow", &format!("address:{address}")]);
+        }
+    });
 }
 
 fn tauri_screens(app: &AppHandle) -> Vec<Screen> {
@@ -254,10 +341,8 @@ fn open_window(
     let url = WebviewUrl::App(format!("index.html#{label}").into());
     let mut builder = WebviewWindowBuilder::new(app, label, url).title(title);
     match screen {
-        Some(s) if hypr => {
-            hyprland_focus(&s.name);
-            builder = builder.fullscreen(fullscreen).maximized(!fullscreen);
-        }
+        // Placed (and made fullscreen) by `hyprland_place` once mapped.
+        Some(_) if hypr => builder = builder.inner_size(1280.0, 760.0),
         Some(s) => {
             builder = builder
                 .position(s.x, s.y)
@@ -290,6 +375,7 @@ pub fn start_presentation(
     doc: Presentation,
     start: usize,
     rehearse: bool,
+    audience_screen: Option<String>,
 ) -> AppResult<()> {
     let count = doc.slides.iter().filter(|s| !s.hidden).count();
     if count == 0 {
@@ -315,37 +401,35 @@ pub fn start_presentation(
     } else {
         tauri_screens(&app)
     };
-    let layout = choose_layout(&screens, rehearse);
+    let layout = choose_layout(&screens, rehearse, audience_screen.as_deref());
     let audience = layout.audience.map(|i| &screens[i]);
     let presenter = layout.presenter.map(|i| &screens[i]);
 
     if rehearse {
-        open_window(&app, PRESENTER, "Tiza — Presentador", None, false, false)?;
-        open_window(&app, AUDIENCE, "Tiza — Público", None, false, false)?;
+        open_window(&app, PRESENTER, PRESENTER_TITLE, None, false, false)?;
+        open_window(&app, AUDIENCE, AUDIENCE_TITLE, None, false, false)?;
     } else {
-        // Presenter first, so with Hyprland the audience is the last (focused) fullscreen.
         if let Some(screen) = presenter {
-            open_window(
-                &app,
-                PRESENTER,
-                "Tiza — Presentador",
-                Some(screen),
-                false,
-                hypr,
-            )?;
+            open_window(&app, PRESENTER, PRESENTER_TITLE, Some(screen), false, hypr)?;
         }
-        open_window(&app, AUDIENCE, "Tiza — Público", audience, true, hypr)?;
-        // Keep keyboard focus (and the clicker) on the presenter view when there is one.
-        if let Some(screen) = presenter {
-            if hypr {
-                hyprland_focus(&screen.name);
-            }
-            if let Some(w) = app.get_webview_window(PRESENTER) {
-                let _ = w.set_focus();
-            }
+        open_window(&app, AUDIENCE, AUDIENCE_TITLE, audience, true, hypr)?;
+        if hypr {
+            hyprland_place(&app, audience, presenter);
+        } else if let Some(w) = presenter.and_then(|_| app.get_webview_window(PRESENTER)) {
+            let _ = w.set_focus();
         }
     }
     Ok(())
+}
+
+/// Screens connected now, for choosing where the audience sees the presentation.
+#[tauri::command]
+pub fn list_screens(app: AppHandle) -> Vec<Screen> {
+    if hyprland() {
+        hyprland_screens()
+    } else {
+        tauri_screens(&app)
+    }
 }
 
 #[tauri::command]
@@ -405,7 +489,7 @@ mod tests {
     fn audience_goes_to_the_external_screen() {
         let laptop_plus_projector = [screen("HDMI-A-1", true), screen("eDP-1", false)];
         assert_eq!(
-            choose_layout(&laptop_plus_projector, false),
+            choose_layout(&laptop_plus_projector, false, None),
             Layout {
                 audience: Some(0),
                 presenter: Some(1)
@@ -413,7 +497,7 @@ mod tests {
         );
         let two_desktop_monitors = [screen("DP-1", false), screen("DP-2", true)];
         assert_eq!(
-            choose_layout(&two_desktop_monitors, false),
+            choose_layout(&two_desktop_monitors, false, None),
             Layout {
                 audience: Some(0),
                 presenter: Some(1)
@@ -422,16 +506,52 @@ mod tests {
     }
 
     #[test]
+    fn the_user_can_pick_the_audience_screen() {
+        let screens = [
+            screen("eDP-1", false),
+            screen("HDMI-A-1", true),
+            screen("DP-1", false),
+        ];
+        assert_eq!(
+            choose_layout(&screens, false, Some("DP-1")),
+            Layout {
+                audience: Some(2),
+                presenter: Some(0)
+            }
+        );
+        // Picking the laptop puts the presenter view on the other screen.
+        assert_eq!(
+            choose_layout(&screens[..2], false, Some("eDP-1")),
+            Layout {
+                audience: Some(0),
+                presenter: Some(1)
+            }
+        );
+        // A screen that is no longer connected falls back to the automatic choice.
+        assert_eq!(
+            choose_layout(&screens[..2], false, Some("DP-9")),
+            Layout {
+                audience: Some(1),
+                presenter: Some(0)
+            }
+        );
+    }
+
+    #[test]
     fn single_screen_and_rehearsal() {
         assert_eq!(
-            choose_layout(&[screen("eDP-1", true)], false),
+            choose_layout(&[screen("eDP-1", true)], false, None),
             Layout {
                 audience: Some(0),
                 presenter: None
             }
         );
         assert_eq!(
-            choose_layout(&[screen("eDP-1", true), screen("HDMI-A-1", false)], true),
+            choose_layout(
+                &[screen("eDP-1", true), screen("HDMI-A-1", false)],
+                true,
+                None
+            ),
             Layout {
                 audience: None,
                 presenter: None

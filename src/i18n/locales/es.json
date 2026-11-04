@@ -259,7 +259,13 @@
       "zoom": "Zoom",
       "rise": "Subir"
     },
-    "stepOf": "paso {{current}}/{{total}}"
+    "stepOf": "paso {{current}}/{{total}}",
+    "screens": "Monitores",
+    "audienceScreen": "El público lo ve en",
+    "autoScreen": "Automática (pantalla externa)",
+    "laptopScreen": "Pantalla del portátil",
+    "twoScreensHint": "La otra pantalla muestra tu vista del presentador: notas, siguiente diapositiva y cronómetro.",
+    "oneScreenHint": "Con una sola pantalla solo hay vista del público. Conecta un proyector o usa «Ensayar en ventanas»."
   },
   "image": {
     "fit": "Encuadre",

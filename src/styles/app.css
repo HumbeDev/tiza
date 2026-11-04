@@ -2541,3 +2541,16 @@ input[type="color"] {
   line-height: 1.5;
   color: var(--muted);
 }
+
+.rb-screens {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 260px;
+  padding-top: 2px;
+}
+
+.rb-field.wide select {
+  flex: 1;
+  min-width: 0;
+}

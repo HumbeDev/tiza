@@ -171,7 +171,12 @@ export async function startPresentation(
   const count = visibleSlides(doc).length;
   if (count === 0) return;
   if (isDesktop) {
-    await invoke("start_presentation", { doc, start, rehearse });
+    await invoke("start_presentation", {
+      doc,
+      start,
+      rehearse,
+      audienceScreen: getAudienceScreen(),
+    });
     return;
   }
   const status: PresentStatus = {
@@ -187,4 +192,24 @@ export async function startPresentation(
 /** Web: opens the presenter view in a new window (drag it to the other screen). */
 export function openWebPresenterView(): void {
   window.open(`${location.pathname}#presenter`, "tiza-presenter", "popup,width=1280,height=760");
+}
+
+const AUDIENCE_SCREEN_KEY = "tiza.audienceScreen";
+
+/** Screen the user picked for the audience (desktop); null = automatic (external). */
+export function getAudienceScreen(): string | null {
+  try {
+    return localStorage.getItem(AUDIENCE_SCREEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setAudienceScreen(name: string | null): void {
+  try {
+    if (name) localStorage.setItem(AUDIENCE_SCREEN_KEY, name);
+    else localStorage.removeItem(AUDIENCE_SCREEN_KEY);
+  } catch {
+    // Not persisted; the automatic choice is used.
+  }
 }

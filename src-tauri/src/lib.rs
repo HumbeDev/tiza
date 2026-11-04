@@ -63,6 +63,7 @@ pub fn run() {
             commands::confirm_gpu_launch,
             commands::restart_app,
             present::start_presentation,
+            present::list_screens,
             present::presentation_snapshot,
             present::present_nav,
             present::end_presentation,
