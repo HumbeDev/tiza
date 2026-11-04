@@ -80,7 +80,9 @@ export function styleText(
     }
     if (parts.length === 0) return [node];
     if (from < text.length) parts.push({ ...node, text: text.slice(from) });
-    return parts.map((p) => (p.marks?.length ? p : (({ marks: _, ...rest }) => rest)(p)));
+    // Drop empty `marks` arrays so documents stay as TipTap writes them.
+    for (const p of parts) if (!p.marks?.length) delete p.marks;
+    return parts;
   };
   return { doc: visit(doc)[0], count };
 }
