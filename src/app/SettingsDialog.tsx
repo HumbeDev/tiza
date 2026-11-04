@@ -7,6 +7,7 @@ import type { GpuPreference } from "../bindings/GpuPreference";
 import type { GpuReport } from "../bindings/GpuReport";
 import { platform } from "../files/platform";
 import { restartApp } from "../files/session";
+import { configureMcp, setMcpEnabled, useMcpStatus } from "../agent/mcpStatus";
 import { diagnosticsText, gpuInUse, gpuInfo, systemGpus } from "./diagnostics";
 import Icon from "./Icon";
 import LanguagePicker from "./LanguagePicker";
@@ -135,6 +136,8 @@ function Dialog() {
           </section>
         )}
 
+        {isDesktop && <McpSection />}
+
         <section className="modal-section">
           <h3>{t("settings.diagnostics")}</h3>
           <dl className="diagnostics">
@@ -188,6 +191,101 @@ function Dialog() {
         </section>
       </div>
     </div>
+  );
+}
+
+/** AI agents: the MCP server switch, address, token and the command for Claude Code. */
+function McpSection() {
+  const { t } = useTranslation();
+  const status = useMcpStatus((s) => s.status);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [showToken, setShowToken] = useState(false);
+
+  async function run(action: () => Promise<void>) {
+    setError(null);
+    try {
+      await action();
+    } catch (e) {
+      const detail =
+        typeof e === "object" && e && "detail" in e
+          ? String((e as { detail: unknown }).detail)
+          : String(e);
+      setError(detail);
+    }
+  }
+
+  async function copyCommand() {
+    if (!status) return;
+    await navigator.clipboard.writeText(status.claudeCommand);
+    setCopied(true);
+  }
+
+  if (!status) return null;
+  return (
+    <section className="modal-section">
+      <h3>
+        {t("mcp.title")}
+        <HelpTip text={t("mcp.help")} />
+      </h3>
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={status.enabled}
+          onChange={(e) => void run(() => setMcpEnabled(e.target.checked))}
+        />
+        {t("mcp.enable")}
+      </label>
+      {status.enabled && (
+        <>
+          <p className={status.running ? "hint ok-text" : "hint error"}>
+            {status.running ? t("mcp.running", { port: status.port }) : t("mcp.stopped")}
+          </p>
+          <div className="mcp-row">
+            <label className="number-field">
+              <span className="field-label">{t("mcp.port")}</span>
+              <input
+                type="number"
+                defaultValue={status.port}
+                min={1024}
+                max={65535}
+                onBlur={(e) => {
+                  const port = e.target.valueAsNumber;
+                  if (Number.isFinite(port) && port !== status.port)
+                    void run(() => configureMcp(port, false));
+                }}
+              />
+            </label>
+            <label className="number-field mcp-token">
+              <span className="field-label">{t("mcp.token")}</span>
+              <input
+                readOnly
+                value={showToken ? status.token : "•".repeat(16)}
+                onFocus={() => setShowToken(true)}
+              />
+            </label>
+          </div>
+          <div className="button-row wrap">
+            <button
+              type="button"
+              className="small-button primary"
+              onClick={() => void copyCommand()}
+            >
+              <Icon name="copy" /> {copied ? t("settings.copied") : t("mcp.copyCommand")}
+            </button>
+            <button
+              type="button"
+              className="small-button"
+              onClick={() => void run(() => configureMcp(null, true))}
+            >
+              {t("mcp.newToken")}
+            </button>
+          </div>
+          <p className="hint">{t("mcp.commandHint")}</p>
+        </>
+      )}
+      {error && <p className="hint error">{error}</p>}
+    </section>
   );
 }
 

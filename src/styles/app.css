@@ -1732,3 +1732,34 @@ input[type="color"] {
   border-radius: 50%;
   box-shadow: 0 1px 3px #0005;
 }
+
+/* ---------------------------------------------------------------- MCP */
+
+.mcp-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 8px;
+}
+
+.mcp-token input {
+  font-family: ui-monospace, monospace;
+}
+
+.ok-text {
+  color: var(--accent);
+}
+
+.mcp-badge {
+  color: var(--accent);
+}
+
+.mcp-badge.working {
+  font-weight: 600;
+  animation: tiza-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes tiza-pulse {
+  to {
+    opacity: 0.5;
+  }
+}

@@ -312,5 +312,20 @@
     "onNextClick": "Apparaître au prochain clic",
     "remove": "Retirer l’animation",
     "hint": "Comme \\pause dans Beamer : chaque clic révèle l’étape suivante avant de passer à la diapositive suivante."
+  },
+  "mcp": {
+    "title": "Agents d’IA (MCP)",
+    "enable": "Autoriser les agents d’IA à modifier la présentation ouverte",
+    "help": "Active un serveur MCP sur cet ordinateur (127.0.0.1 uniquement, protégé par un jeton). Des agents comme Claude Code ou Claude Desktop peuvent alors créer et modifier des diapositives en direct pendant que vous regardez. Chaque modification de l’agent peut être annulée avec Ctrl+Z.",
+    "running": "Actif sur http://127.0.0.1:{{port}}/mcp",
+    "stopped": "Arrêté (le port est peut-être utilisé : essayez-en un autre).",
+    "port": "Port",
+    "token": "Jeton",
+    "copyCommand": "Copier la commande pour Claude Code",
+    "newToken": "Nouveau jeton",
+    "commandHint": "Collez la commande dans un terminal pour connecter Claude Code. Créer un nouveau jeton déconnecte les agents qui utilisent l’ancien.",
+    "listening": "MCP ●",
+    "working": "🤖 Agent au travail…",
+    "statusHint": "Serveur MCP actif sur le port {{port}}"
   }
 }

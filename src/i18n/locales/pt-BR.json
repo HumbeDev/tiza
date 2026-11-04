@@ -312,5 +312,20 @@
     "onNextClick": "Aparecer no próximo clique",
     "remove": "Remover animação",
     "hint": "Como \\pause no Beamer: cada clique mostra o próximo passo antes de ir ao próximo slide."
+  },
+  "mcp": {
+    "title": "Agentes de IA (MCP)",
+    "enable": "Permitir que agentes de IA editem a apresentação aberta",
+    "help": "Ativa um servidor MCP neste computador (somente 127.0.0.1, protegido por um token). Agentes como Claude Code ou Claude Desktop podem criar e editar slides ao vivo enquanto você assiste. Cada alteração do agente pode ser desfeita com Ctrl+Z.",
+    "running": "Ativo em http://127.0.0.1:{{port}}/mcp",
+    "stopped": "Parado (a porta pode estar em uso: tente outra).",
+    "port": "Porta",
+    "token": "Token",
+    "copyCommand": "Copiar comando para o Claude Code",
+    "newToken": "Novo token",
+    "commandHint": "Cole o comando em um terminal para conectar o Claude Code. Criar um novo token desconecta os agentes que usam o anterior.",
+    "listening": "MCP ●",
+    "working": "🤖 Agente trabalhando…",
+    "statusHint": "Servidor MCP ativo na porta {{port}}"
   }
 }

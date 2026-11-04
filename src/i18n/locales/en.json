@@ -312,5 +312,20 @@
     "onNextClick": "Appear on the next click",
     "remove": "Remove animation",
     "hint": "Like \\pause in Beamer: each click reveals the next step before moving to the next slide."
+  },
+  "mcp": {
+    "title": "AI agents (MCP)",
+    "enable": "Let AI agents edit the open presentation",
+    "help": "Turns on an MCP server on this computer (127.0.0.1 only, protected by a token). Agents such as Claude Code or Claude Desktop can then create and edit slides live while you watch. Every change the agent makes can be undone with Ctrl+Z.",
+    "running": "Running at http://127.0.0.1:{{port}}/mcp",
+    "stopped": "Not running (the port may be in use: try another one).",
+    "port": "Port",
+    "token": "Token",
+    "copyCommand": "Copy command for Claude Code",
+    "newToken": "New token",
+    "commandHint": "Paste the command in a terminal to connect Claude Code. Making a new token disconnects agents that use the old one.",
+    "listening": "MCP ●",
+    "working": "🤖 Agent working…",
+    "statusHint": "MCP server active on port {{port}}"
   }
 }

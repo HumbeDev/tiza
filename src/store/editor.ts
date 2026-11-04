@@ -95,6 +95,7 @@ useEditor.subscribe((s) => setMathPreamble(s.doc.latex.preamble));
  * step until `seal()` is called.
  */
 export function change(recipe: (doc: Draft<Presentation>) => void, mergeKey?: string): void {
+  mergeKey = batchKey ?? mergeKey;
   const s = get();
   const [doc, patches, inverse] = produceWithPatches(s.doc, recipe);
   if (patches.length === 0) return;
@@ -115,6 +116,24 @@ export function change(recipe: (doc: Draft<Presentation>) => void, mergeKey?: st
 
 export function seal(): void {
   set({ sealed: true });
+}
+
+let batchKey: string | null = null;
+let batchCounter = 0;
+
+/**
+ * Runs `fn` so that all its changes form a single undo step (used for each AI agent tool
+ * call). Changes the user makes while an async batch is running join it too.
+ */
+export async function batch<T>(fn: () => T | Promise<T>): Promise<T> {
+  seal();
+  batchKey = `batch-${++batchCounter}`;
+  try {
+    return await fn();
+  } finally {
+    batchKey = null;
+    seal();
+  }
 }
 
 export function undo(): void {

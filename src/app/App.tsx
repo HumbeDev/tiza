@@ -1,5 +1,8 @@
 import { lazy, Suspense, useEffect } from "react";
 import Canvas from "../canvas/Canvas";
+import { listenForAgents } from "../agent/executor";
+import { refreshMcpStatus } from "../agent/mcpStatus";
+import { isDesktop } from "../files/platform";
 import { startSession } from "../files/session";
 import { currentSlide, useEditor } from "../store/editor";
 import PropertiesPanel from "./PropertiesPanel";
@@ -19,6 +22,12 @@ const HtmlEditorPanel = lazy(() => import("../editors/HtmlEditorPanel"));
 export default function App() {
   useShortcuts();
   useEffect(() => startSession(), []);
+  useEffect(() => {
+    if (!isDesktop) return;
+    void refreshMcpStatus();
+    const off = listenForAgents();
+    return () => void off.then((f) => f());
+  }, []);
   useEndOfPresentation();
   return (
     <div className="editor">
