@@ -1,4 +1,4 @@
-import type { Element, Presentation, ShapeKind, Slide } from ".";
+import type { Element, EmbedProvider, Presentation, ShapeKind, Slide } from ".";
 import { plainDoc } from "./richtext";
 import { SCHEMA_VERSION } from ".";
 
@@ -173,5 +173,28 @@ export function createTable(rows: string[][], cx: number, cy: number, fontSize =
     striped: true,
     theme: "green",
     fontSize,
+  };
+}
+
+/** A YouTube video (16:9) or X post (portrait card) centered at (cx, cy). */
+export function createEmbed(
+  embed: { provider: EmbedProvider; media: string; start?: number },
+  url: string,
+  cx: number,
+  cy: number,
+): Element {
+  const [w, h] = embed.provider === "youtube" ? [1120, 630] : [1000, 1000];
+  return {
+    ...base,
+    id: newId(),
+    x: cx - w / 2,
+    y: cy - h / 2,
+    w,
+    h,
+    kind: "embed",
+    provider: embed.provider,
+    media: embed.media,
+    url,
+    ...(embed.start ? { start: embed.start } : {}),
   };
 }

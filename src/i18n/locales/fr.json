@@ -370,7 +370,8 @@
     "fileDefault": "Par défaut de la présentation",
     "fileDefaultHint": "Utilisée par les diapositives sans transition propre.",
     "start": "Démarrer",
-    "practice": "Répétition"
+    "practice": "Répétition",
+    "web": "Web"
   },
   "effects": {
     "in": {
@@ -413,5 +414,25 @@
   "about": {
     "tagline": "Présentations hors ligne pour la science et l’enseignement : LaTeX, vidéo, simulations et agents d’IA.",
     "license": "Logiciel libre · MIT ou Apache 2.0"
+  },
+  "color": {
+    "hex": "Code couleur HEX",
+    "copy": "Copier le code HEX",
+    "copied": "Copié"
+  },
+  "embed": {
+    "title": "Insérer depuis le web",
+    "help": "Collez le lien d'une vidéo YouTube ou d'une publication X (Twitter).",
+    "link": "Lien",
+    "supported": "Les liens YouTube et X sont acceptés.",
+    "invalid": "Ce n'est pas un lien YouTube ou X.",
+    "youtube": "Vidéo YouTube",
+    "x": "Publication X",
+    "youtubeShort": "YouTube",
+    "xShort": "Post X",
+    "online": "Lecture dans le lecteur du service : une connexion internet est nécessaire pour présenter.",
+    "insert": "Insérer",
+    "content": "Contenu web",
+    "start": "Commencer à (s)"
   }
 }

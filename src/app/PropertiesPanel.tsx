@@ -1,5 +1,5 @@
 import { useEditorState } from "@tiptap/react";
-import { type ReactNode, useSyncExternalStore } from "react";
+import { type ReactNode, useState, useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
@@ -15,6 +15,7 @@ import type {
   TransitionKind,
 } from "../document";
 import { parseCsv } from "../elements/table/csv";
+import { parseEmbedUrl } from "../elements/embed/parse";
 import { platform } from "../files/platform";
 import { reloadSim } from "../elements/sim/reload";
 import {
@@ -180,7 +181,7 @@ function MathProperties({ el }: { el: Element & { kind: "math" } }) {
   const { error } = useMath(el.latex, true);
   return (
     <Section id="props.style" title={t("props.style")}>
-      <div className="grid-2">
+      <div className="grid-color">
         <NumberField
           label={t("props.fontSize")}
           value={el.fontSize}
@@ -299,6 +300,54 @@ function VideoProperties({ el }: { el: Element & { kind: "video" } }) {
         />
       </div>
       <p className="hint">{t("video.hint")}</p>
+    </Section>
+  );
+}
+
+function EmbedProperties({ el }: { el: Element & { kind: "embed" } }) {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState<string | null>(null);
+  const update = (fields: Partial<Element>, field: string) =>
+    updateElements([el.id], fields, `prop:${el.id}:${field}`);
+  const invalid = draft !== null && parseEmbedUrl(draft) === null;
+  return (
+    <Section id="embed" title={t("embed.content")}>
+      <label className="field">
+        <span className="field-label">{t("embed.link")}</span>
+        <input
+          type="url"
+          className={invalid ? "text-input invalid" : "text-input"}
+          value={draft ?? el.url}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            const parsed = parseEmbedUrl(e.target.value);
+            if (parsed)
+              update(
+                { ...parsed, start: parsed.start, url: e.target.value.trim() } as Partial<Element>,
+                "url",
+              );
+          }}
+          onBlur={() => {
+            setDraft(null);
+            seal();
+          }}
+        />
+      </label>
+      {invalid && <p className="hint error">{t("embed.invalid")}</p>}
+      {el.provider === "youtube" && (
+        <NumberField
+          label={t("embed.start")}
+          value={el.start ?? 0}
+          min={0}
+          onChange={(v) =>
+            update({ start: v > 0 ? Math.round(v) : undefined } as Partial<Element>, "start")
+          }
+        />
+      )}
+      <button type="button" className="small-button" onClick={() => startEditing(el.id)}>
+        <Icon name="play" /> {t("sim.interact")}
+      </button>
+      <p className="hint">{t("embed.online")}</p>
     </Section>
   );
 }
@@ -647,7 +696,13 @@ function ElementProperties({ el }: { el: Element }) {
     <>
       <Section
         id="geometry"
-        title={el.kind === "shape" ? t(`shapes.${el.shape}`) : t(`props.${el.kind}`)}
+        title={
+          el.kind === "shape"
+            ? t(`shapes.${el.shape}`)
+            : el.kind === "embed"
+              ? t(`embed.${el.provider}`)
+              : t(`props.${el.kind}`)
+        }
       >
         <div className="grid-4">
           <NumberField label="X" value={el.x} onChange={(x) => update({ x }, "x")} />
@@ -776,7 +831,7 @@ function ElementProperties({ el }: { el: Element }) {
 
       {el.kind === "text" && (
         <Section id="props.style" title={t("props.style")}>
-          <div className="grid-2">
+          <div className="grid-color">
             <NumberField
               label={t("props.fontSize")}
               value={el.fontSize}
@@ -801,6 +856,7 @@ function ElementProperties({ el }: { el: Element }) {
       {el.kind === "math" && <MathProperties el={el} />}
       {el.kind === "sim" && <SimProperties el={el} />}
       {el.kind === "video" && <VideoProperties el={el} />}
+      {el.kind === "embed" && <EmbedProperties el={el} />}
       {el.kind === "table" && <TableProperties el={el} />}
       {el.kind === "image" && (
         <Section id="props.style" title={t("props.style")}>
@@ -901,9 +957,49 @@ function NumberField({ label, title, value, onChange, min, max }: NumberFieldPro
   );
 }
 
+const HEX = /^#?([0-9a-f]{6})$/i;
+
+/** Swatch + editable HEX code + copy button. */
 function ColorInput({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const hex = value.toLowerCase();
   return (
-    <input type="color" value={value} onChange={(e) => onChange(e.target.value)} onBlur={seal} />
+    <span className="color-input">
+      <input type="color" value={value} onChange={(e) => onChange(e.target.value)} onBlur={seal} />
+      <input
+        type="text"
+        className="color-hex"
+        aria-label={t("color.hex")}
+        spellCheck={false}
+        maxLength={7}
+        value={draft ?? hex}
+        onChange={(e) => {
+          setDraft(e.target.value);
+          const m = HEX.exec(e.target.value.trim());
+          if (m) onChange(`#${m[1].toLowerCase()}`);
+        }}
+        onBlur={() => {
+          setDraft(null);
+          seal();
+        }}
+      />
+      <button
+        type="button"
+        className="color-copy"
+        title={t(copied ? "color.copied" : "color.copy")}
+        aria-label={t("color.copy")}
+        onClick={() => {
+          void navigator.clipboard.writeText(hex).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1200);
+          });
+        }}
+      >
+        <Icon name={copied ? "check" : "copy"} small />
+      </button>
+    </span>
   );
 }
 

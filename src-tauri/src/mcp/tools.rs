@@ -151,6 +151,18 @@ pub struct AddHtmlArgs {
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct AddEmbedArgs {
+    pub slide: SlideRef,
+    /// Link to a YouTube video (youtube.com/watch?v=…, youtu.be/…, /shorts/…) or an X
+    /// (Twitter) post (x.com/<user>/status/<id>).
+    pub url: String,
+    /// YouTube only: start playing at this second (a `t=` in the link also works).
+    pub start: Option<f64>,
+    #[serde(flatten)]
+    pub frame: Frame,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct AddImageArgs {
     pub slide: SlideRef,
     /// Absolute path of a local image file (png, jpg, gif, webp, svg, bmp, avif).
@@ -165,7 +177,7 @@ pub struct UpdateElementArgs {
     /// Fields to change. Common: x, y, w, h, rotation, opacity, locked. Text: text (same
     /// syntax as add_text), font_size, color, align. Equation: latex, font_size, color.
     /// Shape: fill, stroke_color, stroke_width. Table: rows, header_row, theme, font_size.
-    /// HTML: html, title, view_width, view_height.
+    /// HTML: html, title, view_width, view_height. YouTube/X embed: url, start.
     pub changes: serde_json::Map<String, Value>,
 }
 
@@ -358,6 +370,16 @@ impl TizaMcp {
         Parameters(args): Parameters<AddHtmlArgs>,
     ) -> Result<CallToolResult, ErrorData> {
         self.forward("add_html", args).await
+    }
+
+    #[tool(
+        description = "Embed a YouTube video or an X (Twitter) post, played with the service's own player (needs internet when presenting). Returns the element id."
+    )]
+    async fn add_embed(
+        &self,
+        Parameters(args): Parameters<AddEmbedArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        self.forward("add_embed", args).await
     }
 
     #[tool(description = "Add a picture from a local image file. Returns the element id.")]

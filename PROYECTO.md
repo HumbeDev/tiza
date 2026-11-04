@@ -638,3 +638,11 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - **Transición del archivo**: `Presentation.transition` (predeterminada); la diapositiva guarda `{kind:"none"}` para excluirse. Transiciones nuevas: zoom y rise.
 - **Ajustes por secciones** (General, Rendimiento, Agentes, Diagnóstico, Acerca de). Conexión automática de **Claude Code** (CLI `claude mcp add --scope user`), **Codex** (`~/.codex/config.toml`, `toml_edit`) y **Antigravity** (`~/.gemini/config/mcp_config.json`), con respaldo `.tiza-backup` y escritura atómica (`src-tauri/src/mcp/clients.rs`).
 - MCP: `set_animation` con `exit` y efectos, `set_slide` con zoom/rise/default y `duration_ms`, nueva `set_presentation_transition` (22 herramientas).
+
+### Contenido web y pulido — 2026-11-04 🧪
+- Nuevo elemento `embed` (`EmbedElement {provider: youtube|x, media, url, start?}`): solo se guarda el id; la URL del reproductor se arma en `src/elements/embed/parse.ts` (youtube-nocookie / platform.twitter.com). CSP: `frame-src` y `img-src i.ytimg.com`. Las publicaciones de X se dibujan a 2× para que se lean en una diapositiva de 1920. Herramienta MCP `add_embed` (23) y `update_element` con `url`/`start`.
+- Menús desplegables con `position: fixed` (la cinta los recortaba) y color de texto propio (el menú Archivo heredaba blanco de la barra).
+- Campo de color con HEX editable y botón copiar.
+- Causa de «el run de PC no funciona»: un servidor Vite de las pruebas ocupaba el puerto 1420 (`--strictPort`). Las capturas ahora usan otro puerto.
+- Verificado en la app de escritorio (WebKitGTK, modo dev): YouTube reproduce y X se muestra. Falta probar en el instalado (origen `tauri://localhost`).
+

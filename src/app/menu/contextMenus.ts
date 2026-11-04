@@ -43,6 +43,8 @@ export function elementMenu(): MenuItem[] {
       shortcut: "Enter",
       onSelect: () => startEditing(single.id),
     });
+  } else if (single?.kind === "embed") {
+    edit.push({ label: t("sim.interact"), icon: "play", onSelect: () => startEditing(single.id) });
   } else if (single?.kind === "table" || single?.kind === "video") {
     edit.push({
       label: t(single.kind === "table" ? "table.editCells" : "video.play"),

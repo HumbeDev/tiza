@@ -3,6 +3,8 @@ export type { Aspect } from "../bindings/Aspect";
 export type { Build } from "../bindings/Build";
 export type { BuildEffect } from "../bindings/BuildEffect";
 export type { Element } from "../bindings/Element";
+export type { EmbedElement } from "../bindings/EmbedElement";
+export type { EmbedProvider } from "../bindings/EmbedProvider";
 export type { ElementContent } from "../bindings/ElementContent";
 export type { ImageElement } from "../bindings/ImageElement";
 export type { ImageFit } from "../bindings/ImageFit";

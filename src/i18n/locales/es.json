@@ -370,7 +370,8 @@
     "fileDefault": "Predeterminada de la presentación",
     "fileDefaultHint": "La usan las diapositivas que no tienen una propia.",
     "start": "Iniciar",
-    "practice": "Práctica"
+    "practice": "Práctica",
+    "web": "Web"
   },
   "effects": {
     "in": {
@@ -413,5 +414,25 @@
   "about": {
     "tagline": "Presentaciones sin conexión para ciencia y docencia: LaTeX, video, simulaciones y agentes de IA.",
     "license": "Software libre · MIT o Apache 2.0"
+  },
+  "color": {
+    "hex": "Código de color HEX",
+    "copy": "Copiar código HEX",
+    "copied": "Copiado"
+  },
+  "embed": {
+    "title": "Insertar desde la web",
+    "help": "Pega el enlace de un video de YouTube o de una publicación de X (Twitter).",
+    "link": "Enlace",
+    "supported": "Se admiten enlaces de YouTube y de X.",
+    "invalid": "No es un enlace de YouTube ni de X.",
+    "youtube": "Video de YouTube",
+    "x": "Publicación de X",
+    "youtubeShort": "YouTube",
+    "xShort": "Post de X",
+    "online": "Se reproduce con el reproductor del propio servicio: necesita internet al presentar.",
+    "insert": "Insertar",
+    "content": "Contenido web",
+    "start": "Empezar en (s)"
   }
 }

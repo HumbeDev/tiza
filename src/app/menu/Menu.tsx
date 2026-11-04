@@ -107,8 +107,21 @@ interface MenuButtonProps {
 export function MenuButton({ label, icon, items, badge, children }: MenuButtonProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
   const close = () => setOpen(false);
   useDismiss(ref, open, close);
+
+  // Fixed positioning so scrolling containers (the ribbon) don't clip the menu.
+  useLayoutEffect(() => {
+    if (!open || !ref.current) return;
+    const button = ref.current.getBoundingClientRect();
+    const menu = ref.current.querySelector(".menu-dropdown")?.getBoundingClientRect();
+    const width = menu?.width ?? 0;
+    setPos({
+      x: Math.max(4, Math.min(button.left, window.innerWidth - width - 4)),
+      y: button.bottom + 4,
+    });
+  }, [open]);
 
   return (
     <div className="menu-anchor" ref={ref}>
@@ -127,7 +140,7 @@ export function MenuButton({ label, icon, items, badge, children }: MenuButtonPr
         {badge && <span className="badge" aria-hidden="true" />}
       </button>
       {open && (
-        <div className="menu-dropdown">
+        <div className="menu-dropdown" style={{ left: pos.x, top: pos.y }}>
           <MenuList items={items()} onClose={close} />
         </div>
       )}

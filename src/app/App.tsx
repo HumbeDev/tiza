@@ -12,6 +12,7 @@ import NotesPanel from "./NotesPanel";
 import WebPresentation from "../present/WebPresentation";
 import { useEndOfPresentation } from "../present/startFromEditor";
 import SettingsDialog from "./SettingsDialog";
+import EmbedDialog from "./EmbedDialog";
 import StatusBar from "./StatusBar";
 import Ribbon from "./ribbon/Ribbon";
 import { useShortcuts } from "./useShortcuts";
@@ -46,6 +47,7 @@ export default function App() {
       <ContextMenuHost />
       <WebPresentation />
       <SettingsDialog />
+      <EmbedDialog />
     </div>
   );
 }

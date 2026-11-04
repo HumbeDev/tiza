@@ -178,6 +178,7 @@ pub enum ElementContent {
     Image(ImageElement),
     Video(VideoElement),
     Table(TableElement),
+    Embed(EmbedElement),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -425,6 +426,31 @@ pub struct SimElement {
     pub allow_network: bool,
 }
 
+/// Online service an embedded post or video comes from.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum EmbedProvider {
+    Youtube,
+    X,
+}
+
+/// A YouTube video or X post shown with the service's own player (needs internet).
+/// Only the provider and media id are used to build the player URL; `url` is what the
+/// user pasted, kept for display.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct EmbedElement {
+    pub provider: EmbedProvider,
+    pub media: String,
+    pub url: String,
+    /// YouTube: start playing at this second.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub start: Option<f64>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -626,6 +652,24 @@ mod tests {
         let back = serde_json::to_value(&el).unwrap();
         assert_eq!(back["kind"], "sim");
         assert_eq!(back["viewWidth"], 800.0);
+    }
+
+    #[test]
+    fn embed_elements_round_trip() {
+        let value = json!({
+            "id": "e1", "x": 0, "y": 0, "w": 960, "h": 540, "rotation": 0, "opacity": 1,
+            "kind": "embed", "provider": "youtube", "media": "dQw4w9WgXcQ",
+            "url": "https://youtu.be/dQw4w9WgXcQ", "start": 30
+        });
+        let el: Element = serde_json::from_value(value).unwrap();
+        let ElementContent::Embed(e) = &el.content else {
+            panic!("expected an embed element")
+        };
+        assert_eq!(e.provider, EmbedProvider::Youtube);
+        assert_eq!(e.start, Some(30.0));
+        let back = serde_json::to_value(&el).unwrap();
+        assert_eq!(back["kind"], "embed");
+        assert_eq!(back["provider"], "youtube");
     }
 
     #[test]

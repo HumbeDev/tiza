@@ -255,6 +255,7 @@ mod tests {
                 crate::document::ElementContent::Image(_) => "image",
                 crate::document::ElementContent::Video(_) => "video",
                 crate::document::ElementContent::Table(_) => "table",
+                crate::document::ElementContent::Embed(_) => "embed",
             })
             .collect();
         assert_eq!(kinds, ["shape", "math"]);

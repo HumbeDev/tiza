@@ -370,7 +370,8 @@
     "fileDefault": "Padrão da apresentação",
     "fileDefaultHint": "É usada pelos slides que não têm uma própria.",
     "start": "Iniciar",
-    "practice": "Prática"
+    "practice": "Prática",
+    "web": "Web"
   },
   "effects": {
     "in": {
@@ -413,5 +414,25 @@
   "about": {
     "tagline": "Apresentações offline para ciência e ensino: LaTeX, vídeo, simulações e agentes de IA.",
     "license": "Software livre · MIT ou Apache 2.0"
+  },
+  "color": {
+    "hex": "Código de cor HEX",
+    "copy": "Copiar código HEX",
+    "copied": "Copiado"
+  },
+  "embed": {
+    "title": "Inserir da web",
+    "help": "Cole o link de um vídeo do YouTube ou de uma publicação do X (Twitter).",
+    "link": "Link",
+    "supported": "Links do YouTube e do X são aceitos.",
+    "invalid": "Não é um link do YouTube nem do X.",
+    "youtube": "Vídeo do YouTube",
+    "x": "Publicação do X",
+    "youtubeShort": "YouTube",
+    "xShort": "Post do X",
+    "online": "É reproduzido no player do próprio serviço: precisa de internet ao apresentar.",
+    "insert": "Inserir",
+    "content": "Conteúdo da web",
+    "start": "Começar em (s)"
   }
 }

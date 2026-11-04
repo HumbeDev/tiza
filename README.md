@@ -100,6 +100,8 @@ crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ct
 
 **Video**: botón **Video** (WebM, MP4, MOV, OGV). En el editor muestra un cuadro (doble clic para reproducirlo ahí); al presentar tiene controles y no cambia de diapositiva al hacer clic. Opciones: reproducir al aparecer la diapositiva, repetir, sin sonido, y reproducir solo un tramo (inicio/fin). Viaja dentro del `.tiza`.
 
+**YouTube y X (Twitter)**: pestaña _Insertar → Web_. Pega el enlace de un video (`youtube.com/watch?v=…`, `youtu.be/…`, Shorts; respeta `t=`) o de una publicación de X (`x.com/…/status/…`) y se muestra con el reproductor del propio servicio (YouTube sin cookies). En el editor, doble clic o _Interactuar_ para usarlo; al presentar es interactivo y un clic sobre él no avanza. Panel: cambiar el enlace y el segundo de inicio. Necesita internet al presentar.
+
 **Tablas tipo Excel**: botón **Tabla** → tabla vacía o **desde un CSV** (detecta `,` `;` o tabulador; acentos de Excel en Windows incluidos). Encabezado fijo al desplazar, filas de colores alternos, números alineados a la derecha, 5 combinaciones de colores. Las tablas grandes **se desplazan dentro de su caja**, también al presentar. Doble clic para editar celdas (Enter baja, Tab avanza); agregar o quitar filas y columnas desde el panel.
 
 **Animaciones paso a paso (como `\pause` de Beamer)**: pestaña _Animaciones_, clic derecho → _Aparecer en el siguiente clic_, o el panel _Animación_. **Entrada** y **salida** con 7 efectos (aparecer, desvanecer, subir/bajar, desde/hacia la izquierda o derecha, zoom, barrido) y en qué clic entra o sale cada elemento. Al presentar, cada clic revela el siguiente paso antes de pasar de diapositiva; al retroceder se ve la diapositiva anterior completa. En el editor cada elemento animado muestra su número de clic.
@@ -122,6 +124,7 @@ Herramientas: ver la presentación y cada diapositiva; crear, duplicar, mover, b
 - **Clic derecho** en elementos (cortar, copiar, pegar, duplicar, orden, bloquear, eliminar), en el lienzo vacío y en las miniaturas (duplicar, **ocultar en la presentación**, subir/bajar, eliminar).
 - **Tema claro / oscuro / sistema** (botón en la barra o en Ajustes).
 - **Ajustes** (Ctrl+, o menú Archivo) por secciones: General (idioma, tema), Rendimiento (**tarjeta gráfica** (automática o alto rendimiento; Tiza se reinicia sola y conserva tus cambios), Agentes de IA, Diagnóstico (las GPU reales del sistema, cuál usa Tiza, WebGL) y Acerca de.
+- Los colores (fondo, relleno, texto…) muestran su código **HEX**, editable, con botón para **copiarlo**.
 - Panel de propiedades con **secciones plegables** (recuerda cuáles cerraste) y posición/tamaño compactos.
 
 **General**

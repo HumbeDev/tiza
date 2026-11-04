@@ -13,7 +13,15 @@ import type {
   TextAlign,
   TransitionKind,
 } from "../document";
-import { createImage, createShape, createSim, createTable, createText } from "../document/factory";
+import {
+  createEmbed,
+  createImage,
+  createShape,
+  createSim,
+  createTable,
+  createText,
+} from "../document/factory";
+import { parseEmbedUrl } from "../elements/embed/parse";
 import { toPlainText } from "../document/richtext";
 import { save as saveFile } from "../files/session";
 import {
@@ -110,6 +118,8 @@ function summary(el: Element): string {
       return `${el.rows.length}×${Math.max(0, ...el.rows.map((r) => r.length))} table: ${(el.rows[0] ?? []).join(" | ").slice(0, 120)}`;
     case "sim":
       return `HTML page "${el.title}"`;
+    case "embed":
+      return `${el.provider === "youtube" ? "YouTube video" : "X post"} ${el.url}`;
     case "image":
     case "video":
       return el.asset;
@@ -324,6 +334,29 @@ const tools: Record<string, (args: Args) => unknown> = {
     return { element_id: sim.id };
   },
 
+  add_embed(args) {
+    const { slide } = slideOf(args.slide);
+    const url = String(args.url ?? "").trim();
+    const parsed = parseEmbedUrl(url);
+    if (!parsed)
+      throw new ToolError(
+        "url must be a YouTube video link (youtube.com/watch?v=…, youtu.be/…, /shorts/…) or an X/Twitter post link (x.com/<user>/status/<id>)",
+      );
+    const start = num(args.start);
+    const el = place(
+      createEmbed(
+        start && parsed.provider === "youtube" ? { ...parsed, start } : parsed,
+        url,
+        0,
+        0,
+      ),
+      args,
+      slide,
+    );
+    addElement(el);
+    return { element_id: el.id, provider: parsed.provider };
+  },
+
   add_image(args) {
     const { slide } = slideOf(args.slide);
     const asset = args.asset as { name: string; width?: number; height?: number };
@@ -511,6 +544,16 @@ function applyChange(el: Draft<Element>, key: string, value: unknown): boolean {
     case "view_height":
       if (el.kind !== "sim" || n === undefined) return false;
       el[key === "view_width" ? "viewWidth" : "viewHeight"] = n;
+      return true;
+    case "url": {
+      const parsed = s === undefined ? null : parseEmbedUrl(s);
+      if (el.kind !== "embed" || !parsed) return false;
+      Object.assign(el, { ...parsed, start: parsed.start, url: s!.trim() });
+      return true;
+    }
+    case "start":
+      if (el.kind !== "embed" || el.provider !== "youtube") return false;
+      el.start = n && n > 0 ? Math.round(n) : undefined;
       return true;
     default:
       return false;

@@ -370,7 +370,8 @@
     "fileDefault": "Presentation default",
     "fileDefaultHint": "Slides without their own transition use it.",
     "start": "Start",
-    "practice": "Practice"
+    "practice": "Practice",
+    "web": "Web"
   },
   "effects": {
     "in": {
@@ -413,5 +414,25 @@
   "about": {
     "tagline": "Offline presentations for science and teaching: LaTeX, video, simulations and AI agents.",
     "license": "Free software · MIT or Apache 2.0"
+  },
+  "color": {
+    "hex": "HEX color code",
+    "copy": "Copy HEX code",
+    "copied": "Copied"
+  },
+  "embed": {
+    "title": "Insert from the web",
+    "help": "Paste the link to a YouTube video or an X (Twitter) post.",
+    "link": "Link",
+    "supported": "YouTube and X links are supported.",
+    "invalid": "This isn't a YouTube or X link.",
+    "youtube": "YouTube video",
+    "x": "X post",
+    "youtubeShort": "YouTube",
+    "xShort": "X post",
+    "online": "It plays in the service's own player, so it needs internet when presenting.",
+    "insert": "Insert",
+    "content": "Web content",
+    "start": "Start at (s)"
   }
 }

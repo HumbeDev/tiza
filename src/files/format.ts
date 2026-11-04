@@ -126,7 +126,7 @@ export function validate(doc: any): Presentation {
     for (const el of slide.elements) {
       if (
         typeof el?.id !== "string" ||
-        !["shape", "text", "math", "sim", "image", "video", "table"].includes(el.kind)
+        !["shape", "text", "math", "sim", "image", "video", "table", "embed"].includes(el.kind)
       ) {
         fail(`element ${String(el?.id)}`);
       }

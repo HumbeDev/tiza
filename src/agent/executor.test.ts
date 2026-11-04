@@ -127,4 +127,33 @@ describe("agent tools", () => {
     await call("move_slide", { slide: second, to: 1 });
     expect(doc().slides[0].id).toBe(second);
   });
+
+  it("embeds YouTube videos and X posts", async () => {
+    const yt = await call("add_embed", {
+      slide: 1,
+      url: "https://youtu.be/dQw4w9WgXcQ?t=1m",
+      x: 10,
+    });
+    expect(yt.result).toMatchObject({ provider: "youtube" });
+    expect(doc().slides[0].elements[0]).toMatchObject({
+      kind: "embed",
+      provider: "youtube",
+      media: "dQw4w9WgXcQ",
+      start: 60,
+      x: 10,
+    });
+    const id = doc().slides[0].elements[0].id;
+    await call("update_element", {
+      element_id: id,
+      changes: { url: "https://x.com/NASA/status/1800000000000000000" },
+    });
+    expect(doc().slides[0].elements[0]).toMatchObject({
+      provider: "x",
+      media: "1800000000000000000",
+    });
+    expect(doc().slides[0].elements[0]).not.toHaveProperty("start", 60);
+
+    const bad = await call("add_embed", { slide: 1, url: "https://example.com" });
+    expect(bad.ok).toBe(false);
+  });
 });

@@ -6,6 +6,7 @@ import ShapeView from "../elements/ShapeView";
 import TableView from "../elements/table/TableView";
 import VideoView from "../elements/VideoView";
 import SimView from "../elements/sim/SimView";
+import EmbedView from "../elements/embed/EmbedView";
 import TextView from "../elements/TextView";
 
 /**
@@ -56,7 +57,7 @@ interface ElementViewProps {
 
 function ElementView({ el, mode, editing, pending, gone }: ElementViewProps) {
   const classes = ["element"];
-  if (editing && el.kind === "sim") classes.push("interacting");
+  if (editing && (el.kind === "sim" || el.kind === "embed")) classes.push("interacting");
   if (mode === "present" || mode === "preview") {
     if (el.build) classes.push(`in-${el.build.effect}`);
     if (el.exit) classes.push(`out-${el.exit.effect}`);
@@ -88,6 +89,8 @@ function ElementView({ el, mode, editing, pending, gone }: ElementViewProps) {
         <VideoView el={el} mode={mode} interactive={editing} />
       ) : el.kind === "table" ? (
         <TableView el={el} mode={mode} editing={editing} />
+      ) : el.kind === "embed" ? (
+        <EmbedView el={el} mode={mode} interactive={editing || mode === "present"} />
       ) : (
         <SimView el={el} mode={mode} interactive={editing || mode === "present"} />
       )}

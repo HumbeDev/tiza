@@ -40,6 +40,8 @@ const PATHS = {
   image: "M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6M15.5 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z",
   import: "M12 3v12M7 10l5 5 5-5M4 17v3h16v-3",
   video: "M3 6h13v12H3zM16 10l5-3v10l-5-3",
+  youtube: "M3 8a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3zM10 9v6l5-3z",
+  xPost: "M4 4h4.5L20 20h-4.5zM20 4l-6.6 7.5M4 20l6.6-7.5",
   table: "M3 5h18v14H3zM3 10h18M3 15h18M9 5v14M15 5v14",
   build: "M4 18h4v-4H4zM10 18h4V9h-4zM16 18h4V4h-4z",
   play: "M7 4v16l13-8z",

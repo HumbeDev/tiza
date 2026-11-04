@@ -1,4 +1,5 @@
 import { type ReactNode, useState } from "react";
+import { openEmbedDialog } from "../EmbedDialog";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import type { BuildEffect, ShapeKind, TransitionKind } from "../../document";
@@ -396,6 +397,10 @@ function InsertTab() {
           <MenuButton label={t("toolbar.shapes")} icon="shapes" items={shapeMenu} />
         </div>
         <Big icon="html" label={t("toolbar.html")} onClick={insertHtml} />
+      </Group>
+      <Group label={t("ribbon.web")}>
+        <Big icon="youtube" label={t("embed.youtubeShort")} onClick={openEmbedDialog} />
+        <Big icon="xPost" label={t("embed.xShort")} onClick={openEmbedDialog} />
       </Group>
       <Group label={t("ribbon.import")}>
         <Big icon="import" label={t("ribbon.importFile")} onClick={importPresentation} />
