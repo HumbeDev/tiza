@@ -3,4 +3,4 @@
 /**
  * Online service an embedded post or video comes from.
  */
-export type EmbedProvider = "youtube" | "x";
+export type EmbedProvider = "youtube" | "x" | "web";

@@ -309,7 +309,14 @@ function EmbedProperties({ el }: { el: Element & { kind: "embed" } }) {
   const [draft, setDraft] = useState<string | null>(null);
   const update = (fields: Partial<Element>, field: string) =>
     updateElements([el.id], fields, `prop:${el.id}:${field}`);
-  const invalid = draft !== null && parseEmbed(draft) === null;
+  const invalid = draft !== null && draft.trim() !== "" && parseEmbed(draft) === null;
+  // Applied on Enter or when leaving the field: any partial link is already a "web page".
+  const commit = () => {
+    const parsed = draft === null ? null : parseEmbed(draft);
+    if (parsed) update(embedFields(parsed) as Partial<Element>, "url");
+    setDraft(null);
+    seal();
+  };
   return (
     <Section id="embed" title={t("embed.content")}>
       <label className="field">
@@ -318,15 +325,9 @@ function EmbedProperties({ el }: { el: Element & { kind: "embed" } }) {
           type="text"
           className={invalid ? "text-input invalid" : "text-input"}
           value={draft ?? el.url}
-          onChange={(e) => {
-            setDraft(e.target.value);
-            const parsed = parseEmbed(e.target.value);
-            if (parsed) update(embedFields(parsed) as Partial<Element>, "url");
-          }}
-          onBlur={() => {
-            setDraft(null);
-            seal();
-          }}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && commit()}
+          onBlur={commit}
         />
       </label>
       {invalid && <p className="hint error">{t("embed.invalid")}</p>}

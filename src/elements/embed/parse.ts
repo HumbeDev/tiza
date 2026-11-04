@@ -23,18 +23,37 @@ function parseTime(value: string | null): number | undefined {
 
 /**
  * Recognizes a YouTube video or X/Twitter post from its link or from the embed code the
- * site gives ("Embed post" on X, "Share → Embed" on YouTube); null for anything else.
+ * site gives ("Embed post" on X, "Share → Embed" on YouTube). Any other http(s) link (or
+ * an `<iframe src>`) is a web page. Null when there is no usable link.
  */
 export function parseEmbed(input: string): ParsedEmbed | null {
   const text = input.trim();
-  const urls = text.match(/https?:\/\/[^\s"'<>]+/g);
-  if (!urls) return parseUrl(text);
+  const found = text.match(/https?:\/\/[^\s"'<>]+/g);
+  if (!found) return parseUrl(text) ?? webPage(text);
+  const urls = found.map((u) => u.replaceAll("&amp;", "&"));
   // In X's embed code the post's own link comes last, after any links in its text.
-  for (const url of urls.reverse()) {
-    const parsed = parseUrl(url.replaceAll("&amp;", "&"));
+  for (const url of [...urls].reverse()) {
+    const parsed = parseUrl(url);
     if (parsed) return parsed;
   }
-  return null;
+  const iframe = /<iframe[^>]*\ssrc=["']([^"']+)["']/i.exec(text)?.[1]?.replaceAll("&amp;", "&");
+  return webPage(iframe ?? (urls.length === 1 && urls[0] === text ? text : (urls[0] ?? "")));
+}
+
+/** Any http(s) page with a real host name. */
+function webPage(input: string): ParsedEmbed | null {
+  if (!input || /\s/.test(input)) return null;
+  let url: URL;
+  try {
+    url = new URL(/^[a-z]+:\/\//i.test(input) ? input : `https://${input}`);
+  } catch {
+    return null;
+  }
+  if (!["http:", "https:"].includes(url.protocol) || !/\.[a-z]{2,}$/i.test(url.hostname))
+    return null;
+  // YouTube and X pages other than a video or post can't be framed: not a "web page".
+  if (/(^|\.)(youtube\.com|youtu\.be|x\.com|twitter\.com)$/i.test(url.hostname)) return null;
+  return { provider: "web", media: url.href, link: url.href };
 }
 
 function parseUrl(input: string): ParsedEmbed | null {
@@ -80,11 +99,12 @@ export function embedFields(
   return { provider: p.provider, media: p.media, url: p.link, start: p.start };
 }
 
-/** URL of the service's own player for this element. */
+/** URL of the service's own player for this element (or the page itself). */
 export function embedSrc(
   el: Pick<EmbedElement, "provider" | "media" | "start">,
   lang = "en",
 ): string {
+  if (el.provider === "web") return /^https?:\/\//i.test(el.media) ? el.media : "about:blank";
   const id = encodeURIComponent(el.media);
   if (el.provider === "youtube") {
     const start = el.start ? `&start=${Math.floor(el.start)}` : "";

@@ -92,6 +92,9 @@ function Dialog() {
               <li>
                 <strong>YouTube:</strong> {t("embed.howYoutube")}
               </li>
+              <li>
+                <strong>{t("embed.web")}:</strong> {t("embed.howWeb")}
+              </li>
             </ul>
           )}
           <p className="hint">{t("embed.online")}</p>

@@ -433,6 +433,8 @@ pub struct SimElement {
 pub enum EmbedProvider {
     Youtube,
     X,
+    /// Any web page (`media` is its URL). Some sites refuse to be shown in a frame.
+    Web,
 }
 
 /// A YouTube video or X post shown with the service's own player (needs internet).

@@ -153,7 +153,7 @@ describe("agent tools", () => {
     });
     expect(doc().slides[0].elements[0]).not.toHaveProperty("start", 60);
 
-    const bad = await call("add_embed", { slide: 1, url: "https://example.com" });
+    const bad = await call("add_embed", { slide: 1, url: "not a link" });
     expect(bad.ok).toBe(false);
   });
 });

@@ -2593,3 +2593,24 @@ input[type="color"] {
     rotate: 360deg;
   }
 }
+
+.embed-placeholder.embed-web {
+  background: repeating-linear-gradient(135deg, #eef1f4 0 24px, #e6eaee 24px 48px);
+}
+
+.embed-web {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  font-size: 56px;
+  color: #3b4a5a;
+}
+
+.embed-web svg {
+  width: 160px;
+  height: 160px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}

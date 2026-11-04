@@ -185,8 +185,9 @@ pub struct ExportArgs {
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct AddEmbedArgs {
     pub slide: SlideRef,
-    /// Link to a YouTube video (youtube.com/watch?v=…, youtu.be/…, /shorts/…) or an X
-    /// (Twitter) post (x.com/<user>/status/<id>), or the embed code either site gives.
+    /// Link to a YouTube video (youtube.com/watch?v=…, youtu.be/…, /shorts/…), an X
+    /// (Twitter) post (x.com/<user>/status/<id>), the embed code either site gives, or
+    /// any https web page (shown live; some sites refuse to be framed).
     pub url: String,
     /// YouTube only: start playing at this second (a `t=` in the link also works).
     pub start: Option<f64>,
@@ -486,7 +487,7 @@ impl TizaMcp {
     }
 
     #[tool(
-        description = "Embed a YouTube video or an X (Twitter) post, played with the service's own player (needs internet when presenting). Returns the element id."
+        description = "Embed a YouTube video, an X (Twitter) post or a live web page (needs internet when presenting). Returns the element id and the detected provider."
     )]
     async fn add_embed(
         &self,

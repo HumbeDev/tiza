@@ -34,7 +34,7 @@ export default function EmbedView({ el, mode, interactive }: Props) {
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
         allowFullScreen
         referrerPolicy="strict-origin-when-cross-origin"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-presentation"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-presentation allow-forms"
         style={{
           width: el.w / zoom,
           height: el.h / zoom,
@@ -48,6 +48,14 @@ export default function EmbedView({ el, mode, interactive }: Props) {
   );
 }
 
+const hostOf = (url: string) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+};
+
 function EmbedPlaceholder({ el }: { el: EmbedEl }) {
   const [failed, setFailed] = useState(false);
   const thumb = embedThumbnail(el);
@@ -56,7 +64,16 @@ function EmbedPlaceholder({ el }: { el: EmbedEl }) {
       {thumb && !failed && (
         <img src={thumb} alt="" draggable={false} onError={() => setFailed(true)} />
       )}
-      <span className="embed-badge">{el.provider === "youtube" ? "▶" : "𝕏"}</span>
+      {el.provider === "web" ? (
+        <span className="embed-web">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z" />
+          </svg>
+          {hostOf(el.media)}
+        </span>
+      ) : (
+        <span className="embed-badge">{el.provider === "youtube" ? "▶" : "𝕏"}</span>
+      )}
     </div>
   );
 }

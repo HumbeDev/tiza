@@ -46,13 +46,28 @@ cita <a href="https://twitter.com/other/status/111">otro</a></p>&mdash; NASA (@N
   });
 
   it.each([
-    "https://example.com/watch?v=dQw4w9WgXcQ",
+    [
+      "https://phet.colorado.edu/es/simulations/pendulum-lab",
+      "https://phet.colorado.edu/es/simulations/pendulum-lab",
+    ],
+    ["es.wikipedia.org/wiki/Péndulo", "https://es.wikipedia.org/wiki/P%C3%A9ndulo"],
+    [
+      '<iframe src="https://www.geogebra.org/material/iframe/id/abc" width="800"></iframe>',
+      "https://www.geogebra.org/material/iframe/id/abc",
+    ],
+  ])("web page %s", (input, url) => {
+    expect(parseEmbed(input)).toEqual({ provider: "web", media: url, link: url });
+  });
+
+  it.each([
     "https://www.youtube.com/watch?v=short",
     "https://www.youtube.com/@channel",
     "https://x.com/NASA",
     "javascript:alert(1)",
     "not a url",
     "<p>no links here</p>",
+    "localhost",
+    "ftp://example.com/file",
   ])("rejects %s", (url) => {
     expect(parseEmbed(url)).toBeNull();
   });

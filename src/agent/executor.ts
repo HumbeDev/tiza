@@ -129,7 +129,7 @@ function summary(el: Element): string {
     case "sim":
       return `HTML page "${el.title}"`;
     case "embed":
-      return `${el.provider === "youtube" ? "YouTube video" : "X post"} ${el.url}`;
+      return `${{ youtube: "YouTube video", x: "X post", web: "web page" }[el.provider]} ${el.url}`;
     case "image":
     case "video":
       return el.asset;
@@ -385,7 +385,7 @@ const tools: Record<string, (args: Args) => unknown> = {
     const parsed = parseEmbed(url);
     if (!parsed)
       throw new ToolError(
-        "url must be a YouTube video link (youtube.com/watch?v=…, youtu.be/…, /shorts/…), an X/Twitter post link (x.com/<user>/status/<id>), or the embed code either site gives",
+        "url must be an http(s) link: a YouTube video, an X/Twitter post, a web page, or an embed code",
       );
     const start = num(args.start);
     const el = place(

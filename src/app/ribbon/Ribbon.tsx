@@ -412,6 +412,7 @@ function InsertTab() {
       <Group label={t("ribbon.web")}>
         <Big icon="youtube" label={t("embed.youtubeShort")} onClick={openEmbedDialog} />
         <Big icon="xPost" label={t("embed.xShort")} onClick={openEmbedDialog} />
+        <Big icon="globe" label={t("embed.webShort")} onClick={openEmbedDialog} />
       </Group>
       <Group label={t("ribbon.import")}>
         <Big icon="import" label={t("ribbon.importFile")} onClick={importPresentation} />

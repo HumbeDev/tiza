@@ -183,7 +183,12 @@ export function createEmbed(
   cx: number,
   cy: number,
 ): Element {
-  const [w, h] = embed.provider === "youtube" ? [1120, 630] : [1000, 1000];
+  const [w, h] =
+    embed.provider === "youtube"
+      ? [1120, 630]
+      : embed.provider === "x"
+        ? [1000, 1000]
+        : [1600, 900];
   return {
     ...base,
     id: newId(),
