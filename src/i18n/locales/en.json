@@ -443,5 +443,15 @@
     "placeholder": "Link or embed code…",
     "howX": "on the post, Share → “Copy link”, or ⋯ → “Embed post” → “Copy Code”.",
     "howYoutube": "Share → “Copy”, or Share → “Embed” → “Copy”."
+  },
+  "export": {
+    "pdf": "Export to PDF…",
+    "pdfSteps": "Export to PDF, one page per click…",
+    "png": "Export as PNG pictures…",
+    "pngCurrent": "Export this slide as PNG…",
+    "html": "Export as HTML page…",
+    "progress": "Exporting… {{done}}/{{total}}",
+    "htmlHint": "→ / click: next · ← : back · F: full screen",
+    "done": "Exported."
   }
 }

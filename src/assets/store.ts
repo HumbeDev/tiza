@@ -71,6 +71,26 @@ export async function webAssetBytes(names: string[]): Promise<Record<string, Uin
   return out;
 }
 
+/** The bytes of one asset (desktop: read from Rust). */
+export async function assetBytes(name: string): Promise<Uint8Array> {
+  if (isDesktop) return new Uint8Array(await invoke<ArrayBuffer>("read_asset", { name }));
+  const blob = webBlobs.get(name);
+  if (!blob) throw new Error(`missing asset ${name}`);
+  return new Uint8Array(await blob.arrayBuffer());
+}
+
+/** `data:` URL of an asset, for exports that must not depend on Tiza. */
+export async function assetDataUrl(name: string): Promise<string> {
+  const bytes = await assetBytes(name);
+  const blob = new Blob([bytes as BlobPart], { type: MIME[extensionOf(name)] ?? "" });
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
 /** Web: assets read from a .tiza file. */
 export function addWebAssets(assets: Record<string, Uint8Array>): void {
   for (const [name, bytes] of Object.entries(assets)) {

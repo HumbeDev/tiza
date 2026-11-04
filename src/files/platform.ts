@@ -29,6 +29,11 @@ export interface Platform {
     suggestedName: string,
     forceDialog: boolean,
   ): Promise<FileInfo | null>;
+  /**
+   * Asks where to save an exported file (PDF, PNG, ZIP, HTML) and writes it; the web
+   * downloads it. Returns false when cancelled.
+   */
+  saveExport(bytes: Uint8Array, suggestedName: string, format: ExportFormat): Promise<boolean>;
   /** Lets the user choose a presentation to import; null when cancelled. */
   pickImportFile(): Promise<{ name: string; bytes: Uint8Array } | null>;
   /** An informational message (not an error). */
@@ -58,6 +63,18 @@ export interface Platform {
    */
   onClose(guard: () => Promise<boolean>, hasUnsaved: () => boolean): () => void;
 }
+
+export type ExportFormat = "pdf" | "png" | "zip" | "html";
+
+const EXPORT_TYPES: Record<ExportFormat, { name: string; mime: string }> = {
+  pdf: { name: "PDF", mime: "application/pdf" },
+  png: { name: "PNG", mime: "image/png" },
+  zip: { name: "ZIP", mime: "application/zip" },
+  html: { name: "HTML", mime: "text/html" },
+};
+
+const withExt = (name: string, ext: string) =>
+  name.toLowerCase().endsWith(`.${ext}`) ? name : `${name}.${ext}`;
 
 const APP_VERSION = __APP_VERSION__;
 const baseName = (path: string) => path.split(/[\\/]/).pop() ?? path;
@@ -99,6 +116,17 @@ const desktop: Platform = {
     }
     await wrap(invoke("save_presentation", { path, doc }));
     return { name: baseName(path), path };
+  },
+
+  async saveExport(bytes, suggestedName, format) {
+    const chosen = await dialog.save({
+      defaultPath: withExt(suggestedName, format),
+      filters: [{ name: EXPORT_TYPES[format].name, extensions: [format] }],
+    });
+    if (!chosen) return false;
+    const path = withExt(chosen, format);
+    await wrap(invoke("write_export", bytes, { headers: { "x-path": encodeURIComponent(path) } }));
+    return true;
   },
 
   async pickImportFile() {
@@ -230,8 +258,8 @@ function pickFile(accept = ".tiza"): Promise<File | null> {
   });
 }
 
-function download(bytes: Uint8Array, name: string) {
-  const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: "application/zip" }));
+function download(bytes: Uint8Array, name: string, type = "application/zip") {
+  const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type }));
   const a = document.createElement("a");
   a.href = url;
   a.download = name;
@@ -277,6 +305,11 @@ const web: Platform = {
     const name = withExtension(file.name ?? suggestedName);
     download(bytes, name);
     return { name, path: null };
+  },
+
+  saveExport(bytes, suggestedName, format) {
+    download(bytes, withExt(suggestedName, format), EXPORT_TYPES[format].mime);
+    return Promise.resolve(true);
   },
 
   async pickImportFile() {

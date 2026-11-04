@@ -151,6 +151,38 @@ pub struct AddHtmlArgs {
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct RenderSlideArgs {
+    /// Slide number (1 = first) or id.
+    pub slide: SlideRef,
+    /// Build step to show (0 = before the first click); omit for the final state.
+    pub step: Option<u32>,
+    /// Picture width in pixels (default 1280, max 3840).
+    pub width: Option<u32>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum ExportFormat {
+    /// One page per visible slide.
+    Pdf,
+    /// One page per click (build step), like Beamer handouts with \\pause.
+    PdfSteps,
+    /// PNG pictures: one slide → .png, several → .zip.
+    Png,
+    /// One self-contained HTML file that presents in any browser.
+    Html,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct ExportArgs {
+    pub format: ExportFormat,
+    /// Absolute path of the file to write. The extension is added if missing.
+    pub path: String,
+    /// PNG only: slide numbers or ids to export (default: all visible slides).
+    pub slides: Option<Vec<SlideRef>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct AddEmbedArgs {
     pub slide: SlideRef,
     /// Link to a YouTube video (youtube.com/watch?v=…, youtu.be/…, /shorts/…) or an X
@@ -236,6 +268,35 @@ fn reply(result: Result<Value, String>) -> Result<CallToolResult, ErrorData> {
     })
 }
 
+/// Decodes the `base64` field the editor returns for binary results.
+fn take_bytes(value: &mut Value) -> Result<Vec<u8>, String> {
+    use base64::Engine;
+    let data = value
+        .as_object_mut()
+        .and_then(|o| o.remove("base64"))
+        .and_then(|v| v.as_str().map(str::to_owned))
+        .ok_or("the editor returned no data")?;
+    base64::engine::general_purpose::STANDARD
+        .decode(data)
+        .map_err(|e| e.to_string())
+}
+
+/// The path with the extension of what is actually written (PNG of several slides is a ZIP).
+fn export_path(path: &str, ext: &str) -> std::path::PathBuf {
+    let path = std::path::PathBuf::from(path);
+    match path.extension().and_then(|e| e.to_str()) {
+        Some(e) if e.eq_ignore_ascii_case(ext) => path,
+        Some(e) if ["pdf", "png", "zip", "html"].contains(&e.to_ascii_lowercase().as_str()) => {
+            path.with_extension(ext)
+        }
+        _ => {
+            let mut s = path.into_os_string();
+            s.push(format!(".{ext}"));
+            s.into()
+        }
+    }
+}
+
 impl TizaMcp {
     pub fn new(bridge: Bridge) -> Self {
         Self {
@@ -262,6 +323,58 @@ impl TizaMcp {
     )]
     async fn get_presentation(&self) -> Result<CallToolResult, ErrorData> {
         self.forward("get_presentation", json!({})).await
+    }
+
+    #[tool(
+        description = "Picture (PNG) of a slide as the audience sees it, to check your work visually. HTML pages, videos and web embeds appear as placeholders."
+    )]
+    async fn render_slide(
+        &self,
+        Parameters(args): Parameters<RenderSlideArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        let args = serde_json::to_value(args)
+            .map_err(|e| ErrorData::invalid_params(e.to_string(), None))?;
+        let mut value = match self.bridge.call("render_slide", args).await {
+            Ok(value) => value,
+            Err(e) => return reply(Err(e)),
+        };
+        let data = match value.get("base64").and_then(Value::as_str) {
+            Some(data) => data.to_owned(),
+            None => return reply(Err("the editor returned no picture".into())),
+        };
+        if let Some(o) = value.as_object_mut() {
+            o.remove("base64");
+        }
+        Ok(CallToolResult::success(vec![
+            ContentBlock::image(data, "image/png"),
+            ContentBlock::text(value.to_string()),
+        ]))
+    }
+
+    #[tool(
+        description = "Export the presentation to a file: pdf (one page per slide), pdf_steps (one page per click), png (pictures; several slides → .zip) or html (self-contained, presents in any browser). Returns the path written."
+    )]
+    async fn export_presentation(
+        &self,
+        Parameters(args): Parameters<ExportArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        let path = args.path.clone();
+        let args = serde_json::to_value(args)
+            .map_err(|e| ErrorData::invalid_params(e.to_string(), None))?;
+        let mut value = match self.bridge.call("export_presentation", args).await {
+            Ok(value) => value,
+            Err(e) => return reply(Err(e)),
+        };
+        let bytes = match take_bytes(&mut value) {
+            Ok(bytes) => bytes,
+            Err(e) => return reply(Err(e)),
+        };
+        let ext = value["format"].as_str().unwrap_or("pdf").to_owned();
+        let path = export_path(&path, &ext);
+        if let Err(e) = crate::commands::write_export_file(path.clone(), bytes).await {
+            return reply(Err(format!("could not write {}: {e}", path.display())));
+        }
+        reply(Ok(json!({ "path": path, "format": ext })))
     }
 
     #[tool(description = "Full JSON of one slide (all element properties).")]
@@ -483,5 +596,26 @@ impl ServerHandler for TizaMcp {
         ServerConfig::new(ServerCapabilities::builder().enable_tools().build())
             .with_server_info(Implementation::new("tiza", env!("CARGO_PKG_VERSION")))
             .with_instructions(INSTRUCTIONS)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn export_paths_get_the_written_extension() {
+        assert_eq!(export_path("/t/a.pdf", "pdf"), PathBuf::from("/t/a.pdf"));
+        assert_eq!(export_path("/t/a", "html"), PathBuf::from("/t/a.html"));
+        assert_eq!(export_path("/t/a.png", "zip"), PathBuf::from("/t/a.zip"));
+        assert_eq!(export_path("/t/v1.2", "pdf"), PathBuf::from("/t/v1.2.pdf"));
+    }
+
+    #[test]
+    fn binary_results_are_decoded() {
+        let mut value = json!({ "base64": "JVBERg==", "format": "pdf" });
+        assert_eq!(take_bytes(&mut value).unwrap(), b"%PDF");
+        assert!(value.get("base64").is_none());
     }
 }

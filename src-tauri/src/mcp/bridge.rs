@@ -11,6 +11,8 @@ use tauri::{AppHandle, Emitter};
 use tokio::sync::oneshot;
 
 const TIMEOUT: Duration = Duration::from_secs(30);
+/// Exports render every slide; long presentations with video take a while.
+const EXPORT_TIMEOUT: Duration = Duration::from_secs(600);
 
 type Reply = Result<Value, String>;
 
@@ -53,7 +55,12 @@ impl Bridge {
             self.forget(id);
             return Err(format!("could not reach the editor: {e}"));
         }
-        match tokio::time::timeout(TIMEOUT, rx).await {
+        let timeout = if tool == "export_presentation" {
+            EXPORT_TIMEOUT
+        } else {
+            TIMEOUT
+        };
+        match tokio::time::timeout(timeout, rx).await {
             Ok(Ok(reply)) => reply,
             _ => {
                 self.forget(id);

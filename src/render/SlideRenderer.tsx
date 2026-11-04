@@ -9,11 +9,8 @@ import SimView from "../elements/sim/SimView";
 import EmbedView from "../elements/embed/EmbedView";
 import TextView from "../elements/TextView";
 
-/**
- * edit: the editor canvas · thumb: thumbnails (no live pages) · present: the audience
- * (pages interactive) · preview: presenter view (pages live but not interactive).
- */
-export type RenderMode = "edit" | "thumb" | "present" | "preview";
+export type { RenderMode } from "./mode";
+import { type RenderMode } from "./mode";
 
 interface Props {
   slide: Slide;
@@ -31,16 +28,21 @@ function SlideRenderer({ slide, page, mode, editingId, step }: Props) {
       className="slide"
       style={{ width: page.width, height: page.height, background: slide.background ?? "#fff" }}
     >
-      {slide.elements.map((el) => (
-        <ElementView
-          key={el.id}
-          el={el}
-          mode={mode}
-          editing={el.id === editingId}
-          pending={step !== undefined && (el.build?.step ?? 0) > step}
-          gone={step !== undefined && el.exit !== undefined && el.exit.step <= step}
-        />
-      ))}
+      {slide.elements.map((el) => {
+        const pending = step !== undefined && (el.build?.step ?? 0) > step;
+        const gone = step !== undefined && el.exit !== undefined && el.exit.step <= step;
+        if (mode === "export" && (pending || gone)) return null;
+        return (
+          <ElementView
+            key={el.id}
+            el={el}
+            mode={mode}
+            editing={el.id === editingId}
+            pending={pending}
+            gone={gone}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -68,6 +70,8 @@ function ElementView({ el, mode, editing, pending, gone }: ElementViewProps) {
     <div
       className={classes.join(" ")}
       data-element-id={mode === "edit" ? el.id : undefined}
+      data-in={el.build?.step}
+      data-out={el.exit?.step}
       style={{
         left: el.x,
         top: el.y,

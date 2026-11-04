@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { mediaUrl } from "../assets/store";
 import type { Element, VideoElement } from "../document";
-import type { RenderMode } from "../render/SlideRenderer";
+import { type RenderMode, isStill } from "../render/mode";
 
 type Props = {
   el: Element & { kind: "video" } & VideoElement;
@@ -14,7 +14,7 @@ type Props = {
  * (autoplay if set) and clicking it doesn't advance the slide. Thumbnails: a placeholder.
  */
 export default function VideoView({ el, mode, interactive }: Props) {
-  if (mode === "thumb") {
+  if (isStill(mode)) {
     return (
       <div className="video-placeholder">
         <span>▶</span>

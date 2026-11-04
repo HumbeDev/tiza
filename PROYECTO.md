@@ -646,3 +646,10 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - Causa de «el run de PC no funciona»: un servidor Vite de las pruebas ocupaba el puerto 1420 (`--strictPort`). Las capturas ahora usan otro puerto.
 - Verificado en la app de escritorio (WebKitGTK, modo dev): YouTube reproduce y X se muestra. Falta probar en el instalado (origen `tauri://localhost`).
 
+### Exportación + vista del presentador en Hyprland — 2026-11-04 🧪
+- **Vista del presentador**: con Hyprland las dos ventanas aparecían en el monitor enfocado *al mapearse* (carrera con `focusmonitor`), así que el público a pantalla completa tapaba al presentador. Ahora cada ventana, ya mapeada, se mueve con `movetoworkspacesilent <ws>,address:<addr>` al workspace activo de su monitor; luego pantalla completa y foco al presentador. Selector «El público lo ve en» (`list_screens`, preferencia en localStorage).
+- **Exportación** (`src/export/`): cada diapositiva se dibuja fuera de pantalla con el renderizador en modo `export` (lo vivo como marcador, pasos ocultos sin dibujar) y se rasteriza con `modern-screenshot` 4.7.0; las imágenes del documento se pasan como `data:` (los protocolos propios no se pueden `fetch`). PDF propio (`pdf.ts`, JPEG por página, 960×540 pt). PNG 1×, ZIP con `fflate`. HTML autocontenido: plantillas `<template>` por diapositiva + reproductor JS (pasos con `data-in/data-out`, transiciones).
+- Guardado: `write_export` (Rust, cuerpo binario, ruta en cabecera codificada, solo pdf/png/zip/html, escritura atómica).
+- MCP: `render_slide` (devuelve imagen PNG al agente) y `export_presentation` (pdf, pdf_steps, png, html; tiempo de espera 10 min).
+- Verificado: Chrome (descarga) y WebKitGTK (MCP): PDF válido según poppler, capturas fieles con LaTeX, imágenes y formas.
+

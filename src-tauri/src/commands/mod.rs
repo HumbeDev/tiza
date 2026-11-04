@@ -66,6 +66,62 @@ pub fn put_asset(app: AppHandle, request: tauri::ipc::Request<'_>) -> AppResult<
     store(&app).put(bytes, ext)
 }
 
+const EXPORT_EXTENSIONS: &[&str] = &["pdf", "png", "zip", "html"];
+
+/// `%XX` escapes → bytes → UTF-8 (paths travel in a header, which must be ASCII).
+fn percent_decode(text: &str) -> Option<String> {
+    let bytes = text.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'%' {
+            let hex = std::str::from_utf8(bytes.get(i + 1..i + 3)?).ok()?;
+            out.push(u8::from_str_radix(hex, 16).ok()?);
+            i += 3;
+        } else {
+            out.push(bytes[i]);
+            i += 1;
+        }
+    }
+    String::from_utf8(out).ok()
+}
+
+/// Writes an exported file (PDF, PNG, ZIP of PNGs, HTML) to the path chosen in the save
+/// dialog. The body is the raw file; the `x-path` header the percent-encoded path.
+#[tauri::command]
+pub async fn write_export(request: tauri::ipc::Request<'_>) -> AppResult<()> {
+    let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
+        return Err(AppError::InvalidDocument("expected raw bytes".into()));
+    };
+    let path = request
+        .headers()
+        .get("x-path")
+        .and_then(|v| v.to_str().ok())
+        .and_then(percent_decode)
+        .map(PathBuf::from)
+        .ok_or_else(|| AppError::InvalidDocument("missing path".into()))?;
+    write_export_file(path, bytes.clone()).await
+}
+
+pub async fn write_export_file(path: PathBuf, bytes: Vec<u8>) -> AppResult<()> {
+    let ok = path
+        .extension()
+        .is_some_and(|e| EXPORT_EXTENSIONS.iter().any(|x| e.eq_ignore_ascii_case(x)));
+    if !ok {
+        return Err(AppError::BadExtension);
+    }
+    blocking(move || {
+        // Write next to the target, then rename: a failed export never leaves half a file.
+        let tmp = path.with_extension("tiza-export.tmp");
+        fs::write(&tmp, &bytes)?;
+        fs::rename(&tmp, &path).inspect_err(|_| {
+            let _ = fs::remove_file(&tmp);
+        })?;
+        Ok(())
+    })
+    .await
+}
+
 /// Raw bytes of an asset, for the web-style packers and the importers.
 #[tauri::command]
 pub fn read_asset(app: AppHandle, name: String) -> AppResult<tauri::ipc::Response> {
@@ -288,6 +344,29 @@ fn decode_text(bytes: Vec<u8>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn decodes_percent_encoded_paths() {
+        assert_eq!(
+            percent_decode("/home/a%C3%B1o/F%C3%ADsica%201.pdf").as_deref(),
+            Some("/home/año/Física 1.pdf")
+        );
+        assert_eq!(percent_decode("%zz"), None);
+    }
+
+    #[test]
+    fn export_only_writes_export_formats() {
+        let dir = std::env::temp_dir().join(format!("tiza-export-{}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        let pdf = dir.join("a.pdf");
+        tauri::async_runtime::block_on(write_export_file(pdf.clone(), b"%PDF".to_vec())).unwrap();
+        assert_eq!(fs::read(&pdf).unwrap(), b"%PDF");
+        assert!(matches!(
+            tauri::async_runtime::block_on(write_export_file(dir.join("evil.sh"), vec![1])),
+            Err(AppError::BadExtension)
+        ));
+        fs::remove_dir_all(&dir).unwrap();
+    }
 
     #[test]
     fn decodes_utf8_and_latin1() {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Element, EmbedElement } from "../../document";
-import type { RenderMode } from "../../render/SlideRenderer";
+import { type RenderMode, isStill } from "../../render/mode";
 import { embedSrc, embedThumbnail } from "./parse";
 
 type EmbedEl = Element & { kind: "embed" } & EmbedElement;
@@ -19,7 +19,7 @@ interface Props {
  */
 export default function EmbedView({ el, mode, interactive }: Props) {
   const { i18n } = useTranslation();
-  if (mode === "thumb" || mode === "preview") return <EmbedPlaceholder el={el} />;
+  if (isStill(mode) || mode === "preview") return <EmbedPlaceholder el={el} />;
   // Slides are 1920 units wide, so a post laid out at its natural pixel size would be
   // unreadable; lay it out smaller and scale it up. Videos fill any size.
   const zoom = el.provider === "x" ? 2 : 1;

@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { openEmbedDialog } from "../EmbedDialog";
+import { runExport } from "../exportActions";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import type { BuildEffect, ShapeKind, TransitionKind } from "../../document";
@@ -101,6 +102,12 @@ export default function Ribbon() {
       onSelect: openPresentation,
     },
     { label: t("toolbar.import"), icon: "import", onSelect: importPresentation },
+    separator,
+    { label: t("export.pdf"), icon: "exportFile", onSelect: () => runExport("pdf") },
+    { label: t("export.pdfSteps"), onSelect: () => runExport("pdfSteps") },
+    { label: t("export.png"), icon: "image", onSelect: () => runExport("png") },
+    { label: t("export.pngCurrent"), onSelect: () => runExport("pngCurrent") },
+    { label: t("export.html"), icon: "html", onSelect: () => runExport("html") },
     separator,
     { label: t("toolbar.save"), icon: "save", shortcut: "Ctrl+S", onSelect: save },
     { label: t("toolbar.saveAs"), shortcut: "Ctrl+Shift+S", onSelect: saveAs },

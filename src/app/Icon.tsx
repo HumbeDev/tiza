@@ -39,6 +39,7 @@ const PATHS = {
   html: "M8 7 3 12l5 5M16 7l5 5-5 5M14 4l-4 16",
   image: "M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6M15.5 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z",
   import: "M12 3v12M7 10l5 5 5-5M4 17v3h16v-3",
+  exportFile: "M12 15V3M7 8l5-5 5 5M4 17v3h16v-3",
   video: "M3 6h13v12H3zM16 10l5-3v10l-5-3",
   youtube: "M3 8a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3zM10 9v6l5-3z",
   xPost: "M4 4h4.5L20 20h-4.5zM20 4l-6.6 7.5M4 20l6.6-7.5",

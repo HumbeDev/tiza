@@ -20,13 +20,13 @@ crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ct
 | ---- | ----------------------------------------------------------------------------- | ------------ |
 | 0–2  | Entorno, lienzo, texto enriquecido y ecuaciones LaTeX                         | ✅           |
 | 3    | Archivos `.tiza`, instaladores y versión web                                  | ✅           |
-| 4    | Simulaciones HTML (páginas web por URL: pendiente)                            | ✅           |
+| 4    | Simulaciones HTML, YouTube y X                                                | ✅           |
 | 5    | **Modo presentación**, vista del presentador, notas, plantilla de diapositiva | 🧪 en prueba |
-| 6    | Imágenes y video (sistema de assets)                                          | —            |
-| 7    | **Importar PPTX, ODP, PDF y PPT** como diapositivas editables                 | —            |
-| 8    | Servidor MCP para agentes de IA                                               | —            |
-| 9    | LaTeX completo (TikZ) con Tectonic                                            | —            |
-| 10   | Exportar a PDF / HTML / PNG                                                   | —            |
+| 6    | Imágenes, video y tablas                                                      | ✅           |
+| 7    | **Importar PPTX y PDF** como diapositivas editables (ODP y PPT: pendiente)    | ✅           |
+| 8    | Servidor MCP para agentes de IA                                               | ✅           |
+| 9    | Exportar a PDF / PNG / HTML                                                   | 🧪 en prueba |
+| 10   | LaTeX completo (TikZ) con Tectonic                                            | en pausa     |
 | 11   | Temas, pulido e instaladores firmados                                         | —            |
 
 ## Funcionalidades disponibles
@@ -86,6 +86,7 @@ crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ct
 **Modo presentación** (F5 desde el principio, Shift+F5 desde la diapositiva actual)
 
 - Con dos pantallas: el **público** ve la presentación a pantalla completa en la **pantalla externa** y tú ves la **vista del presentador** en la otra: diapositiva actual, la siguiente, **notas**, cronómetro (pausar/reiniciar) y reloj.
+- Pestaña _Presentación → Monitores_: elegir en qué pantalla lo ve el público (automática = la externa).
 - Con una sola pantalla: solo la vista del público. «Ensayar en ventanas» abre ambas vistas en ventanas normales para practicar.
 - Teclado y **clicker**: →, ↓, Espacio, Av Pág, clic = siguiente · ←, ↑, Re Pág, clic derecho = anterior · Inicio/Fin · número + Enter = ir a esa diapositiva · **B** pantalla negra · **W** pantalla blanca · Esc = terminar.
 - Las diapositivas **ocultas** se saltan. Las páginas HTML son **interactivas** durante la presentación (un clic sobre ellas no avanza).
@@ -110,13 +111,19 @@ crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ct
 
 **Importar PDF**: _Archivo → Importar PowerPoint o PDF…_. Cada página es una diapositiva: lo gráfico (figuras, fondos, gráficos) queda como imagen de fondo y **el texto encima, editable**, con su posición, tamaño, color, negrita y cursiva.
 
+**Exportar** — _Archivo_:
+
+- **PDF**: una página por diapositiva, o **una página por clic** (cada paso de animación, como los apuntes de Beamer). Las páginas HTML, videos y YouTube salen como imagen fija.
+- **Imágenes PNG** (1920×1080): todas en un `.zip`, o solo la diapositiva actual.
+- **Página HTML**: un solo archivo con todo dentro (imágenes, videos, páginas HTML interactivas) que **se presenta en cualquier navegador** sin Tiza: → / clic avanza, ← retrocede, F pantalla completa, con animaciones y transiciones. YouTube necesita que el archivo esté publicado en una web; abierto como archivo local muestra la miniatura con enlace al video.
+
 **Agentes de IA (MCP)** — _Ajustes → Agentes de IA (MCP)_ (solo en la app de escritorio):
 
 1. Activa el servidor en _Ajustes → Agentes de IA_.
 2. En la tarjeta de **Claude Code**, **Codex** o **Antigravity** pulsa **Conectar automáticamente** (Tiza escribe su configuración y deja una copia `.tiza-backup`), o copia el comando/configuración para hacerlo a mano. Cada tarjeta muestra si el agente está instalado y conectado.
 3. Pídele a Claude, por ejemplo: «arma 3 diapositivas sobre el péndulo simple con la fórmula del período y una tabla de datos».
 
-Herramientas: ver la presentación y cada diapositiva; crear, duplicar, mover, borrar y configurar diapositivas (fondo, notas, ocultar, transición); agregar texto (con `$…$` y viñetas), ecuaciones, formas, tablas, páginas HTML e imágenes; modificar, borrar, ordenar y **animar** elementos; macros LaTeX; deshacer y guardar. Seguridad: solo `127.0.0.1`, token obligatorio, desactivado por defecto; cada acción del agente es un paso de deshacer. La barra de estado muestra «🤖 Agente trabajando…» mientras actúa.
+Herramientas: ver la presentación y cada diapositiva; crear, duplicar, mover, borrar y configurar diapositivas (fondo, notas, ocultar, transición); agregar texto (con `$…$` y viñetas), ecuaciones, formas, tablas, páginas HTML e imágenes; modificar, borrar, ordenar y **animar** elementos; macros LaTeX; **ver una imagen de la diapositiva** (`render_slide`, para que el agente revise su trabajo); **exportar** a PDF/PNG/HTML; deshacer y guardar. Seguridad: solo `127.0.0.1`, token obligatorio, desactivado por defecto; cada acción del agente es un paso de deshacer. La barra de estado muestra «🤖 Agente trabajando…» mientras actúa.
 
 **Interfaz**
 

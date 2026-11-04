@@ -22,6 +22,8 @@ import {
   createText,
 } from "../document/factory";
 import { embedFields, parseEmbed } from "../elements/embed/parse";
+import { canvasToBytes, renderFrame } from "../export/capture";
+import { exportHtml, exportPdf, exportPng } from "../export/export";
 import { toPlainText } from "../document/richtext";
 import { save as saveFile } from "../files/session";
 import {
@@ -55,6 +57,14 @@ type Args = Record<string, unknown>;
 class ToolError extends Error {}
 
 const state = useEditor.getState;
+
+/** Binary results travel to Rust as base64 inside the JSON reply. */
+function bytesToBase64(bytes: Uint8Array): string {
+  let s = "";
+  for (let i = 0; i < bytes.length; i += 0x8000)
+    s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
 
 function slideOf(ref: unknown): { slide: Slide; index: number } {
   const slides = state().doc.slides;
@@ -157,6 +167,41 @@ const tools: Record<string, (args: Args) => unknown> = {
         })),
       })),
     };
+  },
+
+  async render_slide(args) {
+    const { slide, index } = slideOf(args.slide);
+    const doc = state().doc;
+    const width = Math.min(3840, Math.max(160, num(args.width) ?? 1280));
+    const step = num(args.step);
+    const canvas = await renderFrame(doc, { slide, step }, width / doc.page.width);
+    return {
+      base64: bytesToBase64(await canvasToBytes(canvas, "image/png")),
+      slide: index + 1,
+      width: canvas.width,
+      height: canvas.height,
+      ...(slide.hidden ? { note: "This slide is hidden in the presentation." } : {}),
+    };
+  },
+
+  async export_presentation(args) {
+    const doc = state().doc;
+    const format = String(args.format);
+    const result =
+      format === "pdf" || format === "pdf_steps"
+        ? await exportPdf(doc, format === "pdf_steps")
+        : format === "html"
+          ? await exportHtml(doc)
+          : format === "png"
+            ? await exportPng(
+                doc,
+                Array.isArray(args.slides)
+                  ? args.slides.map((s) => slideOf(s).slide.id)
+                  : undefined,
+              )
+            : null;
+    if (!result) throw new ToolError("format must be pdf, pdf_steps, png or html");
+    return { base64: bytesToBase64(result.bytes), format: result.format };
   },
 
   get_slide({ slide }) {
@@ -578,7 +623,8 @@ export async function runTool(request: ToolRequest): Promise<{ ok: boolean; resu
   useAgentActivity.setState({ lastAt: Date.now() });
   try {
     const readOnly =
-      request.tool.startsWith("get_") || request.tool === "undo" || request.tool === "save";
+      request.tool.startsWith("get_") ||
+      ["undo", "save", "render_slide", "export_presentation"].includes(request.tool);
     const result = readOnly
       ? await tool(request.args ?? {})
       : await batch(() => tool(request.args ?? {}));

@@ -443,5 +443,15 @@
     "placeholder": "Enlace o código de inserción…",
     "howX": "en la publicación, Compartir → «Copiar enlace», o ⋯ → «Insertar post» → «Copy Code».",
     "howYoutube": "Compartir → «Copiar», o Compartir → «Insertar» → «Copiar»."
+  },
+  "export": {
+    "pdf": "Exportar a PDF…",
+    "pdfSteps": "Exportar a PDF, una página por clic…",
+    "png": "Exportar como imágenes PNG…",
+    "pngCurrent": "Exportar esta diapositiva como PNG…",
+    "html": "Exportar como página HTML…",
+    "progress": "Exportando… {{done}}/{{total}}",
+    "htmlHint": "→ / clic: siguiente · ← : atrás · F: pantalla completa",
+    "done": "Exportado."
   }
 }

@@ -2,7 +2,7 @@ import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import type { Element, SimElement } from "../../document";
 import { isDesktop } from "../../files/platform";
-import type { RenderMode } from "../../render/SlideRenderer";
+import { type RenderMode, isStill } from "../../render/mode";
 import { useSimReloads } from "./reload";
 import { injectCsp } from "./csp";
 
@@ -20,7 +20,7 @@ interface Props {
  * origins). The page lays out at `viewWidth × viewHeight` and is scaled into the box.
  */
 export default function SimView({ el, mode, interactive }: Props) {
-  if (mode === "thumb") {
+  if (isStill(mode)) {
     return (
       <div className="sim-placeholder">
         <span className="sim-placeholder-icon">{"</>"}</span>
