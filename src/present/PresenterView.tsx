@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Icon from "../app/Icon";
 import type { PresentClient } from "./client";
 import SlideStage from "./SlideStage";
 import { usePresentation } from "./usePresentation";
+import { type LaserPos } from "./client";
+import { slidePosition, useLaserToggle } from "./laser";
 
 const NOTES_SIZE_KEY = "tiza.notesSize";
 
@@ -31,6 +33,22 @@ export default function PresenterView({ client }: { client: PresentClient }) {
     pausedAt: null as number | null,
   }));
   const [notesSize, setNotesSize] = useState(readNotesSize);
+  const [laserOn, setLaserOn] = useState(false);
+  const [laser, setLaser] = useState<LaserPos | null>(null);
+  const moveLaser = (pos: LaserPos | null) => {
+    setLaser(pos);
+    client.laser(pos);
+  };
+  const toggleLaser = useCallback(() => {
+    setLaserOn((on) => {
+      if (on) {
+        setLaser(null);
+        client.laser(null);
+      }
+      return !on;
+    });
+  }, [client]);
+  useLaserToggle(toggleLaser);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 500);
@@ -108,6 +126,15 @@ export default function PresenterView({ client }: { client: PresentClient }) {
           </button>
           <button
             type="button"
+            className={laserOn ? "tool-button active" : "tool-button"}
+            title={`${t("present.laserHint")} (L)`}
+            aria-pressed={laserOn}
+            onClick={toggleLaser}
+          >
+            <span className="laser-icon" aria-hidden="true" /> {t("present.laser")}
+          </button>
+          <button
+            type="button"
             className={status.blank === "black" ? "tool-button active" : "tool-button"}
             title="B"
             onClick={() => client.nav({ kind: "black" })}
@@ -134,8 +161,18 @@ export default function PresenterView({ client }: { client: PresentClient }) {
       </header>
 
       <main className="presenter-main">
-        <section className="presenter-current">
-          <SlideStage slide={current} page={snapshot.doc.page} mode="preview" step={status.step} />
+        <section
+          className={laserOn ? "presenter-current laser-on" : "presenter-current"}
+          onPointerMove={laserOn ? (e) => moveLaser(slidePosition(e)) : undefined}
+          onPointerLeave={laserOn ? () => moveLaser(null) : undefined}
+        >
+          <SlideStage
+            slide={current}
+            page={snapshot.doc.page}
+            mode="preview"
+            step={status.step}
+            laser={laserOn ? laser : null}
+          />
           {status.blank !== "none" && (
             <div className="blank-badge">{t(`present.${status.blank}Showing`)}</div>
           )}

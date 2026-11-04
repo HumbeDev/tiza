@@ -2,7 +2,7 @@
 // event to all windows. Web: the editor tab owns it (fullscreen in that tab) and a
 // presenter pop-up syncs through a BroadcastChannel.
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
+import { emit, listen } from "@tauri-apps/api/event";
 import { create } from "zustand";
 import type { NavAction } from "../bindings/NavAction";
 import type { PresentSnapshot } from "../bindings/PresentSnapshot";
@@ -47,6 +47,14 @@ export interface PresentClient {
   onStatus(cb: (status: PresentStatus) => void): () => void;
   /** Called when the presentation ends from another window. */
   onEnded(cb: () => void): () => void;
+  /** Laser pointer position on the slide (0–1 fractions), or null to hide it. */
+  laser(pos: LaserPos | null): void;
+  onLaser(cb: (pos: LaserPos | null) => void): () => void;
+}
+
+export interface LaserPos {
+  x: number;
+  y: number;
 }
 
 // ---------------------------------------------------------------- desktop
@@ -63,6 +71,11 @@ const desktopClient: PresentClient = {
     const off = listen("present:ended", () => cb());
     return () => void off.then((f) => f());
   },
+  laser: (pos) => void emit("present:laser", pos),
+  onLaser(cb) {
+    const off = listen<LaserPos | null>("present:laser", (e) => cb(e.payload));
+    return () => void off.then((f) => f());
+  },
 };
 
 // ---------------------------------------------------------------- web
@@ -72,13 +85,25 @@ type Message =
   | { type: "snapshot"; snapshot: PresentSnapshot }
   | { type: "status"; status: PresentStatus }
   | { type: "nav"; action: NavAction }
-  | { type: "end" };
+  | { type: "end" }
+  | { type: "laser"; pos: LaserPos | null };
 
 const channel: BroadcastChannel | null =
   !isDesktop && typeof BroadcastChannel !== "undefined"
     ? new BroadcastChannel("tiza-present")
     : null;
 const post = (m: Message) => channel?.postMessage(m);
+
+function onChannel<T extends Message["type"]>(
+  type: T,
+  cb: (m: Extract<Message, { type: T }>) => void,
+): () => void {
+  const h = (e: MessageEvent<Message>) => {
+    if (e.data.type === type) cb(e.data as Extract<Message, { type: T }>);
+  };
+  channel?.addEventListener("message", h);
+  return () => channel?.removeEventListener("message", h);
+}
 
 /** The running web presentation, owned by the editor tab. */
 export const useWebPresentation = create<{ snapshot: PresentSnapshot | null }>(() => ({
@@ -120,6 +145,8 @@ const webHostClient: PresentClient = {
       if (s.snapshot && s.snapshot.status !== prev.snapshot?.status) cb(s.snapshot.status);
     }),
   onEnded: (cb) => useWebPresentation.subscribe((s, prev) => !s.snapshot && prev.snapshot && cb()),
+  laser: (pos) => post({ type: "laser", pos }),
+  onLaser: (cb) => onChannel("laser", (m) => cb(m.pos)),
 };
 
 /** The presenter pop-up, a separate tab of the web version. */
@@ -148,6 +175,8 @@ const webRemoteClient: PresentClient = {
     channel?.addEventListener("message", h);
     return () => channel?.removeEventListener("message", h);
   },
+  laser: (pos) => post({ type: "laser", pos }),
+  onLaser: (cb) => onChannel("laser", (m) => cb(m.pos)),
 };
 
 export const presentClient: PresentClient = isDesktop

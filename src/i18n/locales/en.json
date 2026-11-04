@@ -266,7 +266,9 @@
     "autoScreen": "Automatic (external screen)",
     "laptopScreen": "Laptop screen",
     "twoScreensHint": "The other screen shows your presenter view: notes, next slide and timer.",
-    "oneScreenHint": "With one screen there is only the audience view. Connect a projector or use “Rehearse in windows”."
+    "oneScreenHint": "With one screen there is only the audience view. Connect a projector or use “Rehearse in windows”.",
+    "laser": "Laser",
+    "laserHint": "Move the mouse over the current slide: the audience sees a red dot"
   },
   "image": {
     "fit": "Fit",

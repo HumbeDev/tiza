@@ -1,6 +1,7 @@
 import { type CSSProperties, useLayoutEffect, useRef, useState } from "react";
 import type { Page, Slide, Transition } from "../document";
 import SlideRenderer, { type RenderMode } from "../render/SlideRenderer";
+import type { LaserPos } from "./client";
 
 interface Props {
   slide: Slide | undefined;
@@ -12,6 +13,8 @@ interface Props {
   step?: number;
   /** The file's transition, used when the slide has none of its own. */
   fallbackTransition?: Transition;
+  /** Laser pointer dot, as fractions of the slide. */
+  laser?: LaserPos | null;
 }
 
 /** A slide scaled to fit its container, centered, letterboxed on black. */
@@ -22,6 +25,7 @@ export default function SlideStage({
   animate,
   step,
   fallbackTransition,
+  laser,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -54,6 +58,12 @@ export default function SlideStage({
           <div style={{ transform: `scale(${scale})`, transformOrigin: "0 0" }}>
             <SlideRenderer slide={slide} page={page} mode={mode} step={step} />
           </div>
+          {laser && (
+            <div
+              className="laser-dot"
+              style={{ left: `${laser.x * 100}%`, top: `${laser.y * 100}%` }}
+            />
+          )}
         </div>
       )}
     </div>

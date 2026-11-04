@@ -266,7 +266,9 @@
     "autoScreen": "Automática (tela externa)",
     "laptopScreen": "Tela do notebook",
     "twoScreensHint": "A outra tela mostra sua visão do apresentador: notas, próximo slide e cronômetro.",
-    "oneScreenHint": "Com uma só tela há apenas a visão do público. Conecte um projetor ou use “Ensaiar em janelas”."
+    "oneScreenHint": "Com uma só tela há apenas a visão do público. Conecte um projetor ou use “Ensaiar em janelas”.",
+    "laser": "Laser",
+    "laserHint": "Mova o mouse sobre o slide atual: o público vê um ponto vermelho"
   },
   "image": {
     "fit": "Enquadramento",

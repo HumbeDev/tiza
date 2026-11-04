@@ -266,7 +266,9 @@
     "autoScreen": "Automática (pantalla externa)",
     "laptopScreen": "Pantalla del portátil",
     "twoScreensHint": "La otra pantalla muestra tu vista del presentador: notas, siguiente diapositiva y cronómetro.",
-    "oneScreenHint": "Con una sola pantalla solo hay vista del público. Conecta un proyector o usa «Ensayar en ventanas»."
+    "oneScreenHint": "Con una sola pantalla solo hay vista del público. Conecta un proyector o usa «Ensayar en ventanas».",
+    "laser": "Láser",
+    "laserHint": "Mueve el ratón sobre la diapositiva actual: el público ve un punto rojo"
   },
   "image": {
     "fit": "Encuadre",

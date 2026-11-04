@@ -88,7 +88,8 @@ crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ct
 - Con dos pantallas: el **público** ve la presentación a pantalla completa en la **pantalla externa** y tú ves la **vista del presentador** en la otra: diapositiva actual, la siguiente, **notas**, cronómetro (pausar/reiniciar) y reloj.
 - Pestaña _Presentación → Monitores_: elegir en qué pantalla lo ve el público (automática = la externa).
 - Con una sola pantalla: solo la vista del público. «Ensayar en ventanas» abre ambas vistas en ventanas normales para practicar.
-- Teclado y **clicker**: →, ↓, Espacio, Av Pág, clic = siguiente · ←, ↑, Re Pág, clic derecho = anterior · Inicio/Fin · número + Enter = ir a esa diapositiva · **B** pantalla negra · **W** pantalla blanca · Esc = terminar.
+- Teclado y **clicker**: →, ↓, Espacio, Av Pág, clic = siguiente · ←, ↑, Re Pág, clic derecho = anterior · Inicio/Fin · número + Enter = ir a esa diapositiva · **B** pantalla negra · **W** pantalla blanca · **L** puntero láser · Esc = terminar.
+- **Puntero láser**: botón _Láser_ (o **L**) en la vista del presentador; mueves el ratón sobre la diapositiva actual y el público ve un punto rojo. Con una sola pantalla, **L** convierte el ratón en láser.
 - Las diapositivas **ocultas** se saltan. Las páginas HTML son **interactivas** durante la presentación (un clic sobre ellas no avanza).
 - **Transiciones**: fundido, deslizar, zoom o subir, con duración. Pestaña _Transiciones_: la de la diapositiva actual o **«Aplicar a todas»**, que la guarda como **transición predeterminada del archivo** (la usan las diapositivas sin una propia).
 - Versión web: pantalla completa en la pestaña; botón «Vista del presentador» abre una ventana sincronizada (arrástrala a la otra pantalla).
