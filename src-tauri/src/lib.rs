@@ -5,6 +5,7 @@ pub mod document;
 pub mod error;
 pub mod gpu;
 pub mod mcp;
+pub mod media;
 pub mod present;
 pub mod settings;
 pub mod sim;
@@ -25,9 +26,11 @@ pub fn run() {
                 .respond(&request)
         })
         .manage(present::PresentState::default())
+        .manage(media::MediaServer::default())
         .manage(mcp::McpServer::default())
         .setup(|app| {
             mcp::start_if_enabled(app.handle());
+            media::start(app.handle());
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -64,6 +67,7 @@ pub fn run() {
             commands::restart_app,
             present::start_presentation,
             present::list_screens,
+            media::media_base,
             commands::write_export,
             present::presentation_snapshot,
             present::present_nav,

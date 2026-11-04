@@ -185,4 +185,24 @@ describe("agent tools", () => {
     expect(el.kind === "text" && el.doc.content?.[0].attrs?.textAlign).toBe("center");
     expect((await call("style_text", { element_id: id, match: "zzz", bold: true })).ok).toBe(false);
   });
+
+  it("adds videos with their playback options", async () => {
+    const r = await call("add_video", {
+      slide: 1,
+      asset: "sha256-abc.mp4",
+      autoplay: true,
+      end: 12,
+    });
+    expect(r.ok).toBe(true);
+    expect(doc().slides[0].elements[0]).toMatchObject({
+      kind: "video",
+      asset: "sha256-abc.mp4",
+      autoplay: true,
+      loop: false,
+      end: 12,
+    });
+    const id = doc().slides[0].elements[0].id;
+    await call("update_element", { element_id: id, changes: { loop: true, start: 3 } });
+    expect(doc().slides[0].elements[0]).toMatchObject({ loop: true, start: 3 });
+  });
 });

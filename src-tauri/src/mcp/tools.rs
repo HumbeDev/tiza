@@ -205,12 +205,30 @@ pub struct AddImageArgs {
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct AddVideoArgs {
+    pub slide: SlideRef,
+    /// Absolute path of a local video file (mp4, m4v, webm, ogv, mov).
+    pub path: String,
+    /// Start playing when the slide is shown while presenting.
+    pub autoplay: Option<bool>,
+    #[serde(rename = "loop")]
+    pub looping: Option<bool>,
+    pub muted: Option<bool>,
+    /// Play only this part (seconds).
+    pub start: Option<f64>,
+    pub end: Option<f64>,
+    #[serde(flatten)]
+    pub frame: Frame,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct UpdateElementArgs {
     pub element_id: String,
     /// Fields to change. Common: x, y, w, h, rotation, opacity, locked. Text: text (same
     /// syntax as add_text), font_size, color, align. Equation: latex, font_size, color.
     /// Shape: fill, stroke_color, stroke_width. Table: rows, header_row, theme, font_size.
-    /// HTML: html, title, view_width, view_height. YouTube/X embed: url, start.
+    /// HTML: html, title, view_width, view_height. YouTube/X/web embed: url, start.
+    /// Video: autoplay, loop, muted, start, end.
     pub changes: serde_json::Map<String, Value>,
 }
 
@@ -513,6 +531,46 @@ impl TizaMcp {
         Parameters(args): Parameters<AddEmbedArgs>,
     ) -> Result<CallToolResult, ErrorData> {
         self.forward("add_embed", args).await
+    }
+
+    #[tool(
+        description = "Add a video from a local file (copied into the presentation). Returns the element id."
+    )]
+    async fn add_video(
+        &self,
+        Parameters(args): Parameters<AddVideoArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        let app = match self.bridge.app() {
+            Ok(app) => app,
+            Err(e) => return reply(Err(e)),
+        };
+        let path = std::path::PathBuf::from(&args.path);
+        let ok = path.extension().is_some_and(|e| {
+            ["mp4", "m4v", "webm", "ogv", "mov"]
+                .iter()
+                .any(|x| e.eq_ignore_ascii_case(x))
+        });
+        if !ok {
+            return reply(Err("path must be an mp4, m4v, webm, ogv or mov file".into()));
+        }
+        let imported = tauri::async_runtime::spawn_blocking(move || {
+            app.state::<AssetStore>()
+                .import_file(&path)
+                .map_err(|e| e.to_string())
+        })
+        .await
+        .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+        let asset = match imported {
+            Ok(asset) => asset,
+            Err(e) => return reply(Err(format!("could not read the video: {e}"))),
+        };
+        let mut payload = serde_json::to_value(&args)
+            .map_err(|e| ErrorData::invalid_params(e.to_string(), None))?;
+        if let Some(o) = payload.as_object_mut() {
+            o.remove("path");
+            o.insert("asset".into(), json!(asset.name));
+        }
+        self.forward("add_video", payload).await
     }
 
     #[tool(description = "Add a picture from a local image file. Returns the element id.")]

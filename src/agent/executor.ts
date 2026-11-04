@@ -16,6 +16,7 @@ import type {
 import {
   createEmbed,
   createImage,
+  createVideo,
   createShape,
   createSim,
   createTable,
@@ -409,6 +410,22 @@ const tools: Record<string, (args: Args) => unknown> = {
     return { element_id: el.id, provider: parsed.provider };
   },
 
+  add_video(args) {
+    const { slide } = slideOf(args.slide);
+    const page = state().doc.page;
+    const el = place(createVideo(String(args.asset), page.width / 2, page.height / 2), args, slide);
+    const video = {
+      ...el,
+      autoplay: args.autoplay === true,
+      loop: args.loop === true,
+      muted: args.muted === true,
+      ...(num(args.start) ? { start: num(args.start) } : {}),
+      ...(num(args.end) ? { end: num(args.end) } : {}),
+    } as Element;
+    addElement(video);
+    return { element_id: video.id };
+  },
+
   add_image(args) {
     const { slide } = slideOf(args.slide);
     const asset = args.asset as { name: string; width?: number; height?: number };
@@ -644,8 +661,22 @@ function applyChange(el: Draft<Element>, key: string, value: unknown): boolean {
       return true;
     }
     case "start":
+      if (el.kind === "video") {
+        el.start = n && n > 0 ? n : undefined;
+        return true;
+      }
       if (el.kind !== "embed" || el.provider !== "youtube") return false;
       el.start = n && n > 0 ? Math.round(n) : undefined;
+      return true;
+    case "end":
+      if (el.kind !== "video") return false;
+      el.end = n && n > 0 ? n : undefined;
+      return true;
+    case "autoplay":
+    case "loop":
+    case "muted":
+      if (el.kind !== "video" || typeof value !== "boolean") return false;
+      el[key] = value;
       return true;
     default:
       return false;

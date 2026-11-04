@@ -152,13 +152,20 @@ export async function imageSize(
 
 const mediaUrls = new Map<string, Promise<string>>();
 
+let mediaBase: Promise<string | null> | null = null;
+
 /**
  * URL for <video>. WebKitGTK's media player can't read custom protocols (tizaasset://
- * fails with MEDIA_ERR_SRC_NOT_SUPPORTED), so on the desktop the bytes are fetched from
- * Rust once and played from a blob: URL. Very large videos therefore use that much memory.
+ * fails with MEDIA_ERR_SRC_NOT_SUPPORTED), so on the desktop videos come from Rust's
+ * local media server (127.0.0.1, HTTP ranges: big videos aren't loaded into memory). If
+ * that server isn't running, the bytes are read once and played from a blob: URL.
  */
-export function mediaUrl(name: string): Promise<string> {
-  if (!isDesktop) return Promise.resolve(assetUrl(name));
+export async function mediaUrl(name: string): Promise<string> {
+  if (!isDesktop) return assetUrl(name);
+  mediaBase ??= invoke<string | null>("media_base").catch(() => null);
+  const base = await mediaBase;
+  if (base) return `${base}/${encodeURIComponent(name)}`;
+  mediaBase = null; // not listening yet: ask again next time
   let url = mediaUrls.get(name);
   if (!url) {
     url = invoke<ArrayBuffer>("read_asset", { name }).then((bytes) =>
