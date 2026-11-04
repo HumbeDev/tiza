@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import type { ShapeKind } from "../document";
 import { createPresentation, createShape, createText } from "../document/factory";
 import {
+  toggleSelected,
+  ungroupElements,
+  groupElements,
   addBlankSlide,
   addElement,
   buildOnNextClick,
@@ -250,5 +254,25 @@ describe("builds", () => {
     expect(maxBuildStep(slide())).toBe(2);
     setBuild([a.id, b.id, c.id], null);
     expect(maxBuildStep(slide())).toBe(0);
+  });
+});
+
+describe("groups", () => {
+  it("selecting one element selects its group; exact picks one; ungroup splits", () => {
+    loadDocument(createPresentation("g", "es"));
+    const [a, b, c] = ["rect", "ellipse", "line"].map((k) => createShape(k as ShapeKind, 100, 100));
+    [a, b, c].forEach(addElement);
+    const group = groupElements([a.id, b.id]);
+    expect(group).toBeTruthy();
+    select([a.id]);
+    expect(useEditor.getState().selectedIds.sort()).toEqual([a.id, b.id].sort());
+    select([a.id], true);
+    expect(useEditor.getState().selectedIds).toEqual([a.id]);
+    toggleSelected(c.id);
+    expect(useEditor.getState().selectedIds).toHaveLength(2);
+    ungroupElements([a.id, b.id]);
+    select([a.id]);
+    expect(useEditor.getState().selectedIds).toEqual([a.id]);
+    expect(groupElements([c.id])).toBeNull();
   });
 });

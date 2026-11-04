@@ -21,6 +21,8 @@ import {
   selectSlide,
   selectedElements,
   setLocked,
+  groupElements,
+  ungroupElements,
   setSlideHidden,
   setTemplateSlide,
   startEditing,
@@ -89,6 +91,27 @@ export function elementMenu(): MenuItem[] {
       shortcut: "Ctrl+Shift+[",
       onSelect: () => reorderSelected("back"),
     },
+    ...(selected.length > 1 &&
+    !selected.every((e) => e.groupId && e.groupId === selected[0].groupId)
+      ? [
+          {
+            label: t("menu.group"),
+            icon: "group" as const,
+            shortcut: "Ctrl+G",
+            onSelect: () => groupElements(state().selectedIds),
+          },
+        ]
+      : []),
+    ...(selected.some((e) => e.groupId)
+      ? [
+          {
+            label: t("menu.ungroup"),
+            icon: "ungroup" as const,
+            shortcut: "Ctrl+Shift+G",
+            onSelect: () => ungroupElements(state().selectedIds),
+          },
+        ]
+      : []),
     separator,
     { label: t("build.onNextClick"), icon: "build", onSelect: buildOnNextClick },
     ...(selected.some((e) => e.build)

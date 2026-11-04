@@ -129,6 +129,8 @@ Herramientas: ver la presentación y cada diapositiva; crear, duplicar, mover, b
 **Interfaz**
 
 - **Cinta estilo Office**: menú **Archivo**, acceso rápido (guardar, deshacer, rehacer) y pestañas **Inicio** (portapapeles, diapositivas, organizar, alinear), **Insertar** (texto, ecuación, imagen, video, tabla, formas, HTML, importar), **Animaciones**, **Transiciones** y **Presentación**. Recuerda la última pestaña.
+- **Agrupar** (Ctrl+G) y desagrupar (Ctrl+Shift+G): al hacer clic en un elemento del grupo se selecciona y se mueve todo; Alt+clic elige uno solo.
+- **Portapapeles del sistema**: copiar y pegar elementos entre ventanas de Tiza y entre la app y la web; desde otras apps se pega una **imagen** (captura de pantalla), un **enlace** (YouTube, X o web → contenido web) o **texto** (→ cuadro de texto). Al copiar, otras apps reciben el texto.
 - **Clic derecho** en elementos (cortar, copiar, pegar, duplicar, orden, bloquear, eliminar), en el lienzo vacío y en las miniaturas (duplicar, **ocultar en la presentación**, subir/bajar, eliminar).
 - **Tema claro / oscuro / sistema** (botón en la barra o en Ajustes).
 - **Ajustes** (Ctrl+, o menú Archivo) por secciones: General (idioma, tema), Rendimiento (**tarjeta gráfica** (automática o alto rendimiento; Tiza se reinicia sola y conserva tus cambios), Agentes de IA, Diagnóstico (las GPU reales del sistema, cuál usa Tiza, WebGL) y Acerca de.

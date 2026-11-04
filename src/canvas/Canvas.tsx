@@ -113,6 +113,8 @@ export default function Canvas() {
       if (id === state.editingId) return;
       const wasSelected = state.selectedIds.includes(id);
       if (additive) toggleSelected(id);
+      // Alt+click: one element inside a group.
+      else if (e.altKey) select([id], true);
       else if (!wasSelected) select([id]);
       const selected = new Set(useEditor.getState().selectedIds);
       if (!selected.has(id)) return;

@@ -534,6 +534,24 @@ impl TizaMcp {
         self.forward("update_element", args).await
     }
 
+    #[tool(
+        description = "Group elements of one slide (2 or more): selecting or moving one moves them all. Returns the group id; get_slide shows it as groupId."
+    )]
+    async fn group_elements(
+        &self,
+        Parameters(args): Parameters<ElementIdsArg>,
+    ) -> Result<CallToolResult, ErrorData> {
+        self.forward("group_elements", args).await
+    }
+
+    #[tool(description = "Remove these elements from their groups.")]
+    async fn ungroup_elements(
+        &self,
+        Parameters(args): Parameters<ElementIdsArg>,
+    ) -> Result<CallToolResult, ErrorData> {
+        self.forward("ungroup_elements", args).await
+    }
+
     #[tool(description = "Delete elements.")]
     async fn delete_elements(
         &self,

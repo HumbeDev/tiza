@@ -184,7 +184,9 @@
     "duplicate": "Duplicate",
     "lock": "Lock",
     "unlock": "Unlock",
-    "selectAll": "Select all"
+    "selectAll": "Select all",
+    "group": "Group",
+    "ungroup": "Ungroup"
   },
   "settings": {
     "title": "Settings",

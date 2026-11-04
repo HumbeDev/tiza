@@ -5,8 +5,8 @@ import { openSettings } from "./SettingsDialog";
 import {
   addSlide,
   copySelected,
-  cutSelected,
   deleteSelected,
+  groupElements,
   duplicateSelected,
   nudgeSelected,
   paste,
@@ -17,8 +17,10 @@ import {
   selectedElements,
   startEditing,
   undo,
+  ungroupElements,
   useEditor,
 } from "../store/editor";
+import { pasteData, writeElements } from "./clipboard";
 
 function isTyping(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -63,11 +65,22 @@ export function useShortcuts(): void {
       if (isTyping(e.target)) return;
       let handled = true;
 
-      if (mod && key === "z" && !e.shiftKey) undo();
+      // Copy/cut/paste: the browser's clipboard events (below) do the work, so the keys
+      // aren't cancelled. The internal clipboard is the fallback when no event comes.
+      if (mod && (key === "c" || key === "x") && !e.shiftKey && !e.altKey) {
+        copySelected();
+        if (key === "x") setTimeout(deleteSelected, 0); // after the cut event read it
+        return;
+      }
+      if (mod && key === "v" && !e.shiftKey && !e.altKey) {
+        pasteSeen = false;
+        setTimeout(() => !pasteSeen && paste(), 60);
+        return;
+      }
+
+      if (mod && key === "g") groupSelection(e.shiftKey);
+      else if (mod && key === "z" && !e.shiftKey) undo();
       else if (mod && (key === "y" || (key === "z" && e.shiftKey))) redo();
-      else if (mod && key === "c") copySelected();
-      else if (mod && key === "x") cutSelected();
-      else if (mod && key === "v") paste();
       else if (mod && key === "d") duplicateSelected();
       else if (mod && key === "a") selectAll();
       else if (mod && key === "m") addSlide();
@@ -95,7 +108,40 @@ export function useShortcuts(): void {
       if (handled) e.preventDefault();
     }
 
+    function onCopy(e: ClipboardEvent) {
+      if (isTyping(e.target) || !e.clipboardData) return;
+      const elements = selectedElements(useEditor.getState());
+      if (elements.length === 0) return;
+      writeElements(e.clipboardData, elements);
+      e.preventDefault();
+    }
+
+    function onPaste(e: ClipboardEvent) {
+      if (isTyping(e.target) || !e.clipboardData) return;
+      pasteSeen = true;
+      if (pasteData(e.clipboardData)) e.preventDefault();
+      else paste();
+    }
+
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    document.addEventListener("copy", onCopy);
+    document.addEventListener("cut", onCopy);
+    document.addEventListener("paste", onPaste);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("copy", onCopy);
+      document.removeEventListener("cut", onCopy);
+      document.removeEventListener("paste", onPaste);
+    };
   }, []);
+}
+
+/** Set by the paste event, so the Ctrl+V fallback doesn't paste twice. */
+let pasteSeen = false;
+
+/** Ctrl+G groups the selection; Ctrl+Shift+G ungroups it. */
+export function groupSelection(ungroup: boolean): void {
+  const ids = useEditor.getState().selectedIds;
+  if (ungroup) ungroupElements(ids);
+  else groupElements(ids);
 }

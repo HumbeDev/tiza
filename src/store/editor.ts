@@ -208,13 +208,55 @@ export function selectSlide(id: string): void {
   set({ currentSlideId: id, selectedIds: [], editingId: null, htmlEditingId: null });
 }
 
-export function select(ids: string[]): void {
-  set({ selectedIds: ids, editingId: null });
+/** The ids plus every element grouped with them (on the current slide). */
+function withGroups(ids: string[]): string[] {
+  const elements = currentSlide(get()).elements;
+  const groups = new Set(
+    elements.filter((e) => e.groupId && ids.includes(e.id)).map((e) => e.groupId),
+  );
+  if (groups.size === 0) return ids;
+  const extra = elements.filter((e) => e.groupId && groups.has(e.groupId)).map((e) => e.id);
+  return [...new Set([...ids, ...extra])];
+}
+
+/** Selects these elements and the rest of their groups; `exact` picks one inside a group. */
+export function select(ids: string[], exact = false): void {
+  set({ selectedIds: exact ? ids : withGroups(ids), editingId: null });
 }
 
 export function toggleSelected(id: string): void {
   const { selectedIds } = get();
-  select(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);
+  const group = withGroups([id]);
+  select(
+    selectedIds.includes(id)
+      ? selectedIds.filter((x) => !group.includes(x))
+      : [...selectedIds, ...group],
+    true,
+  );
+}
+
+/** Groups these elements (2 or more): selecting one selects all. Returns the group id. */
+export function groupElements(ids: string[]): string | null {
+  if (ids.length < 2) return null;
+  const groupId = newId();
+  updateElements(ids, { groupId });
+  return groupId;
+}
+
+export function ungroupElements(ids: string[]): void {
+  updateElements(ids, (el) => {
+    delete el.groupId;
+  });
+}
+
+/** Copies get their own groups, so pasting doesn't join the originals' group. */
+function regroup(elements: Element[]): Element[] {
+  const fresh = new Map<string, string>();
+  return elements.map((e) => {
+    if (!e.groupId) return e;
+    if (!fresh.has(e.groupId)) fresh.set(e.groupId, newId());
+    return { ...e, groupId: fresh.get(e.groupId) };
+  });
 }
 
 export function selectAll(): void {
@@ -419,12 +461,23 @@ export function cutSelected(): void {
 
 export function paste(offset = 20): void {
   if (clipboard.length === 0) return;
-  const copies = clipboard.map((e) => ({ ...e, id: newId(), x: e.x + offset, y: e.y + offset }));
-  clipboard = copies.map((e) => structuredClone(e));
+  clipboard = pasteElements(clipboard, offset).map((e) => structuredClone(e));
+}
+
+/** Adds copies of `elements` (new ids, shifted by `offset`) and selects them. */
+export function pasteElements(elements: Element[], offset = 20): Element[] {
+  if (elements.length === 0) return [];
+  const copies = regroup(
+    elements.map((e) => ({ ...e, id: newId(), x: e.x + offset, y: e.y + offset })),
+  );
   change((doc) => {
     draftSlide(doc).elements.push(...copies);
   });
-  select(copies.map((e) => e.id));
+  select(
+    copies.map((e) => e.id),
+    true,
+  );
+  return copies;
 }
 
 export function duplicateSelected(): void {

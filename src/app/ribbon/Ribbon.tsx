@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { openEmbedDialog } from "../EmbedDialog";
 import { runExport } from "../exportActions";
+import { groupSelection } from "../useShortcuts";
 import { clearRecentFiles, folderOf, useRecentFiles } from "../../files/recent";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
@@ -279,6 +280,7 @@ function QuickButton({ icon, label, onClick, disabled, shortcut }: ButtonProps) 
 function HomeTab() {
   const { t } = useTranslation();
   const selected = useEditor((s) => s.selectedIds.length);
+  const grouped = useEditor((s) => selectedElements(s).some((e) => e.groupId));
   const slide = useEditor(currentSlide);
   const slides = useEditor((s) => s.doc.slides.length);
   const none = selected === 0;
@@ -380,6 +382,22 @@ function HomeTab() {
             onClick={selectAll}
           />
           <Small icon="trash" label={t("props.delete")} onClick={deleteSelected} disabled={none} />
+        </div>
+        <div className="rb-column">
+          <Small
+            icon="group"
+            label={t("menu.group")}
+            shortcut="Ctrl+G"
+            onClick={() => groupSelection(false)}
+            disabled={selected < 2}
+          />
+          <Small
+            icon="ungroup"
+            label={t("menu.ungroup")}
+            shortcut="Ctrl+Shift+G"
+            onClick={() => groupSelection(true)}
+            disabled={!grouped}
+          />
         </div>
       </Group>
       <Group label={t("props.align")}>

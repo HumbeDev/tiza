@@ -29,6 +29,8 @@ import { save as saveFile } from "../files/session";
 import {
   type ZOrder,
   addBlankSlide,
+  groupElements,
+  ungroupElements,
   addElement,
   addSlide,
   batch,
@@ -430,6 +432,21 @@ const tools: Record<string, (args: Args) => unknown> = {
     if (num(c.font_size) && el.kind === "math") setMathFontSize(el.id, num(c.font_size)!);
     focus(slide, [el.id]);
     return unknown.length ? { ok: true, ignored: unknown } : { ok: true };
+  },
+
+  group_elements({ element_ids }) {
+    const ids = Array.isArray(element_ids) ? element_ids.map(String) : [];
+    if (ids.length < 2) throw new ToolError("group_elements needs at least 2 element ids");
+    const slides = new Set(ids.map((id) => elementOf(id).slide.id));
+    if (slides.size > 1) throw new ToolError("all elements of a group must be on the same slide");
+    return { group_id: groupElements(ids) };
+  },
+
+  ungroup_elements({ element_ids }) {
+    const ids = Array.isArray(element_ids) ? element_ids.map(String) : [];
+    ids.forEach(elementOf);
+    ungroupElements(ids);
+    return { ungrouped: ids.length };
   },
 
   delete_elements({ element_ids }) {

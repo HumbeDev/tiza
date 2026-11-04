@@ -184,7 +184,9 @@
     "duplicate": "Duplicar",
     "lock": "Bloquear",
     "unlock": "Desbloquear",
-    "selectAll": "Selecionar tudo"
+    "selectAll": "Selecionar tudo",
+    "group": "Agrupar",
+    "ungroup": "Desagrupar"
   },
   "settings": {
     "title": "Configurações",

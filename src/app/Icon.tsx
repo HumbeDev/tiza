@@ -64,6 +64,8 @@ const PATHS = {
   alignTop: "M3 4h18M7 8h4v12H7zM14 8h4v7h-4z",
   alignCenterY: "M3 12h18M7 6h4v12H7zM14 8.5h4v7h-4z",
   alignBottom: "M3 20h18M7 4h4v12H7zM14 9h4v7h-4z",
+  group: "M3 3h4M3 3v4M21 3h-4M21 3v4M3 21h4M3 21v-4M21 21h-4M21 21v-4M7 7h6v6H7zM11 11h6v6h-6z",
+  ungroup: "M4 4h7v7H4zM13 13h7v7h-7z",
   front: "M8 8h12v12H8zM4 4h12v12",
   back: "M4 4h12v12H4zM8 16v4h12V8h-4",
 } as const;

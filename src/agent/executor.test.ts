@@ -156,4 +156,16 @@ describe("agent tools", () => {
     const bad = await call("add_embed", { slide: 1, url: "not a link" });
     expect(bad.ok).toBe(false);
   });
+
+  it("groups and ungroups elements", async () => {
+    await call("add_shape", { slide: 1, shape: "rect" });
+    await call("add_shape", { slide: 1, shape: "ellipse" });
+    const ids = doc().slides[0].elements.map((e) => e.id);
+    const grouped = await call("group_elements", { element_ids: ids });
+    expect(grouped.ok).toBe(true);
+    expect(new Set(doc().slides[0].elements.map((e) => e.groupId)).size).toBe(1);
+    expect((await call("group_elements", { element_ids: [ids[0]] })).ok).toBe(false);
+    await call("ungroup_elements", { element_ids: ids });
+    expect(doc().slides[0].elements.every((e) => !e.groupId)).toBe(true);
+  });
 });
