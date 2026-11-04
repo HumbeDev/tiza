@@ -624,3 +624,10 @@ Cada fase termina con: código compilando en modo release, tests pasando, commit
 - **Tablas**: `TableElement` (filas de texto, encabezado fijo, bandas, 5 temas, tamaño). CSV propio (RFC 4180, detección de `,`/`;`/tab, BOM; Latin-1 de respaldo en Rust y en la web). Tablas de PPTX importadas como tablas; videos de PPTX como video.
 - **PDF** (pdf.js 6, archivos en `public/vendor/pdfjs/`, CSP con `'wasm-unsafe-eval'`): fondo = página renderizada sin texto (se anulan `fillText/strokeText` del canvas); texto agrupado en líneas/bloques (columnas separadas) como cuadros editables; color por diferencia de píxeles con/sin texto ponderada por el cambio.
 - **Recuperación**: diálogo de tres botones (Recuperar/Descartar/Más tarde); cerrar el aviso = más tarde. Con una recuperación pendiente la sesión no la sobrescribe ni la borra. (Motivo: una prueba borró una recuperación real del autor al cerrar la app con el aviso abierto.)
+
+### Fase 8 — Servidor MCP — 2026-11-04 🧪
+- `rmcp` 3.8 (SDK oficial) con Streamable HTTP sobre `axum` 0.8 en `127.0.0.1:<puerto>` (7457 por defecto). Middleware de token `Authorization: Bearer` (comparación en tiempo constante) + validación de `Host` del SDK (anti DNS rebinding). Desactivado por defecto; preferencias en `settings.json` (`mcp.enabled/port/token`); se arranca en `setup` si está activo y se activa/desactiva sin reiniciar.
+- 21 herramientas (`src-tauri/src/mcp/tools.rs`, esquemas con `schemars`). Rust valida argumentos y reenvía al editor (`mcp:request` con id → `mcp_respond`, timeout 30 s); `add_image` importa el archivo en Rust antes.
+- El editor ejecuta cada llamada en `batch()` = **un paso de deshacer** (`src/agent/executor.ts`), enfoca la diapositiva afectada para que el usuario vea el cambio, y responde errores claros en inglés. Texto de agentes: `$…$`, `- `/`1. `, `**negrita**` (`src/agent/text.ts`).
+- Probado con un cliente MCP real (curl JSON-RPC): 401 sin token, initialize, 21 herramientas, creación de título/ecuación/viñetas/tabla en la app real.
+- Pendiente: `render_slide` (imagen de la diapositiva para que el agente vea el resultado), puente stdio, herramientas para video y PDF/PPTX import.

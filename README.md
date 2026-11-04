@@ -4,8 +4,8 @@ Editor de presentaciones **offline, libre y de código abierto** para ciencia y 
 la facilidad de PowerPoint, la potencia de LaTeX y la riqueza de la web
 (video, páginas en vivo y simulaciones HTML/JS interactivas).
 
-**Hecho para agentes de IA:** Tiza incluirá un servidor **MCP**, así que Claude Code, Claude Desktop
-u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y tú deshaces lo que no te guste).
+**Hecho para agentes de IA:** Tiza trae un servidor **MCP**: Claude Code, Claude Desktop u otro agente
+crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ctrl+Z lo que no te guste.
 
 > 🚧 En desarrollo temprano. Especificación y hoja de ruta: [PROYECTO.md](PROYECTO.md).
 
@@ -107,6 +107,14 @@ u otro agente podrá crear y editar tu presentación en vivo mientras la ves (y 
 **Importar PowerPoint (.pptx)**: _Archivo → Importar PowerPoint…_ crea una presentación nueva con todo **editable**: textos (negrita, cursiva, subrayado, tachado, tamaños, colores, alineación, viñetas), imágenes, formas y líneas con sus colores, fondos, diapositivas ocultas, **notas del orador** y los elementos de los patrones/diseños (logos, barras). Sin programas externos: funciona igual en la app y en la web. Las **tablas** de PowerPoint se importan como tablas y los **videos** incrustados como video. Aún no convierte gráficos, SmartArt ni ecuaciones de Office (avisa cuántos omitió).
 
 **Importar PDF**: _Archivo → Importar PowerPoint o PDF…_. Cada página es una diapositiva: lo gráfico (figuras, fondos, gráficos) queda como imagen de fondo y **el texto encima, editable**, con su posición, tamaño, color, negrita y cursiva.
+
+**Agentes de IA (MCP)** — _Ajustes → Agentes de IA (MCP)_ (solo en la app de escritorio):
+
+1. Activa «Permitir que agentes de IA editen la presentación abierta».
+2. Pulsa **Copiar comando para Claude Code** y pégalo en una terminal (`claude mcp add --transport http tiza http://127.0.0.1:7457/mcp --header "Authorization: Bearer …"`).
+3. Pídele a Claude, por ejemplo: «arma 3 diapositivas sobre el péndulo simple con la fórmula del período y una tabla de datos».
+
+Herramientas: ver la presentación y cada diapositiva; crear, duplicar, mover, borrar y configurar diapositivas (fondo, notas, ocultar, transición); agregar texto (con `$…$` y viñetas), ecuaciones, formas, tablas, páginas HTML e imágenes; modificar, borrar, ordenar y **animar** elementos; macros LaTeX; deshacer y guardar. Seguridad: solo `127.0.0.1`, token obligatorio, desactivado por defecto; cada acción del agente es un paso de deshacer. La barra de estado muestra «🤖 Agente trabajando…» mientras actúa.
 
 **Interfaz**
 

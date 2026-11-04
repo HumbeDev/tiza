@@ -30,7 +30,7 @@ Antes de cada commit: `npm run lint && npm test && npm run format:check` y en `s
 
 - Código, identificadores y comentarios en **inglés**. Docs para el autor en **español**.
 - **i18n obligatorio:** ningún texto visible escrito directo en componentes. Todo texto nuevo se agrega a los **cuatro** archivos de `src/i18n/locales/` (`es`, `pt-BR`, `fr`, `en`) en el mismo commit. `en.json` define las claves tipadas.
-- **Build for agents (MCP, §7.11) obligatorio:** toda funcionalidad nueva expone su herramienta MCP. Las acciones del store deben poder llamarse sin la UI y con ids explícitos (no depender de la selección ni de la diapositiva actual), porque la capa MCP las invoca directamente. Descripciones de herramientas y errores para agentes en inglés.
+- **Build for agents (MCP, §7.11) obligatorio:** toda funcionalidad nueva expone su herramienta MCP (Rust: `src-tauri/src/mcp/tools.rs`; ejecución: `src/agent/executor.ts`). Las acciones del store deben poder llamarse sin la UI y con ids explícitos (no depender de la selección ni de la diapositiva actual), porque la capa MCP las invoca directamente. Descripciones de herramientas y errores para agentes en inglés.
 - Rust no produce textos para el usuario: errores con código estable (`thiserror`), el frontend traduce.
 - Rust: sin `unwrap()`/`expect()` en producción (salvo el arranque de Tauri). Clippy sin advertencias.
 - TS: `strict`. El documento solo se modifica vía acciones del store (Zustand + Immer).
@@ -41,6 +41,10 @@ Antes de cada commit: `npm run lint && npm test && npm run format:check` y en `s
 
 - `src/app/` layout · `src/i18n/` idiomas · `src/styles/` CSS · (próximas: `canvas/`, `elements/`, `store/`, `render/`…)
 - `src-tauri/src/` backend Rust · `src-tauri/tauri.conf.json` config y CSP
+
+## Pruebas con la app de escritorio
+
+Antes de lanzar `npm run tauri dev` para probar: revisar `~/.local/share/dev.humbe.tiza/recovery/` (si no está vacío, preguntar al autor) y respaldar `~/.config/dev.humbe.tiza/settings.json` si se modifica. Al terminar, restaurar y borrar solo lo creado por la prueba.
 
 ## Entorno del autor
 
