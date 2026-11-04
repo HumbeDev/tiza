@@ -13,8 +13,14 @@ function renderChildren(node: RichNode): ReactNode[] {
 
 function renderNode(node: RichNode, key: number): ReactNode {
   switch (node.type) {
-    case "paragraph":
-      return <p key={key}>{node.content?.length ? renderChildren(node) : <br />}</p>;
+    case "paragraph": {
+      const align = node.attrs?.textAlign;
+      return (
+        <p key={key} style={typeof align === "string" ? { textAlign: align as "left" } : undefined}>
+          {node.content?.length ? renderChildren(node) : <br />}
+        </p>
+      );
+    }
     case "bulletList":
       return <ul key={key}>{renderChildren(node)}</ul>;
     case "orderedList":
@@ -48,6 +54,14 @@ function wrapMark(inner: ReactNode, mark: RichMark): ReactNode {
       return <s>{inner}</s>;
     case "code":
       return <code>{inner}</code>;
+    case "textStyle": {
+      const { color, fontSize } = mark.attrs ?? {};
+      const style = {
+        ...(typeof color === "string" ? { color } : {}),
+        ...(typeof fontSize === "string" ? { fontSize } : {}),
+      };
+      return <span style={style}>{inner}</span>;
+    }
     default:
       return inner;
   }

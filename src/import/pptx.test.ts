@@ -230,6 +230,11 @@ describe("importPptx", async () => {
       { type: "bold" },
       { type: "underline" },
     ]);
+    // "mundo" has no run properties: 18 pt (other style) in the theme's text color.
+    const mundo = box.doc.content?.[0].content?.at(-1);
+    expect(mundo?.marks).toEqual([
+      { type: "textStyle", attrs: { color: "#111111", fontSize: "36px" } },
+    ]);
   });
 });
 

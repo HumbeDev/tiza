@@ -2641,3 +2641,20 @@ input[type="color"] {
   background: #ff2a2a;
   box-shadow: 0 0 6px #ff2a2a;
 }
+
+/* ---------------------------------------------------------------- text fragments */
+
+.fragment-style {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fragment-style select {
+  min-width: 0;
+  flex: 1;
+}
+
+.fragment-color input[type="color"] {
+  width: 34px;
+}

@@ -1,6 +1,8 @@
 import type { JSONContent } from "@tiptap/core";
 import { EditorContent, useEditor as useTiptap } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import TextAlign from "@tiptap/extension-text-align";
+import { Color, FontSize, TextStyle } from "@tiptap/extension-text-style";
 import { useEffect } from "react";
 import type { Element, RichNode, TextElement } from "../../document";
 import { stopEditing, updateElements } from "../../store/editor";
@@ -18,6 +20,11 @@ export const textExtensions = [
     link: false,
   }),
   InlineMath,
+  // Per-fragment color and size (mark `textStyle`), per-paragraph alignment.
+  TextStyle,
+  Color,
+  FontSize,
+  TextAlign.configure({ types: ["paragraph"], alignments: ["left", "center", "right", "justify"] }),
 ];
 
 export default function TextEditor({ el }: Props) {

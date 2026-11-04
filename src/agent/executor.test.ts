@@ -168,4 +168,21 @@ describe("agent tools", () => {
     await call("ungroup_elements", { element_ids: ids });
     expect(doc().slides[0].elements.every((e) => !e.groupId)).toBe(true);
   });
+
+  it("styles fragments of a text box", async () => {
+    await call("add_text", { slide: 1, text: "Velocidad v y aceleración a" });
+    const id = doc().slides[0].elements[0].id;
+    const r = await call("style_text", {
+      element_id: id,
+      match: "v",
+      color: "#d62828",
+      font_size: 90,
+    });
+    expect(r.result).toMatchObject({ styled: 1 });
+    await call("style_text", { element_id: id, align: "center" });
+    const el = doc().slides[0].elements[0];
+    expect(el.kind === "text" && JSON.stringify(el.doc)).toContain('"color":"#d62828"');
+    expect(el.kind === "text" && el.doc.content?.[0].attrs?.textAlign).toBe("center");
+    expect((await call("style_text", { element_id: id, match: "zzz", bold: true })).ok).toBe(false);
+  });
 });

@@ -86,7 +86,12 @@
     "opacityShort": "Opac. %",
     "image": "Image",
     "video": "Video",
-    "table": "Table"
+    "table": "Table",
+    "fragmentColor": "Color of the selected text",
+    "fragmentSize": "Size of the selected text",
+    "sizeDefault": "Size: box",
+    "clearStyle": "Clear color/size",
+    "paragraphAlign": "Paragraph alignment"
   },
   "align": {
     "left": "Align left",
@@ -105,7 +110,8 @@
   "textAlign": {
     "left": "Left",
     "center": "Center",
-    "right": "Right"
+    "right": "Right",
+    "justify": "Justify"
   },
   "status": {
     "slideOf": "Slide {{current}} of {{total}}",

@@ -623,6 +623,9 @@ function TextFormatting() {
             strike: e.isActive("strike"),
             bulletList: e.isActive("bulletList"),
             orderedList: e.isActive("orderedList"),
+            color: (e.getAttributes("textStyle").color as string | undefined) ?? null,
+            fontSize: parseFloat(String(e.getAttributes("textStyle").fontSize ?? "")) || null,
+            align: (e.getAttributes("paragraph").textAlign as string | undefined) ?? null,
           }
         : null,
   });
@@ -678,10 +681,69 @@ function TextFormatting() {
           onClick={insertFormula}
         />
       </div>
+      <div className="fragment-style">
+        <label className="fragment-color" title={t("props.fragmentColor")}>
+          <input
+            type="color"
+            value={active.color ?? "#1d1d1b"}
+            onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
+          />
+        </label>
+        <select
+          aria-label={t("props.fragmentSize")}
+          title={t("props.fragmentSize")}
+          value={active.fontSize ?? ""}
+          onChange={(e) =>
+            e.target.value
+              ? editor.chain().focus().setFontSize(`${e.target.value}px`).run()
+              : editor.chain().focus().unsetFontSize().run()
+          }
+        >
+          <option value="">{t("props.sizeDefault")}</option>
+          {[...new Set([...FRAGMENT_SIZES, ...(active.fontSize ? [active.fontSize] : [])])]
+            .sort((a, b) => a - b)
+            .map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+        </select>
+        <IconButton
+          icon="eraser"
+          label={t("props.clearStyle")}
+          onMouseDown={keepFocus}
+          onClick={() => editor.chain().focus().unsetColor().unsetFontSize().run()}
+        />
+      </div>
+      <div className="button-row" role="group" aria-label={t("props.paragraphAlign")}>
+        {PARAGRAPH_ALIGN.map(([align, icon]) => (
+          <IconButton
+            key={align}
+            icon={icon}
+            label={t(`textAlign.${align}`)}
+            active={active.align === align}
+            onMouseDown={keepFocus}
+            onClick={() =>
+              active.align === align
+                ? editor.chain().focus().unsetTextAlign().run()
+                : editor.chain().focus().setTextAlign(align).run()
+            }
+          />
+        ))}
+      </div>
       <p className="hint">{t("math.inlineHint")}</p>
     </>
   );
 }
+
+const FRAGMENT_SIZES = [24, 32, 40, 48, 56, 64, 72, 88, 104, 120, 144];
+
+const PARAGRAPH_ALIGN: ["left" | "center" | "right" | "justify", IconName][] = [
+  ["left", "textLeft"],
+  ["center", "textCenter"],
+  ["right", "textRight"],
+  ["justify", "textJustify"],
+];
 
 function ElementProperties({ el }: { el: Element }) {
   const { t } = useTranslation();

@@ -86,7 +86,12 @@
     "opacityShort": "Opac. %",
     "image": "Imagem",
     "video": "Vídeo",
-    "table": "Tabela"
+    "table": "Tabela",
+    "fragmentColor": "Cor do texto selecionado",
+    "fragmentSize": "Tamanho do texto selecionado",
+    "sizeDefault": "Tamanho: o da caixa",
+    "clearStyle": "Remover cor/tamanho",
+    "paragraphAlign": "Alinhamento do parágrafo"
   },
   "align": {
     "left": "Alinhar à esquerda",
@@ -105,7 +110,8 @@
   "textAlign": {
     "left": "Esquerda",
     "center": "Centro",
-    "right": "Direita"
+    "right": "Direita",
+    "justify": "Justificar"
   },
   "status": {
     "slideOf": "Slide {{current}} de {{total}}",

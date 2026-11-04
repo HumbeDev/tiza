@@ -86,7 +86,12 @@
     "opacityShort": "Opac. %",
     "image": "Image",
     "video": "Vidéo",
-    "table": "Tableau"
+    "table": "Tableau",
+    "fragmentColor": "Couleur du texte sélectionné",
+    "fragmentSize": "Taille du texte sélectionné",
+    "sizeDefault": "Taille : celle du cadre",
+    "clearStyle": "Retirer couleur/taille",
+    "paragraphAlign": "Alignement du paragraphe"
   },
   "align": {
     "left": "Aligner à gauche",
@@ -105,7 +110,8 @@
   "textAlign": {
     "left": "Gauche",
     "center": "Centre",
-    "right": "Droite"
+    "right": "Droite",
+    "justify": "Justifier"
   },
   "status": {
     "slideOf": "Diapositive {{current}} sur {{total}}",

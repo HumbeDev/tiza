@@ -215,6 +215,25 @@ pub struct UpdateElementArgs {
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct StyleTextArgs {
+    pub element_id: String,
+    /// Text to style (every occurrence, case-sensitive). Omit to style the whole box.
+    #[serde(rename = "match")]
+    pub match_text: Option<String>,
+    /// CSS color like "#d62828"; "" removes it.
+    pub color: Option<String>,
+    /// Size in slide units (the box's font_size is the default); 0 removes it.
+    pub font_size: Option<f64>,
+    pub bold: Option<bool>,
+    pub italic: Option<bool>,
+    pub underline: Option<bool>,
+    /// Paragraph alignment: left, center, right, justify, or "" for the box's alignment.
+    pub align: Option<String>,
+    /// With align: only this paragraph (1 = first). Default: all.
+    pub paragraph: Option<u32>,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct ElementIdsArg {
     pub element_ids: Vec<String>,
 }
@@ -550,6 +569,16 @@ impl TizaMcp {
         Parameters(args): Parameters<ElementIdsArg>,
     ) -> Result<CallToolResult, ErrorData> {
         self.forward("ungroup_elements", args).await
+    }
+
+    #[tool(
+        description = "Style part of a text box: color, size, bold/italic/underline of every occurrence of `match` (or the whole text), and paragraph alignment. Returns how many fragments changed."
+    )]
+    async fn style_text(
+        &self,
+        Parameters(args): Parameters<StyleTextArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        self.forward("style_text", args).await
     }
 
     #[tool(description = "Delete elements.")]

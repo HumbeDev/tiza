@@ -24,7 +24,12 @@ import {
 import { embedFields, parseEmbed } from "../elements/embed/parse";
 import { canvasToBytes, renderFrame } from "../export/capture";
 import { exportHtml, exportPdf, exportPng } from "../export/export";
-import { toPlainText } from "../document/richtext";
+import {
+  type TextStyleChange,
+  alignParagraphs,
+  styleText,
+  toPlainText,
+} from "../document/richtext";
 import { save as saveFile } from "../files/session";
 import {
   type ZOrder,
@@ -432,6 +437,31 @@ const tools: Record<string, (args: Args) => unknown> = {
     if (num(c.font_size) && el.kind === "math") setMathFontSize(el.id, num(c.font_size)!);
     focus(slide, [el.id]);
     return unknown.length ? { ok: true, ignored: unknown } : { ok: true };
+  },
+
+  style_text(args) {
+    const { el } = elementOf(args.element_id);
+    if (el.kind !== "text") throw new ToolError("style_text works on text boxes only");
+    const style: TextStyleChange = {};
+    if (typeof args.color === "string") style.color = args.color || null;
+    if (num(args.font_size) !== undefined)
+      style.fontSize = num(args.font_size)! > 0 ? num(args.font_size)! : null;
+    for (const flag of ["bold", "italic", "underline"] as const)
+      if (typeof args[flag] === "boolean") style[flag] = args[flag] as boolean;
+    let doc = el.doc;
+    let count = 0;
+    if (Object.keys(style).length > 0) {
+      ({ doc, count } = styleText(doc, str(args.match) ?? "", style));
+      if (count === 0) throw new ToolError(`"${String(args.match)}" was not found in the text`);
+    }
+    if (typeof args.align === "string") {
+      if (!["", "left", "center", "right", "justify"].includes(args.align))
+        throw new ToolError("align must be left, center, right, justify or empty");
+      const p = num(args.paragraph);
+      doc = alignParagraphs(doc, (args.align || null) as "left" | null, p ? p - 1 : undefined);
+    }
+    updateElements([el.id], { doc } as Partial<Element>);
+    return { styled: count };
   },
 
   group_elements({ element_ids }) {

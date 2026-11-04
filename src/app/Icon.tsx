@@ -66,6 +66,11 @@ const PATHS = {
   alignBottom: "M3 20h18M7 4h4v12H7zM14 9h4v7h-4z",
   group: "M3 3h4M3 3v4M21 3h-4M21 3v4M3 21h4M3 21v-4M21 21h-4M21 21v-4M7 7h6v6H7zM11 11h6v6h-6z",
   ungroup: "M4 4h7v7H4zM13 13h7v7h-7z",
+  textLeft: "M4 6h16M4 10h10M4 14h16M4 18h10",
+  textCenter: "M4 6h16M7 10h10M4 14h16M7 18h10",
+  textRight: "M4 6h16M10 10h10M4 14h16M10 18h10",
+  textJustify: "M4 6h16M4 10h16M4 14h16M4 18h16",
+  eraser: "M7 21h13M5.5 15.5 14 7l5 5-8.5 8.5H7.5l-2-2a1.4 1.4 0 0 1 0-2zM10 11l5 5",
   front: "M8 8h12v12H8zM4 4h12v12",
   back: "M4 4h12v12H4zM8 16v4h12V8h-4",
 } as const;

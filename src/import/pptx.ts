@@ -728,6 +728,9 @@ function textElement(
   ]);
 
   const paragraphs: RichNode[] = [];
+  // Run styles, to mark the runs whose color or size differ from the box's (the first).
+  const runStyles = new Map<RichNode, RunStyle>();
+  const paragraphAligns = new Map<RichNode, TextAlign>();
   let firstSize: number | undefined;
   let firstColor: string | undefined;
   let align: TextAlign | undefined;
@@ -739,8 +742,14 @@ function textElement(
     const levels = [pPr, ...chain.levels(lvl)].filter((x): x is El => x !== null);
     const levelDefaults = merge(...levels.map((l) => runStyle(kid(l, "defRPr"), ctx.theme)));
     const algn = levels.map((l) => l.getAttribute("algn")).find((a) => a);
-    if (align === undefined && algn)
-      align = algn === "ctr" ? "center" : algn === "r" ? "right" : "left";
+    const pAlign: TextAlign | undefined = algn
+      ? algn === "ctr"
+        ? "center"
+        : algn === "r"
+          ? "right"
+          : "left"
+      : undefined;
+    if (align === undefined && pAlign) align = pAlign;
 
     // Bullets: the first level that says something about bullets wins.
     const bulletLevel = levels.find(
@@ -769,10 +778,13 @@ function textElement(
       const marks = (["bold", "italic", "underline", "strike"] as const)
         .filter((m) => style[m])
         .map((m) => ({ type: m }));
-      content.push({ type: "text", text, ...(marks.length ? { marks } : {}) });
+      const node: RichNode = { type: "text", text, ...(marks.length ? { marks } : {}) };
+      runStyles.set(node, style);
+      content.push(node);
     }
     if (firstSize === undefined) firstSize = levelDefaults.size;
     const paragraph: RichNode = { type: "paragraph", ...(content.length ? { content } : {}) };
+    if (pAlign) paragraphAligns.set(paragraph, pAlign);
 
     if (bullet && content.length) {
       if (!list || list.type !== bullet) {
@@ -793,6 +805,19 @@ function textElement(
   const rIns = (num(bodyPr, "rIns") ?? 91440) * s;
   const tIns = (num(bodyPr, "tIns") ?? 45720) * s;
   const pt = (firstSize ?? 18) * fontScale;
+  const units = (size: number) => Math.round(size * fontScale * EMU_PER_PT * s * 10) / 10;
+  const boxColor = firstColor ?? ctx.theme.tx1;
+  for (const [node, style] of runStyles) {
+    const color = style.color ?? ctx.theme.tx1;
+    const attrs = {
+      ...(color && color !== boxColor ? { color } : {}),
+      ...(style.size && style.size !== firstSize ? { fontSize: `${units(style.size)}px` } : {}),
+    };
+    if (Object.keys(attrs).length)
+      node.marks = [...(node.marks ?? []), { type: "textStyle", attrs }];
+  }
+  for (const [paragraph, pAlign] of paragraphAligns)
+    if (pAlign !== align) paragraph.attrs = { textAlign: pAlign };
   return {
     id: newId(),
     x: geo.x + lIns,
