@@ -12,7 +12,8 @@ edition = "2024"
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
 name = "tiza_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+# Desktop only: `staticlib` and `cdylib` are needed just for mobile targets.
+crate-type = ["rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
@@ -36,6 +37,13 @@ uuid = { version = "1.29.0", features = ["v4"] }
 toml_edit = "0.25.18"
 base64 = "0.23.1"
 
+
+# Keep `target/` small: file and line info for our code, no debug info for dependencies.
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]
