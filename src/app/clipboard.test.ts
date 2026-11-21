@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPresentation, createShape, createText } from "../document/factory";
 import { addElement, groupElements, loadDocument, useEditor } from "../store/editor";
-import { pasteData, readElements, writeElements } from "./clipboard";
+import { imagePathFromUriList, pasteData, readElements, writeElements } from "./clipboard";
 
 class FakeData {
   store = new Map<string, string>();
@@ -53,5 +53,28 @@ describe("clipboard", () => {
     link.setData("text/plain", "https://youtu.be/dQw4w9WgXcQ");
     pasteData(link as unknown as DataTransfer);
     expect(elements().map((e) => e.kind)).toEqual(["text", "embed"]);
+  });
+
+  it("keeps the GIF when the clipboard also has a still frame", async () => {
+    const data = new FakeData();
+    const png = new File([new Uint8Array([1])], "a.png", { type: "image/png" });
+    const gif = new File([new Uint8Array([2])], "a.gif", { type: "image/gif" });
+    data.files = [png, gif] as unknown as FileList;
+    expect(pasteData(data as unknown as DataTransfer)).toBe(true);
+    await vi.waitFor(() => expect(elements()).toHaveLength(1));
+    const el = elements()[0];
+    expect(el.kind === "image" && el.asset).toMatch(/\.gif$/);
+  });
+
+  it("reads picture paths copied in a file manager", () => {
+    expect(imagePathFromUriList("file:///home/ana/Mis%20fotos/gato.GIF\r\n")).toBe(
+      "/home/ana/Mis fotos/gato.GIF",
+    );
+    expect(imagePathFromUriList("# comment\nfile:///C:/Users/ana/x.gif")).toBe(
+      "C:/Users/ana/x.gif",
+    );
+    expect(imagePathFromUriList("file:///home/ana/notas.txt")).toBeNull();
+    expect(imagePathFromUriList("https://example.com/x.gif")).toBeNull();
+    expect(imagePathFromUriList("")).toBeNull();
   });
 });

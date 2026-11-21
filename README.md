@@ -102,7 +102,7 @@ crea y edita tu presentación **en vivo** mientras la ves, y tú deshaces con Ct
 
 **Plantilla de diapositiva del archivo**: clic derecho en una miniatura → «Guardar como plantilla de nuevas diapositivas». Se guarda **una copia en ese momento**: cada diapositiva nueva empieza así (logos, barras de un evento…) aunque después cambies la original. «Nueva diapositiva en blanco» la ignora; «Quitar la plantilla» la borra.
 
-**Imágenes**: botón **Imagen** (PNG, JPG, GIF, WebP, SVG, BMP, AVIF). Se guardan **dentro del `.tiza`** (una sola copia aunque la repitas). Encuadre: imagen completa, rellenar y recortar, o estirar.
+**Imágenes**: botón **Imagen** (PNG, JPG, GIF, WebP, SVG, BMP, AVIF). Los **GIF animados** se ven animados en el editor y al presentar. Se guardan **dentro del `.tiza`** (una sola copia aunque la repitas). Encuadre: imagen completa, rellenar y recortar, o estirar.
 
 **Video**: botón **Video** (WebM, MP4, MOV, OGV). En el editor muestra un cuadro (doble clic para reproducirlo ahí); al presentar tiene controles y no cambia de diapositiva al hacer clic. Opciones: reproducir al aparecer la diapositiva, repetir, sin sonido, y reproducir solo un tramo (inicio/fin). Viaja dentro del `.tiza`. En la app de escritorio los videos se reproducen desde un servidor local (127.0.0.1) por partes, así que los **videos grandes** no se cargan enteros en memoria.
 
@@ -135,7 +135,7 @@ Herramientas: ver la presentación y cada diapositiva; crear, duplicar, mover, b
 - **Cinta estilo Office**: menú **Archivo**, acceso rápido (guardar, deshacer, rehacer) y pestañas **Inicio** (portapapeles, diapositivas, organizar, alinear), **Insertar** (texto, ecuación, imagen, video, tabla, formas, HTML, importar), **Animaciones**, **Transiciones** y **Presentación**. Recuerda la última pestaña.
 - **Texto**: al editar un cuadro, el texto seleccionado puede tener su propio **color** y **tamaño**, y cada **párrafo** su alineación (izquierda, centro, derecha, justificado). Al importar PowerPoint se conservan.
 - **Agrupar** (Ctrl+G) y desagrupar (Ctrl+Shift+G): al hacer clic en un elemento del grupo se selecciona y se mueve todo; Alt+clic elige uno solo.
-- **Portapapeles del sistema**: copiar y pegar elementos entre ventanas de Tiza y entre la app y la web; desde otras apps se pega una **imagen** (captura de pantalla), un **enlace** (YouTube, X o web → contenido web) o **texto** (→ cuadro de texto). Al copiar, otras apps reciben el texto.
+- **Portapapeles del sistema**: copiar y pegar elementos entre ventanas de Tiza y entre la app y la web; desde otras apps se pega una **imagen** (captura de pantalla, o un archivo de imagen copiado en el gestor de archivos: los **GIF** siguen animados), un **enlace** (YouTube, X o web → contenido web) o **texto** (→ cuadro de texto). Al copiar, otras apps reciben el texto.
 - **Clic derecho** en elementos (cortar, copiar, pegar, duplicar, orden, bloquear, eliminar), en el lienzo vacío y en las miniaturas (duplicar, **ocultar en la presentación**, subir/bajar, eliminar).
 - **Tema claro / oscuro / sistema** (botón en la barra o en Ajustes).
 - **Ajustes** (Ctrl+, o menú Archivo) por secciones: General (idioma, tema), Rendimiento (**tarjeta gráfica** (automática o alto rendimiento; Tiza se reinicia sola y conserva tus cambios), Agentes de IA, Diagnóstico (las GPU reales del sistema, cuál usa Tiza, WebGL) y Acerca de.

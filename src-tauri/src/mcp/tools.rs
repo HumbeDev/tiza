@@ -202,7 +202,7 @@ pub struct AddEmbedArgs {
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct AddImageArgs {
     pub slide: SlideRef,
-    /// Absolute path of a local image file (png, jpg, gif, webp, svg, bmp, avif).
+    /// Absolute path of a local image file (png, jpg, gif, webp, svg, bmp, avif). Animated GIFs stay animated.
     pub path: String,
     #[serde(flatten)]
     pub frame: Frame,

@@ -142,6 +142,11 @@ async function pickMedia(extensions: string[], label: string): Promise<ImportedA
   return { name, ...(extensions === IMAGE_EXTENSIONS ? await naturalSize(file) : {}) };
 }
 
+/** Stores a picture from a local path, byte for byte (GIFs keep their animation). Desktop only. */
+export function importImageFile(path: string): Promise<ImportedAsset> {
+  return invoke<ImportedAsset>("import_image", { path });
+}
+
 /** Pixel size of an asset's image (used by the importers when the file doesn't say). */
 export async function imageSize(
   bytes: Uint8Array,

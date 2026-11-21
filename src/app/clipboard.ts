@@ -2,7 +2,14 @@
 // into another Tiza window, the web version or, as plain text, into other apps). Pasting
 // from other apps: pictures become images, links to YouTube/X/web pages become embeds,
 // other text becomes a text box.
-import { imageSize, putAsset } from "../assets/store";
+import {
+  IMAGE_EXTENSIONS,
+  extensionOf,
+  imageSize,
+  importImageFile,
+  putAsset,
+} from "../assets/store";
+import { isDesktop } from "../files/platform";
 import type { Element } from "../document";
 import { createEmbed, createImage, createText } from "../document/factory";
 import { toPlainText } from "../document/richtext";
@@ -62,6 +69,23 @@ export function readElements(html: string): Element[] | null {
   }
 }
 
+/** Local path of the first picture in a text/uri-list (file:// URLs), or null. */
+export function imagePathFromUriList(list: string): string | null {
+  const uri = list
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .find((l) => l && !l.startsWith("#"));
+  if (!uri?.toLowerCase().startsWith("file://")) return null;
+  let path: string;
+  try {
+    path = decodeURIComponent(new URL(uri).pathname);
+  } catch {
+    return null;
+  }
+  if (/^\/[A-Za-z]:\//.test(path)) path = path.slice(1); // file:///C:/x.gif on Windows
+  return IMAGE_EXTENSIONS.includes(extensionOf(path)) ? path : null;
+}
+
 function center() {
   const { width, height } = useEditor.getState().doc.page;
   return { cx: width / 2, cy: height / 2 };
@@ -77,7 +101,20 @@ export function pasteData(data: DataTransfer): boolean {
     return true;
   }
 
-  const picture = Array.from(data.files).find((f) => f.type.startsWith("image/"));
+  // A picture file copied in the file manager: import the original file, so a GIF stays
+  // animated (the clipboard's image data, when there is any, is a still frame).
+  const path = isDesktop ? imagePathFromUriList(data.getData("text/uri-list")) : null;
+  if (path) {
+    void (async () => {
+      const picked = await importImageFile(path);
+      const { cx, cy } = center();
+      addElement(createImage(picked.name, picked, cx, cy));
+    })();
+    return true;
+  }
+
+  const pictures = Array.from(data.files).filter((f) => f.type.startsWith("image/"));
+  const picture = pictures.find((f) => f.type === "image/gif") ?? pictures[0];
   if (picture) {
     void (async () => {
       const ext = picture.type.split("/")[1]?.replace("jpeg", "jpg").replace("svg+xml", "svg");
