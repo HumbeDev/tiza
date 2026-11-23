@@ -1,6 +1,7 @@
 pub mod archive;
 pub mod assets;
 pub mod commands;
+pub mod crash;
 pub mod document;
 pub mod error;
 pub mod gpu;
@@ -14,6 +15,9 @@ use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    if let Some(path) = crash::log_path() {
+        crash::install(path);
+    }
     settings::apply_webkit_workarounds();
     settings::apply_gpu_preference();
     tauri::Builder::default()

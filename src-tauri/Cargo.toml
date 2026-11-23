@@ -50,7 +50,8 @@ debug = false
 codegen-units = 1
 lto = true
 opt-level = 3
-panic = "abort"
+# No `panic = "abort"`: a panic while serving one request (MCP, media, assets) must fail
+# that request only, not close the app. Panics are logged to crash.log (src/crash.rs).
 strip = true
 
 [dev-dependencies]
